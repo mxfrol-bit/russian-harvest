@@ -3,7 +3,21 @@
 import os
 from pathlib import Path
 
-SITE = Path(__file__).parent.parent / 'site'
+# Resolve site directory robustly:
+#   - If script is in scripts/ subdir: SITE = ../site (parent.parent / site)
+#   - If script is in repo root:       SITE = ./site (parent / site)
+#   - Override with $SITE_DIR env var in any environment.
+_here = Path(__file__).resolve().parent
+if (_here.parent / 'site').exists():
+    _default_site = _here.parent / 'site'
+elif (_here / 'site').exists():
+    _default_site = _here / 'site'
+else:
+    _default_site = Path.cwd() / 'site'
+
+SITE = Path(os.environ.get('SITE_DIR', str(_default_site)))
+SITE.mkdir(parents=True, exist_ok=True)
+print(f'[build] Writing pages to: {SITE}')
 
 # ================= SHARED COMPONENTS =================
 

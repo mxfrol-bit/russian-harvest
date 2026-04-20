@@ -1,37 +1,38 @@
 # ==========================================================
 # Русский Урожай — production Dockerfile
 # ==========================================================
-# Builds the static site with Python and serves it via Nginx.
+# Two-stage build:
+#   1) Python builds HTML from templates via scripts/build.py
+#   2) Caddy serves the result (better than Nginx for this use case —
+#      auto-configures gzip, respects $PORT from Railway, no config reload)
 #
 # Build:   docker build -t russian-harvest .
-# Run:     docker run -p 80:80 russian-harvest
+# Run:     docker run -p 8080:8080 russian-harvest
 # ==========================================================
 
-# ---- Stage 1: build ----
+# ---- Stage 1: build HTML ----
 FROM python:3.11-slim AS builder
 
-WORKDIR /build
-COPY scripts/build.py ./build.py
+WORKDIR /app
+
+# Copy source structure: scripts/ and site/ (with assets)
+COPY scripts/ ./scripts/
 COPY site/ ./site/
 
-RUN python3 build.py
+# Run the builder — generates HTML files into /app/site/
+RUN python3 scripts/build.py
 
-# ---- Stage 2: serve ----
-FROM nginx:1.25-alpine
+# ---- Stage 2: serve with Caddy ----
+FROM caddy:2-alpine
 
-# Remove default config
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy the built site to /srv (Caddyfile references this path)
+COPY --from=builder /app/site /srv
 
-# Copy our nginx config
-COPY scripts/nginx.conf /etc/nginx/conf.d/russian-harvest.conf
+# Copy the Caddyfile
+COPY Caddyfile /etc/caddy/Caddyfile
 
-# Copy built site
-COPY --from=builder /build/site /usr/share/nginx/html
+# Railway injects $PORT. Caddy reads it from env at runtime.
+# Default to 8080 for local testing.
+EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --spider http://localhost/ || exit 1
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

@@ -1,28 +1,31 @@
-# Caddy configuration — Русский Урожай (Railway)
-# ================================================
-# Caddy автоматически настраивает HTTPS, HTTP/2, gzip, brotli.
-# Слушаем на порту, который даст Railway через переменную $PORT.
+# Caddy configuration — Русский Урожай
+# ======================================
+# Works on: Railway (Nixpacks or Dockerfile), any Docker host, self-hosted.
+# Caddy auto-configures HTTP/2, gzip, HTTPS (when applicable).
 
 {
-    # Global options
-    admin off
+    # Railway and most platforms terminate TLS at the edge.
     auto_https off
+    admin off
     servers {
         protocols h1 h2 h2c
     }
 }
 
+# Listen on $PORT (Railway provides it) or 8080 by default.
 :{$PORT:8080} {
-    root * /app/site
+    # The site root. Dockerfile copies to /srv; nixpacks uses /app/site.
+    # $SITE_ROOT env var lets us override without editing the file.
+    root * {$SITE_ROOT:/srv}
+
     encode gzip zstd
 
-    # Security headers
+    # Security headers (applied to all responses)
     header {
         X-Frame-Options "SAMEORIGIN"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "geolocation=(self), camera=(), microphone=()"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
         -Server
     }
 
@@ -32,21 +35,13 @@
     }
     rewrite @pretty {path}.html
 
-    # Cache static assets aggressively
-    @static {
-        path /assets/*
-    }
-    header @static {
-        Cache-Control "public, max-age=31536000, immutable"
-    }
+    # Aggressive cache for static assets (1 year, immutable)
+    @static path /assets/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
 
-    # Cache HTML briefly
-    @html {
-        path *.html
-    }
-    header @html {
-        Cache-Control "public, max-age=300, must-revalidate"
-    }
+    # Short cache for HTML (5 minutes, must revalidate)
+    @html path *.html
+    header @html Cache-Control "public, max-age=300, must-revalidate"
 
     # 404 fallback
     handle_errors {
@@ -55,9 +50,11 @@
         file_server
     }
 
-    # Serve files
+    # Serve files: try exact path, then with .html suffix
     try_files {path} {path}.html
     file_server
+
+    # Access log to stdout (Railway picks it up)
     log {
         output stdout
         format console
