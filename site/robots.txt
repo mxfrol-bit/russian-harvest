@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block account and internal pages from indexing
+Disallow: /account.html
+Disallow: /assets/
+
+# Sitemap
+Sitemap: https://russian-harvest.ru/sitemap.xml

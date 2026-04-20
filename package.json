@@ -1,0 +1,29 @@
+{
+  "name": "russian-harvest",
+  "version": "1.0.0",
+  "description": "Русский Урожай — онлайн-площадка для прямых сделок между фермерами и покупателями сельхозпродукции.",
+  "private": true,
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "dev": "python3 -m http.server 8080 --directory site",
+    "serve": "python3 -m http.server 8080 --directory site",
+    "clean": "rm -rf site/*.html && echo 'Cleaned HTML files.'",
+    "zip": "cd .. && zip -rq russian-harvest-site.zip $(basename $(pwd)) -x '*.git*' '*node_modules*'",
+    "lint:html": "npx htmlhint site/*.html || true",
+    "validate": "python3 scripts/validate.py"
+  },
+  "engines": {
+    "node": ">=18",
+    "python": ">=3.9"
+  },
+  "keywords": ["agro", "marketplace", "b2b", "russia", "wheat", "grain"],
+  "author": "ИП Фролов В.А.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/russian-harvest.git"
+  },
+  "devDependencies": {
+    "htmlhint": "^1.1.4"
+  }
+}

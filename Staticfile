@@ -1,0 +1,8 @@
+# Railpack Staticfile configuration
+# =================================
+# Railway автоматически определяет папку со статикой и обслуживает её через Caddy.
+# Этот файл нужен только если хотите использовать Railpack вместо Nixpacks.
+#
+# Если используете Nixpacks (через nixpacks.toml + Caddyfile) — этот файл можно удалить.
+
+root: site

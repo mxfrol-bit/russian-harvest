@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Продать — Русский Урожай</title>
+<meta name="description" content="Продавайте урожай напрямую покупателям на площадке Русский Урожай. Без посредников, с эскроу-защитой. 30 актуальных запросов." />
+<link rel="icon" type="image/svg+xml" href="https://russian-harvest.ru/img/logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/index.html">
+      <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+      <div class="brand-sub"><span class="s">Растим будущее агробизнеса</span></div>
+    </a>
+    <nav class="nav-main">
+      <a href="/catalog.html" class="">Купить</a>
+      <a href="/sale.html" class="active">Продать</a>
+      <a href="/about.html" class="">О компании</a>
+      <a href="/how.html" class="">Помощь</a>
+      <a href="/contacts.html" class="">Контакты</a>
+    </nav>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="siteSearchBtn" title="Поиск по сайту (⌘K)" aria-label="Поиск">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+    </button>
+    <button class="region-chip" title="Ваш адрес доставки — все расстояния считаются от него">
+      <span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span>
+      Нижний Новгород
+      <span class="change">изменить</span>
+    </button>
+    <span class="phone-link">
+      <span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 4-2 1s1 3 4 6l1-2 4 2v4a2 2 0 0 1-2 2A14 14 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg></span>
+      <a href="tel:+79300129797">+7 930 012-97-97</a>
+    </span>
+    <button class="btn btn-ghost btn-sm" data-open="login">Войти</button>
+    <a class="btn btn-primary btn-sm" href="/account.html">Кабинет</a>
+    <button class="menu-trigger" id="menuTrigger" aria-label="Меню"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+    <button class="drawer-close" id="drawerClose" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <nav class="drawer-nav">
+      <a href="/catalog.html" class="">Купить</a>
+      <a href="/sale.html" class="active">Продать</a>
+      <a href="/about.html" class="">О компании</a>
+      <a href="/how.html" class="">Помощь</a>
+      <a href="/contacts.html" class="">Контакты</a>
+    </nav>
+  </div>
+  <div class="drawer-foot">
+    <a href="tel:+79300129797" class="phone"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 4-2 1s1 3 4 6l1-2 4 2v4a2 2 0 0 1-2 2A14 14 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg> +7 930 012-97-97</a>
+    <a class="btn btn-primary btn-block" href="/account.html">Личный кабинет</a>
+    <button class="btn btn-outline btn-block" data-open="login">Войти</button>
+  </div>
+</aside>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="/index.html">Главная</a>
+      <span class="sep">/</span>
+      <span>Продать</span>
+    </div>
+    <h1>Продавайте урожай напрямую покупателям — быстро, выгодно и надёжно</h1>
+    <p>Получайте заявки от проверенных компаний и заключайте выгодные сделки без цепочки посредников.</p>
+
+    <form class="filter-bar" action="#" onsubmit="event.preventDefault()">
+      <label class="field">
+        <span class="k">Культура</span>
+        <input type="text" placeholder="Пшеница, ячмень, кукуруза…" />
+      </label>
+      <div class="field">
+        <span class="k">Регион покупателя</span>
+        <span class="v">Все <span class="chev">▾</span></span>
+      </div>
+      <div class="field">
+        <span class="k">Минимальный объём</span>
+        <span class="v">от 50 т <span class="chev">▾</span></span>
+      </div>
+      <div class="field">
+        <span class="k">НДС</span>
+        <span class="v">любой <span class="chev">▾</span></span>
+      </div>
+      <button class="submit" type="submit"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg> Найти</button>
+    </form>
+  </div>
+</section>
+
+<section class="section">
+  <div class="catalog-head">
+    <div>
+      <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.4 6.1 6.6.5-5 4.4 1.5 6.4L10 15l-5.5 3.4L6 12 1 7.6l6.6-.5z"/></svg> Актуальные запросы</span>
+      <h2 class="h2">Покупатели ищут прямо сейчас</h2>
+      <p class="section-lead">Откликайтесь на заявки — средний отклик на платформе 3 часа. Все покупатели проверены, оплата через эскроу.</p>
+    </div>
+    <div class="top-row">
+      <div class="catalog-chips">
+        <button class="c-chip active">Все запросы</button>
+        <button class="c-chip">🔥 Срочные</button>
+        <button class="c-chip">Пшеница</button>
+        <button class="c-chip">Ячмень</button>
+        <button class="c-chip">Кукуруза</button>
+        <button class="c-chip">Подсолнечник</button>
+        <button class="c-chip">Крупный опт (&gt; 200 т)</button>
+      </div>
+      <div class="view-tools">
+        <div class="sort-select">
+          <select>
+            <option>Сортировка: новые сверху</option>
+            <option>По цене: ↓</option>
+            <option>По цене: ↑</option>
+            <option>По объёму: ↓</option>
+            <option>По срочности</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="active">
+      Активные <span class="tab-count">30</span>
+    </button>
+    <button class="tab-btn" data-tab="archive">
+      В архиве <span class="tab-count">6</span>
+    </button>
+  </div>
+
+  <div class="tab-pane" data-pane="active">
+    <div class="req-grid">
+      <article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge orange">🔥 Срочно</span><span class="badge featured">Новый</span>
+        <span class="badge gray">№ Q-001</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 3 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">200 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Хлебозавод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0121</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>2 часа назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge featured">Новый</span>
+        <span class="badge gray">№ Q-002</span>
+      </div>
+      <h3 class="req-card-title">Ячмень кормовой</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">12 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">500 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Дзержинск</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Птицефабрика</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0074</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>5 часов назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge featured">Новый</span>
+        <span class="badge gray">№ Q-003</span>
+      </div>
+      <h3 class="req-card-title">Кукуруза</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 800 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">150 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Арзамас</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 15.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Комбикормовый завод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0203</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>6 часов назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge orange">🔥 Срочно</span>
+        <span class="badge gray">№ Q-004</span>
+      </div>
+      <h3 class="req-card-title">Подсолнечник</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">28 000 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">80 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 25.04.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0099</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>1 день назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-005</span>
+      </div>
+      <h3 class="req-card-title">Рапс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">31 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">100 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Балахна</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 30.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0114</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>1 день назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-006</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 4 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">11 800 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">350 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 05.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Мукомольное предприятие</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0302</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>2 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-007</span>
+      </div>
+      <h3 class="req-card-title">Овёс фуражный</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">10 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">60 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Семёнов</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 01.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Животноводческий комплекс</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0188</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>2 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-008</span>
+      </div>
+      <h3 class="req-card-title">Соя</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">39 000 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">70 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Кормопроизводство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0155</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>3 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-009</span>
+      </div>
+      <h3 class="req-card-title">Горох</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">18 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">40 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Кстово</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Пищевое производство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0077</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>3 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-010</span>
+      </div>
+      <h3 class="req-card-title">Гречиха</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">22 000 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">35 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 15.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Пищевое производство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0221</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>4 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-011</span>
+      </div>
+      <h3 class="req-card-title">Ячмень пивоваренный</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">16 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">250 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Чебоксары</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 01.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Солодовня</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0408</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>4 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-012</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 3 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 300 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">180 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Муром</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Хлебозавод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0099</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>5 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-013</span>
+      </div>
+      <h3 class="req-card-title">Кукуруза</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">15 200 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">120 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Арзамас</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 25.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Комбикормовый завод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0312</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>5 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-014</span>
+      </div>
+      <h3 class="req-card-title">Подсолнечник</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">27 800 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">150 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0155</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>6 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-015</span>
+      </div>
+      <h3 class="req-card-title">Рапс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">32 000 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">200 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Дзержинск</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 15.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0411</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>6 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-016</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 5 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">10 800 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">400 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Комбикормовый завод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0188</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>1 неделю назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-017</span>
+      </div>
+      <h3 class="req-card-title">Ячмень кормовой</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">12 300 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">220 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Балахна</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 01.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Животноводческий комплекс</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0074</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>1 неделю назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-018</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 4 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">12 100 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">500 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Выкса</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Птицефабрика</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0133</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>1 неделю назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-019</span>
+      </div>
+      <h3 class="req-card-title">Соя</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">38 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">120 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 25.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0099</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>8 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-020</span>
+      </div>
+      <h3 class="req-card-title">Горох</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">18 800 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">80 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Арзамас</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 30.05.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Пищевое производство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0203</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>9 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-021</span>
+      </div>
+      <h3 class="req-card-title">Кукуруза</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">300 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Кормопроизводство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0302</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>10 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-022</span>
+      </div>
+      <h3 class="req-card-title">Подсолнечник</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">28 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">90 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Семёнов</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 01.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0411</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>10 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-023</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 3 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 700 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">250 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Муром</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Хлебозавод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0121</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>12 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-024</span>
+      </div>
+      <h3 class="req-card-title">Овёс голозёрный</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 200 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">50 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 15.06.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Пищевое производство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0155</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>12 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-025</span>
+      </div>
+      <h3 class="req-card-title">Ячмень пивоваренный</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">16 800 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">180 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Чебоксары</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 01.08.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Солодовня</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0408</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>14 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-026</span>
+      </div>
+      <h3 class="req-card-title">Рапс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">31 200 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">150 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Балахна</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 10.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0114</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>14 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-027</span>
+      </div>
+      <h3 class="req-card-title">Гречиха</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">21 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">45 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 20.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Пищевое производство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0221</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>16 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-028</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 4 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">12 000 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">600 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Дзержинск</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 15.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Мукомольное предприятие</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0302</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>18 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-029</span>
+      </div>
+      <h3 class="req-card-title">Кукуруза</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 200 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">200 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Богородск</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 25.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Комбикормовый завод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0312</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>20 дней назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article><article class="req-card">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        
+        <span class="badge gray">№ Q-030</span>
+      </div>
+      <h3 class="req-card-title">Подсолнечник</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">27 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">110 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Выкса</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">до 30.07.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0099</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>22 дня назад</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+  </div>
+</article>
+    </div>
+  </div>
+  <div class="tab-pane" data-pane="archive" style="display:none">
+    <div class="req-grid">
+      <article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-901</span>
+      </div>
+      <h3 class="req-card-title">Пшеница 3 класс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 000 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">300 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 15.03.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Хлебозавод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0121</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article><article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-902</span>
+      </div>
+      <h3 class="req-card-title">Ячмень кормовой</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">12 100 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">400 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Дзержинск</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 10.03.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Птицефабрика</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0074</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article><article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-903</span>
+      </div>
+      <h3 class="req-card-title">Кукуруза</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">14 500 ₽/т</span>
+      <span class="small">с НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">200 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Арзамас</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 05.03.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Комбикорм. завод</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0203</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article><article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-904</span>
+      </div>
+      <h3 class="req-card-title">Подсолнечник</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">27 200 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">120 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 28.02.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0099</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article><article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-905</span>
+      </div>
+      <h3 class="req-card-title">Рапс</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">30 500 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">90 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Балахна</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 20.02.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>МЭЗ</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0114</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article><article class="req-card req-archive">
+  <div class="req-card-head">
+    <div>
+      <div class="req-badges">
+        <span class="badge archive">Закрыта</span>
+        <span class="badge gray">№ Q-906</span>
+      </div>
+      <h3 class="req-card-title">Соя</h3>
+    </div>
+    <div class="req-target-price">
+      <span class="num">37 800 ₽/т</span>
+      <span class="small">без НДС</span>
+    </div>
+  </div>
+
+  <div class="req-attrs">
+    <div class="cell"><div class="k">Объём</div><div class="v">80 т</div></div>
+    <div class="cell"><div class="k">Куда</div><div class="v">Нижний Новгород</div></div>
+    <div class="cell"><div class="k">Срок</div><div class="v">Закрыта 10.02.2026</div></div>
+  </div>
+
+  <div class="req-meta">
+    <span class="item"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>Кормопроизводство</span>
+    <span class="dot"></span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID B-0155</span>
+    <span class="dot"></span>
+    <span class="item"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>Закрыта</span>
+  </div>
+
+  <div class="req-foot">
+    <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
+    <a class="cta" href="#">Закрыта </a>
+  </div>
+</article>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="reverse-card">
+    <div>
+      <span class="reverse-chip"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg> Отклик в течение 3 часов</span>
+      <h3>Хотите продать свой урожай выгодно?</h3>
+      <p class="lead">Разместите товар — покупатели сами предложат вам лучшие условия. Без посредников, с защитой оплаты через эскроу.</p>
+    </div>
+    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
+      <input type="text" placeholder="Наименование продукта" />
+      <input type="text" placeholder="Ваш регион" />
+      <div class="sel"><span>С НДС / без НДС</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Объём партии (т)</span><span class="chev">▾</span></div>
+      <button class="submit" type="submit">Продать свой урожай <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
+</section>
+
+<section class="section">
+  <div class="how-grid">
+    <div>
+      <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.4 6.1 6.6.5-5 4.4 1.5 6.4L10 15l-5.5 3.4L6 12 1 7.6l6.6-.5z"/></svg> Как быстро начать</span>
+      <h2 class="h2">Запустите продажи за 4 простых шага</h2>
+      <p class="section-lead">От регистрации до первой сделки — обычно проходит меньше суток. Платформа ведёт вас на каждом этапе.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="ic-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div>
+        <h4>Создайте личный кабинет</h4>
+        <p>Регистрация займёт 1 минуту. Подтверждение номера по SMS и реквизитов юр.лица — до 2 часов.</p>
+      </div>
+      <div class="step">
+        <div class="ic-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg></div>
+        <h4>Добавьте товар</h4>
+        <p>Укажите цену, качество и регион. Чем подробнее заполнены показатели качества — тем выше позиция в выдаче.</p>
+      </div>
+      <div class="step">
+        <div class="ic-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v12H8l-5 4V5z"/></svg></div>
+        <h4>Получайте заявки</h4>
+        <p>Уведомления о новых заявках — в личный кабинет, email и Telegram. Отвечайте за 1 клик.</p>
+      </div>
+      <div class="step">
+        <div class="ic-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 11 2 2 4-4 2 2-8 8-6-6 2-2 2 2 2-2z"/><path d="m15 7 3-3"/></svg></div>
+        <h4>Закрывайте сделки</h4>
+        <p>Подтверждайте условия, подписывайте типовой договор и получайте оплату через эскроу после отгрузки.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="foot-wrap">
+    <div class="foot-brand">
+      <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+      <p>Онлайн-площадка для прямых сделок между фермерами и покупателями сельхозпродукции. Прозрачно, быстро, надёжно.</p>
+      <span class="mono" style="font-size:11px;color:var(--slate-400)">ИП Фролов В.А.</span>
+    </div>
+    <div class="foot-col">
+      <h5>Разделы</h5>
+      <a href="/catalog.html">Купить</a>
+      <a href="/sale.html">Продать</a>
+      <a href="/about.html">О компании</a>
+      <a href="/how.html">Помощь</a>
+      <a href="/contacts.html">Контакты</a>
+    </div>
+    <div class="foot-col">
+      <h5>Документы</h5>
+      <a href="/offer.html">Публичная оферта</a>
+      <a href="/regulations.html">Правила площадки</a>
+      <a href="/policy.html">Политика конфиденциальности</a>
+      <a href="/dispute.html">Регламент споров</a>
+    </div>
+    <div class="foot-col">
+      <h5>Контакты</h5>
+      <a href="tel:+79300129797">+7 930 012-97-97</a>
+      <a href="mailto:support@russian-harvest.ru">support@russian-harvest.ru</a>
+      <span class="txt">Нижний Новгород</span>
+      <div class="foot-soc" style="margin-top:8px">
+        <a href="https://t.me/tdrusagro" title="Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg></a>
+        <a href="#" title="VK"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8 17.2c-5.6 0-8.8-3.8-8.9-10.1h2.8c.1 4.6 2.1 6.5 3.7 6.9V7.1h2.6v4c1.6-.2 3.3-2 3.9-4h2.6c-.4 2.5-2.2 4.3-3.5 5 1.3.6 3.4 2.2 4.2 5.1h-2.9c-.6-2-2.1-3.5-3.9-3.8v3.8h-.6z"/></svg></a>
+        <a href="#" title="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span class="c">© 2026 Русский Урожай</span>
+    <span style="font-size:12px;color:var(--slate-400)">Сайт использует файлы cookies для улучшения работы.</span>
+  </div>
+</footer>
+
+<div class="so-backdrop" id="soBackdrop"></div>
+<div class="so" id="so">
+  <div class="so-in">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+    <input type="text" id="soInput" placeholder="Поиск по сайту: культуры, регионы, поставщики…" autocomplete="off" />
+    <span class="esc">Esc</span>
+  </div>
+  <div class="so-body">
+    <div class="sd-sec">
+      <div class="sd-title">Популярные запросы</div>
+      <div class="sd-chips">
+        <button class="sd-chip">пшеница 3 класс</button>
+        <button class="sd-chip">кукуруза с НДС</button>
+        <button class="sd-chip">рапс с доставкой</button>
+        <button class="sd-chip">ячмень кормовой</button>
+        <button class="sd-chip">подсолнечник опт</button>
+      </div>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
+      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Регионы</div>
+      <a class="sd-item" href="/catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Разделы сайта</div>
+      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Как работает эскроу</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+  </div>
+  <div class="so-ft">
+    <div class="hints">
+      <span><kbd>↑</kbd><kbd>↓</kbd> навигация</span>
+      <span><kbd>↵</kbd> открыть</span>
+      <span><kbd>Esc</kbd> закрыть</span>
+    </div>
+    <span class="all">Все результаты →</span>
+  </div>
+</div>
+<div class="modal-backdrop" id="onbBackdrop"></div>
+<div class="modal modal-onb" id="onbModal" role="dialog" aria-labelledby="onbTitle">
+  <button class="modal-close" data-close="onb" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  <div class="onb-head">
+    <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" class="onb-logo" />
+    <h2 id="onbTitle">Здравствуйте! Что вас интересует?</h2>
+    <p>Выберите сценарий — мы подстроим интерфейс под ваши задачи. Это можно будет изменить в любой момент.</p>
+  </div>
+  <div class="onb-choices">
+    <button class="onb-choice" data-role="buyer">
+      <div class="onb-choice-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></div>
+      <div class="onb-choice-body">
+        <h3>Я хочу купить урожай</h3>
+        <p>Покажем каталог офферов, биржу цен и калькулятор доставки до вашего склада.</p>
+        <span class="onb-choice-go">Перейти в каталог <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span>
+      </div>
+    </button>
+    <button class="onb-choice" data-role="seller">
+      <div class="onb-choice-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h18v12H3zM7 8V5a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v3"/><path d="M9 12h6"/></svg></div>
+      <div class="onb-choice-body">
+        <h3>Я хочу продать урожай</h3>
+        <p>Покажем заявки покупателей, подскажем рыночную цену и поможем разместить оффер.</p>
+        <span class="onb-choice-go">Смотреть заявки <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span>
+      </div>
+    </button>
+  </div>
+  <div class="onb-foot">
+    <button class="onb-skip" data-close="onb">Пропустить — я просто смотрю</button>
+    <button class="onb-login" data-open="login" data-close="onb">Уже есть аккаунт? Войти</button>
+  </div>
+</div>
+<div class="modal-backdrop" id="loginBackdrop"></div>
+<div class="modal modal-login" id="loginModal" role="dialog" aria-labelledby="loginTitle">
+  <button class="modal-close" data-close="login" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+
+  <div class="login-tabs">
+    <button class="login-tab active" data-tab="signin">Вход</button>
+    <button class="login-tab" data-tab="signup">Регистрация</button>
+  </div>
+
+  <!-- SIGN IN -->
+  <div class="login-pane" data-pane="signin">
+    <h2 id="loginTitle">Вход в личный кабинет</h2>
+    <p class="login-sub">Введите телефон — мы отправим SMS с кодом подтверждения.</p>
+    <form class="login-form" onsubmit="event.preventDefault();window.location='/account.html'">
+      <div class="form-group">
+        <label>Телефон <span class="req">*</span></label>
+        <input type="tel" required placeholder="+7 (___) ___-__-__" value="+7 " />
+      </div>
+      <div class="form-group">
+        <label>Код из SMS</label>
+        <input type="text" placeholder="· · · · ·" maxlength="5" class="mono" style="letter-spacing:8px;text-align:center;font-size:18px" />
+        <div class="form-hint">SMS придёт после ввода телефона</div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+    <div class="login-divider"><span>или</span></div>
+    <div class="login-alt">
+      <button class="btn btn-outline btn-block"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg> Войти через Telegram</button>
+    </div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div class="login-pane" data-pane="signup" hidden>
+    <h2>Регистрация на платформе</h2>
+    <p class="login-sub">Всего 1 минута — потом заполните профиль из кабинета.</p>
+    <form class="login-form" onsubmit="event.preventDefault();window.location='/account.html'">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Я хочу</label>
+          <div class="seg">
+            <button type="button" class="seg-btn active" data-role="buyer">Покупать</button>
+            <button type="button" class="seg-btn" data-role="seller">Продавать</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Название компании <span class="req">*</span></label>
+        <input type="text" required placeholder="ООО «АгроКомпания» / ИП Иванов" />
+      </div>
+      <div class="form-group">
+        <label>ИНН <span class="req">*</span></label>
+        <input type="text" required placeholder="10 или 12 цифр" maxlength="12" inputmode="numeric" />
+      </div>
+      <div class="form-group">
+        <label>Телефон <span class="req">*</span></label>
+        <input type="tel" required placeholder="+7 (___) ___-__-__" value="+7 " />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="mail@company.ru" />
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Создать аккаунт <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+      <p class="form-note" style="margin-top:12px">
+        Нажимая «Создать аккаунт», вы принимаете <a href="/offer.html">оферту</a> и <a href="/policy.html">политику конфиденциальности</a>.
+      </p>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/js/config.js"></script>
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>
