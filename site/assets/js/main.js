@@ -90,13 +90,7 @@
     });
   });
 
-  // ---------- View-toggle (Grid / List / Map) ----------
-  document.querySelectorAll('.view-toggle button').forEach(b => {
-    b.addEventListener('click', () => {
-      b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-    });
-  });
+  // ---------- View-toggle handled later (in IIFE below) ----------
 
   // ---------- Site search overlay (⌘K) ----------
   const soBtn = document.getElementById('siteSearchBtn');
@@ -401,6 +395,30 @@
   if (trigger && aside) {
     trigger.addEventListener('click', () => aside.classList.toggle('open'));
   }
+
+  // Apply URL parameters from incoming links (e.g. /catalog?crop=wheat)
+  try {
+    const params = new URLSearchParams(location.search);
+    const cropParam = params.get('crop');
+    if (cropParam) {
+      const cb = document.querySelector('[data-filter="crop"][value="' + cropParam + '"]');
+      if (cb) {
+        cb.checked = true;
+        state.crops.add(cropParam);
+      }
+    }
+    const regionParam = params.get('region');
+    if (regionParam) {
+      const cb = document.querySelector('[data-filter="region"][value="' + regionParam + '"]');
+      if (cb) { cb.checked = true; state.regions.add(regionParam); }
+    }
+    if (params.get('delivery') === '1') {
+      const sw = document.getElementById('swDelivery');
+      if (sw) { sw.checked = true; state.withDelivery = true; }
+    }
+    const q = params.get('q');
+    if (q) state.query = q;
+  } catch(e){}
 
   // Initial run
   apply();

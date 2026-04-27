@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Russian Harvest — multi-page static site builder."""
 import os
+import time
 from pathlib import Path
+
+# Cache-busting: version stamp for assets, regenerated on every build.
+# This forces browsers to reload CSS/JS even if Caddy/CDN cached them.
+BUILD_ID = os.environ.get('BUILD_ID') or str(int(time.time()))
 
 # Resolve site directory robustly:
 #   - If script is in scripts/ subdir: SITE = ../site (parent.parent / site)
@@ -404,7 +409,7 @@ def page(title, body, active='', description=None):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="/assets/css/main.css?v={BUILD_ID}">
 </head>
 <body>
 
@@ -420,11 +425,11 @@ def page(title, body, active='', description=None):
 {onboarding_modal()}
 {login_modal()}
 
-<script src="/assets/js/config.js"></script>
-<script src="/assets/js/cities.js"></script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/main.js"></script>
-<script src="/assets/js/tour.js"></script>
+<script src="/assets/js/config.js?v={BUILD_ID}"></script>
+<script src="/assets/js/cities.js?v={BUILD_ID}"></script>
+<script src="/assets/js/api.js?v={BUILD_ID}"></script>
+<script src="/assets/js/main.js?v={BUILD_ID}"></script>
+<script src="/assets/js/tour.js?v={BUILD_ID}"></script>
 </body>
 </html>'''
 
@@ -814,12 +819,12 @@ def build_index():
     </div>
     <div class="top-row">
       <div class="catalog-chips">
-        <button class="c-chip active">Все товары</button>
-        <button class="c-chip">Пшеница</button>
-        <button class="c-chip">Ячмень</button>
-        <button class="c-chip">Кукуруза</button>
-        <button class="c-chip">Подсолнечник</button>
-        <button class="c-chip">С доставкой</button>
+        <a class="c-chip active" href="/catalog.html">Все товары</a>
+        <a class="c-chip" href="/catalog.html?crop=wheat">Пшеница</a>
+        <a class="c-chip" href="/catalog.html?crop=barley">Ячмень</a>
+        <a class="c-chip" href="/catalog.html?crop=corn">Кукуруза</a>
+        <a class="c-chip" href="/catalog.html?crop=sunflower">Подсолнечник</a>
+        <a class="c-chip" href="/catalog.html?delivery=1">С доставкой</a>
       </div>
       <div class="view-tools">
         <div class="view-toggle" data-target="homeGrid">

@@ -1180,28 +1180,24 @@ input,select,textarea{font-family:inherit}
 /* =================================================================
    WORKING FILTERS (sidebar on catalog)
    ================================================================= */
-.catalog-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;align-items:start}
+.catalog-layout{display:grid;grid-template-columns:280px 1fr;gap:28px;align-items:start}
 .filters-aside{
   background:var(--paper);border-radius:var(--radius-xl);padding:22px;
-  box-shadow:var(--shadow-md);position:sticky;top:92px;align-self:start;
-  /* Key fix: limit height to viewport and scroll contents internally */
-  max-height:calc(100vh - 104px);
-  display:flex;flex-direction:column;
-  overflow:hidden; /* outer clip so rounded corners work */
-}
-.filters-head{flex-shrink:0}
-.filter-group{flex-shrink:0}
-.filter-apply-bar{flex-shrink:0;margin-top:auto;padding-top:14px;border-top:1px solid var(--slate-100);background:var(--paper);position:sticky;bottom:0}
-/* Scrollable middle section that contains all the filter groups */
-.filters-scroll{
-  flex:1;overflow-y:auto;margin:0 -12px;padding:0 12px;min-height:0;
-  /* Custom scrollbar for the filter panel */
+  box-shadow:var(--shadow-md);
+  /* Sticky positioning — always visible while scrolling */
+  position:sticky;top:92px;align-self:start;
+  /* Limit to viewport height; scroll inside if needed */
+  max-height:calc(100vh - 110px);
+  overflow-y:auto;
+  /* Custom scrollbar */
   scrollbar-width:thin;scrollbar-color:var(--slate-300) transparent;
 }
-.filters-scroll::-webkit-scrollbar{width:6px}
-.filters-scroll::-webkit-scrollbar-track{background:transparent}
-.filters-scroll::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:999px}
-.filters-scroll::-webkit-scrollbar-thumb:hover{background:var(--slate-300)}
+.filters-aside::-webkit-scrollbar{width:6px}
+.filters-aside::-webkit-scrollbar-track{background:transparent}
+.filters-aside::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:999px}
+.filters-aside::-webkit-scrollbar-thumb:hover{background:var(--slate-300)}
+/* Reset any flex layout from old code */
+.filters-scroll{display:contents}
 .filters-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--slate-100)}
 .filters-head h3{font-size:15px;font-weight:700;color:var(--ink)}
 .filters-head .reset{font-size:12px;color:var(--emerald-600);font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px}
@@ -1367,105 +1363,36 @@ input,select,textarea{font-family:inherit}
 .view-toggle button svg{flex-shrink:0}
 
 /* ===============================================
-   LIST VIEW for cards-grid
+   LIST VIEW for cards-grid (simple & robust)
    =============================================== */
 .cards-grid.list-view{
   grid-template-columns:1fr !important;
   gap:10px;
 }
+.cards-grid.list-view > .card-featured{
+  grid-column:span 1 !important;
+}
 .cards-grid.list-view .card{
-  display:grid;
-  grid-template-columns:1fr auto auto auto;
-  grid-template-rows:auto;
-  gap:0;
-  align-items:center;
-  padding:0;
-  border-radius:var(--radius-lg);
+  display:flex;flex-direction:column;
 }
-.cards-grid.list-view .card-featured{grid-column:span 1}
-.cards-grid.list-view .card-head{
-  padding:18px 20px;border:none;
-  display:flex;flex-direction:column;gap:8px;
-  grid-column:1;
-}
-.cards-grid.list-view .card-top{
-  margin:0;align-items:center;gap:14px;flex-wrap:wrap;
-}
-.cards-grid.list-view .card-top > div:first-child{flex:1;min-width:200px}
-.cards-grid.list-view .card-title{
-  font-size:16px;margin-top:4px;-webkit-line-clamp:1;
-  display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;
-}
-.cards-grid.list-view .card-featured .card-title{font-size:18px}
-.cards-grid.list-view .card-price-pill{flex-shrink:0}
-.cards-grid.list-view .card-price-pill .num{font-size:14px}
-.cards-grid.list-view .card-meta{
-  display:flex;gap:16px;margin-top:4px;
-}
-.cards-grid.list-view .card-meta .cell{
-  display:inline-flex;align-items:baseline;gap:6px;
-}
-.cards-grid.list-view .card-meta .cell .k{
-  font-size:10px;letter-spacing:.1em;
-}
-.cards-grid.list-view .card-meta .cell .v{font-size:13px;margin-top:0}
-.cards-grid.list-view .q-toggle{
-  display:none;
-}
-.cards-grid.list-view .q-body{display:none}
-.cards-grid.list-view .distance-strip{
-  grid-column:2;border:none;background:transparent;
-  padding:0 16px;min-height:auto;border-left:1px solid var(--slate-100);
-  border-right:1px solid var(--slate-100);
-}
-.cards-grid.list-view .card-featured .distance-strip{
-  border-left-color:rgba(255,255,255,.1);
-  border-right-color:rgba(255,255,255,.1);
-}
-.cards-grid.list-view .distance-from .pin-ic{display:none}
-.cards-grid.list-view .distance-cost{font-size:10.5px;padding:5px 8px}
-.cards-grid.list-view .supplier-strip{
-  grid-column:3;border:none;background:transparent;padding:0 16px;gap:8px;
-  flex-direction:column;align-items:flex-start;
-}
-.cards-grid.list-view .supplier-verify{font-size:9.5px;padding:4px 10px 4px 4px}
-.cards-grid.list-view .supplier-verify .bc{width:16px;height:16px}
-.cards-grid.list-view .supplier-stat{font-size:11px;gap:5px}
-.cards-grid.list-view .card-foot{
-  grid-column:4;padding:18px 20px;border:none;
-  flex-direction:column;gap:8px;align-items:stretch;
-}
-.cards-grid.list-view .delivery-tag{display:none}
-.cards-grid.list-view .card-foot .cta{padding:10px 18px;white-space:nowrap}
+.cards-grid.list-view .card-head{padding:18px 20px}
+.cards-grid.list-view .card-title{font-size:16px;line-height:1.25}
+.cards-grid.list-view .card-meta{margin-top:10px;gap:14px}
+.cards-grid.list-view .card-meta .cell{padding:8px 10px}
+.cards-grid.list-view .card-meta .cell .k{font-size:10px}
+.cards-grid.list-view .card-meta .cell .v{font-size:13px}
+.cards-grid.list-view .q-toggle{padding:10px 20px}
+.cards-grid.list-view .q-body[data-q]{display:none}
+.cards-grid.list-view .q-body.on{display:block}
+.cards-grid.list-view .distance-strip{padding:10px 20px;min-height:auto}
+.cards-grid.list-view .supplier-strip{padding:10px 20px}
+.cards-grid.list-view .card-foot{padding:14px 20px}
 
-@media (max-width:960px){
-  .cards-grid.list-view .card{
-    grid-template-columns:1fr auto;
-    grid-template-rows:auto auto;
-  }
-  .cards-grid.list-view .distance-strip{
-    grid-column:1 / -1;grid-row:2;border:none;padding:12px 20px;
-    border-top:1px solid var(--slate-100);
-  }
-  .cards-grid.list-view .distance-from .pin-ic{display:grid}
-  .cards-grid.list-view .supplier-strip{
-    grid-column:1;grid-row:3;padding:12px 20px;border-top:1px solid var(--slate-100);
-    flex-direction:row;align-items:center;
-  }
-  .cards-grid.list-view .card-foot{
-    grid-column:2;grid-row:3;padding:12px 20px;border-top:1px solid var(--slate-100);
-  }
-}
 @media (max-width:640px){
   .view-toggle button span{display:none}
   .view-toggle button{padding:8px;width:32px;justify-content:center}
-  .cards-grid.list-view .card{grid-template-columns:1fr}
-  .cards-grid.list-view .card-foot,
-  .cards-grid.list-view .supplier-strip,
-  .cards-grid.list-view .distance-strip{grid-column:1}
-  .cards-grid.list-view .card-foot{grid-row:4}
-  .cards-grid.list-view .supplier-strip{grid-row:3}
 }
+
 
 /* ===============================================
    CITY PICKER MODAL
