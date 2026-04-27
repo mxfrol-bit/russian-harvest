@@ -15,6 +15,7 @@ SITE = Path(__file__).parent.parent / 'site'
 REQUIRED_PAGES = [
     'index.html', 'catalog.html', 'product.html', 'sale.html',
     'about.html', 'how.html', 'contacts.html', 'account.html',
+    'auction.html', 'prices.html',
     'offer.html', 'regulations.html', 'policy.html', 'dispute.html',
     '404.html',
 ]

@@ -88,8 +88,15 @@
       if (!IS_DEMO) await http('POST', '/auth/logout').catch(() => {});
       return { ok: true };
     },
+    async loginWithCredentials(username, password) {
+      const r = await http('POST', '/auth/login', { username, password });
+      if (r.token) setToken(r.token);
+      if (r.user) setUser(r.user);
+      return r;
+    },
     isLoggedIn() { return !!getToken(); },
     currentUser() { return getUser(); },
+    isAdmin() { return (getUser()?.role === 'admin'); },
 
     // ---- Offers (Купить) ----
     async listOffers(filters = {}) {
@@ -185,6 +192,37 @@
         }
       };
     }
+    // Login with username/password (demo accounts)
+    if (route === '/auth/login' && method === 'POST') {
+      const { username, password } = body;
+      if (username === 'admin' && password === 'admin') {
+        return {
+          token: 'demo-admin-' + Date.now(),
+          user: {
+            id: 'u_admin',
+            username: 'admin',
+            name: 'Администратор',
+            company: 'Русский Урожай',
+            role: 'admin',
+            balance: 0,
+          }
+        };
+      }
+      if (username === 'user' && password === 'user') {
+        return {
+          token: 'demo-user-' + Date.now(),
+          user: {
+            id: 'u_user',
+            username: 'user',
+            name: 'Демо Пользователь',
+            company: 'ИП Тестовый В.А.',
+            role: 'buyer',
+            balance: 450000,
+          }
+        };
+      }
+      throw new Error('Неверный логин или пароль. Используйте admin/admin или user/user');
+    }
     if (route === '/auth/register' && method === 'POST') {
       return {
         token: 'demo-' + Date.now(),
@@ -198,6 +236,41 @@
           balance: 0,
         }
       };
+    }
+
+    // ---- CITIES (city search / geocoding) ----
+    if (route === '/cities/search' && method === 'GET') {
+      const q = (qs.get('q') || '').toLowerCase();
+      const all = window.RH_CITIES || [];
+      const matches = all.filter(c => c.name.toLowerCase().includes(q) || c.name_en?.toLowerCase().includes(q)).slice(0, 20);
+      return { items: matches };
+    }
+    if (route === '/cities/geolocate' && method === 'POST') {
+      // body = { lat, lng }
+      const all = window.RH_CITIES || [];
+      let best = null, bestD = Infinity;
+      for (const c of all) {
+        const d = Math.hypot(c.lat - body.lat, c.lng - body.lng);
+        if (d < bestD) { bestD = d; best = c; }
+      }
+      return best || { name: 'Нижний Новгород', region: 'Нижегородская область', lat: 56.3269, lng: 44.0075 };
+    }
+
+    // ---- AUCTIONS ----
+    if (route === '/auctions' && method === 'GET') {
+      return {
+        items: [
+          { id: 'AU-001', title: 'Пшеница 3 класс · 500 т', current_bid: 14800, starting: 13500, region: 'Саратов', distance_km: 689, ends_at: new Date(Date.now() + 3600*1000*4.5).toISOString(), bids_count: 12, status: 'active' },
+          { id: 'AU-002', title: 'Подсолнечник · 250 т',   current_bid: 29200, starting: 27000, region: 'Воронеж', distance_km: 580, ends_at: new Date(Date.now() + 3600*1000*12).toISOString(), bids_count: 8, status: 'active' },
+          { id: 'AU-003', title: 'Кукуруза · 400 т',        current_bid: 15400, starting: 14500, region: 'Липецк',  distance_km: 634, ends_at: new Date(Date.now() + 3600*1000*1.2).toISOString(), bids_count: 23, status: 'ending-soon' },
+          { id: 'AU-004', title: 'Рапс · 180 т',            current_bid: 32800, starting: 30000, region: 'Саранск', distance_km: 413, ends_at: new Date(Date.now() + 3600*1000*26).toISOString(), bids_count: 5, status: 'active' },
+          { id: 'AU-005', title: 'Ячмень пивоваренный · 300 т', current_bid: 16900, starting: 15800, region: 'Чебоксары', distance_km: 235, ends_at: new Date(Date.now() + 3600*1000*8).toISOString(), bids_count: 14, status: 'active' },
+          { id: 'AU-006', title: 'Соя · 120 т',             current_bid: 40100, starting: 38000, region: 'Казань',  distance_km: 407, ends_at: new Date(Date.now() + 3600*1000*18).toISOString(), bids_count: 9, status: 'active' },
+        ]
+      };
+    }
+    if (route.startsWith('/auctions/') && route.endsWith('/bid') && method === 'POST') {
+      return { ok: true, new_bid: body.amount, bids_count: Math.floor(Math.random()*30)+1 };
     }
 
     // ---- OFFERS ----

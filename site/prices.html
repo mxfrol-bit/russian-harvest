@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Страница не найдена — Русский Урожай</title>
-<meta name="description" content="Русский Урожай — онлайн-площадка для покупки и продажи сельхозпродукции напрямую между фермерами и покупателями." />
+<title>Биржа цен — Русский Урожай</title>
+<meta name="description" content="Живая биржа цен на сельхозпродукцию. Медианные цены по 30+ регионам обновляются в реальном времени." />
 <meta name="theme-color" content="#97C524" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -32,7 +32,7 @@
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
       <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа</a>
+      <a href="prices.html" class="active">Биржа</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -68,7 +68,7 @@
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
       <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа цен</a>
+      <a href="prices.html" class="active">Биржа цен</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -81,17 +81,155 @@
   </div>
 </aside>
 
-<div class="error-page">
-  <div class="error-content">
-    <div class="error-code">404</div>
-    <h1>Страница не найдена</h1>
-    <p>Похоже, такой страницы не существует. Возможно, вы перешли по устаревшей ссылке или ошиблись в адресе.</p>
-    <div class="actions">
-      <a class="btn btn-primary btn-lg" href="index.html">На главную <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-      <a class="btn btn-outline btn-lg" href="catalog.html">Каталог</a>
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="index.html">Главная</a>
+      <span class="sep">/</span>
+      <span>Биржа цен</span>
+    </div>
+    <h1>Биржа котировок в реальном времени</h1>
+    <p>Актуальные медианные цены по 30+ регионам, обновляются автоматически. Сверяйте свои офферы с рынком — платформа подсветит выгодные предложения.</p>
+    <div style="margin-top:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <span class="live-pulse">LIVE · обновление каждые 3 сек</span>
+      <span style="color:rgba(255,255,255,.6);font-size:13px;font-family:'JetBrains Mono',monospace">Источник: агрегатор 152 закрытых сделок за 24 часа</span>
     </div>
   </div>
+</section>
+
+<section class="section">
+  <div class="catalog-head" style="margin-bottom:20px">
+    <div>
+      <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.4 6.1 6.6.5-5 4.4 1.5 6.4L10 15l-5.5 3.4L6 12 1 7.6l6.6-.5z"/></svg> Медианные цены</span>
+      <h2 class="h2">Цены по вашему региону</h2>
+      <p class="section-lead">Средние цены последних 24 часов по 14 культурам. Для точной цены конкретного склада — смотрите карточку товара в каталоге.</p>
+    </div>
+  </div>
+
+  <div class="quotes-grid">
+    <div class="quote-tile" data-quote-crop="wheat-3" data-base-price="14200">
+  <div class="q-crop"><span class="ico">🌾</span>Пшеница 3 класс</div>
+  <div class="q-price">14 200 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+1.8%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="wheat-4" data-base-price="12100">
+  <div class="q-crop"><span class="ico">🌾</span>Пшеница 4 класс</div>
+  <div class="q-price">12 100 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change dn">-0.4%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="wheat-5" data-base-price="10800">
+  <div class="q-crop"><span class="ico">🌾</span>Пшеница 5 класс</div>
+  <div class="q-price">10 800 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+0.2%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="barley" data-base-price="13050">
+  <div class="q-crop"><span class="ico">🌿</span>Ячмень кормовой</div>
+  <div class="q-price">13 050 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+0.6%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="barley-malt" data-base-price="16400">
+  <div class="q-crop"><span class="ico">🍺</span>Ячмень пивоваренный</div>
+  <div class="q-price">16 400 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+1.2%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="corn" data-base-price="15100">
+  <div class="q-crop"><span class="ico">🌽</span>Кукуруза</div>
+  <div class="q-price">15 100 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+2.3%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="sunflower" data-base-price="28400">
+  <div class="q-crop"><span class="ico">🌻</span>Подсолнечник</div>
+  <div class="q-price">28 400 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change dn">-1.1%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="rapeseed" data-base-price="32100">
+  <div class="q-crop"><span class="ico">🌱</span>Рапс</div>
+  <div class="q-price">32 100 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+3.2%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="soy" data-base-price="39500">
+  <div class="q-crop"><span class="ico">🫘</span>Соя</div>
+  <div class="q-price">39 500 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change dn">-0.3%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="oat" data-base-price="10800">
+  <div class="q-crop"><span class="ico">🥣</span>Овёс</div>
+  <div class="q-price">10 800 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+0.8%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="pea" data-base-price="18200">
+  <div class="q-crop"><span class="ico">🟢</span>Горох</div>
+  <div class="q-price">18 200 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+0.9%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="buckwheat" data-base-price="22400">
+  <div class="q-crop"><span class="ico">🟤</span>Гречиха</div>
+  <div class="q-price">22 400 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change dn">-2.0%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="flax" data-base-price="34800">
+  <div class="q-crop"><span class="ico">🌾</span>Лён масличный</div>
+  <div class="q-price">34 800 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+1.5%</span>
+  </div>
+</div><div class="quote-tile" data-quote-crop="chickpea" data-base-price="58200">
+  <div class="q-crop"><span class="ico">🫛</span>Нут</div>
+  <div class="q-price">58 200 ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change up">+0.5%</span>
+  </div>
 </div>
+  </div>
+
+  <div style="margin-top:40px;padding:28px;background:var(--paper);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)">
+    <h3 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:10px">Как формируются цены</h3>
+    <p style="color:var(--slate-600);line-height:1.7;font-size:14.5px">Показанные цены — медиана закрытых сделок на платформе за последние 24 часа по каждой культуре и классу качества, скорректированная на ваш регион с учётом логистики. Мы не включаем единичные экстремальные цены (верхние/нижние 5%), чтобы показать реальную «рабочую» цену рынка. Данные обновляются каждые 3 секунды, график истории цен доступен по клику на карточку.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="reverse-card">
+    <div>
+      <span class="reverse-chip"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg> Подписка бесплатно</span>
+      <h3>Получайте сводку цен каждое утро</h3>
+      <p class="lead">Ежедневная рассылка в Telegram/email с изменениями цен по культурам, которые вас интересуют. Настройте один раз и будьте в курсе рынка.</p>
+    </div>
+    <form class="reverse-form" onsubmit="event.preventDefault();alert('Подписка оформлена.')">
+      <input type="text" placeholder="Ваш email или @telegram" />
+      <div class="sel"><span>Культуры</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Частота</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Регион</span><span class="chev">▾</span></div>
+      <button class="submit" type="submit">Подписаться на сводку <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
+</section>
 
 <footer class="site-footer">
   <div class="foot-wrap">
@@ -137,7 +275,7 @@
       <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
       <a href="catalog.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
       <a href="auction.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
-      <a href="prices.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
+      <a href="prices.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
       <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
     </nav>
 

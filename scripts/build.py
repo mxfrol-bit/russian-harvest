@@ -29,6 +29,8 @@ def icon(name):
         'pin':          '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg>',
         'phone':        '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 4-2 1s1 3 4 6l1-2 4 2v4a2 2 0 0 1-2 2A14 14 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg>',
         'menu':         '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+        'grid':         '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>',
+        'list':         '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h14M3 10h14M3 15h14"/><circle cx="3" cy="5" r=".8" fill="currentColor"/><circle cx="3" cy="10" r=".8" fill="currentColor"/><circle cx="3" cy="15" r=".8" fill="currentColor"/></svg>',
         'close':        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>',
         'check':        '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg>',
         'check-big':    '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/><path d="m7 10 2 2 4-4"/></svg>',
@@ -77,6 +79,8 @@ def header(active=''):
     <nav class="nav-main">
       {nav_item('/catalog.html', 'Купить', 'catalog')}
       {nav_item('/sale.html', 'Продать', 'sale')}
+      {nav_item('/auction.html', 'Аукцион', 'auction')}
+      {nav_item('/prices.html', 'Биржа', 'prices')}
       {nav_item('/about.html', 'О компании', 'about')}
       {nav_item('/how.html', 'Помощь', 'how')}
       {nav_item('/contacts.html', 'Контакты', 'contacts')}
@@ -111,6 +115,8 @@ def header(active=''):
     <nav class="drawer-nav">
       <a href="/catalog.html" class="{'active' if active=='catalog' else ''}">Купить</a>
       <a href="/sale.html" class="{'active' if active=='sale' else ''}">Продать</a>
+      <a href="/auction.html" class="{'active' if active=='auction' else ''}">Аукцион</a>
+      <a href="/prices.html" class="{'active' if active=='prices' else ''}">Биржа цен</a>
       <a href="/about.html" class="{'active' if active=='about' else ''}">О компании</a>
       <a href="/how.html" class="{'active' if active=='how' else ''}">Помощь</a>
       <a href="/contacts.html" class="{'active' if active=='contacts' else ''}">Контакты</a>
@@ -257,6 +263,7 @@ def login_modal():
   <div class="login-tabs">
     <button class="login-tab active" data-tab="signin">Вход</button>
     <button class="login-tab" data-tab="signup">Регистрация</button>
+    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
   </div>
 
   <!-- SIGN IN -->
@@ -271,7 +278,7 @@ def login_modal():
       <div class="form-group">
         <label>Код из SMS</label>
         <input type="text" placeholder="· · · · ·" maxlength="5" class="mono" style="letter-spacing:8px;text-align:center;font-size:18px" />
-        <div class="form-hint">SMS придёт после ввода телефона</div>
+        <div class="form-hint">SMS придёт после ввода телефона · В демо-режиме код: <b>12345</b></div>
       </div>
       <button class="btn btn-primary btn-lg btn-block" type="submit">Войти {icon('arrow-sm')}</button>
     </form>
@@ -317,20 +324,83 @@ def login_modal():
       </p>
     </form>
   </div>
+
+  <!-- DEMO LOGIN -->
+  <div class="login-pane" data-pane="demo" hidden>
+    <h2>Демо-доступ</h2>
+    <p class="login-sub">Войдите в один из тестовых аккаунтов, чтобы оценить интерфейс без регистрации.</p>
+
+    <div class="demo-accounts">
+      <button class="demo-account" data-login="admin" data-pass="admin">
+        <div class="demo-account-ic">👑</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Администратор</div>
+          <div class="demo-account-creds">
+            <code>admin</code> / <code>admin</code>
+          </div>
+          <div class="demo-account-desc">Модерация офферов, управление сделками, статистика платформы</div>
+        </div>
+      </button>
+
+      <button class="demo-account" data-login="user" data-pass="user">
+        <div class="demo-account-ic">👤</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Обычный пользователь</div>
+          <div class="demo-account-creds">
+            <code>user</code> / <code>user</code>
+          </div>
+          <div class="demo-account-desc">Покупатель с активными сделками, заявками и историей</div>
+        </div>
+      </button>
+    </div>
+
+    <form class="login-form" id="demoForm" onsubmit="event.preventDefault();return false">
+      <div class="form-group">
+        <label>Или введите вручную</label>
+        <input type="text" id="demoUsername" placeholder="Логин (admin или user)" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <input type="password" id="demoPassword" placeholder="Пароль" autocomplete="current-password" />
+        <div class="form-hint" id="demoHint">В демо-режиме: <b>admin/admin</b> или <b>user/user</b></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="demoSubmit">Войти {icon('arrow-sm')}</button>
+    </form>
+  </div>
 </div>'''
 
 
 def page(title, body, active='', description=None):
     """Wrap body with full page HTML."""
     desc = description or 'Русский Урожай — онлайн-площадка для покупки и продажи сельхозпродукции напрямую между фермерами и покупателями.'
+
+    # Mobile app-style bottom tabbar
+    def tab(href, label, key, svg):
+        cls = 'active' if active == key else ''
+        return f'<a href="{href}" class="{cls}">{svg}<span>{label}</span></a>'
+
+    tabbar = f'''<nav class="mobile-tabbar">
+      {tab('/index.html', 'Главная', 'home', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg>')}
+      {tab('/catalog.html', 'Каталог', 'catalog', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>')}
+      {tab('/auction.html', 'Аукцион', 'auction', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg>')}
+      {tab('/prices.html', 'Биржа', 'prices', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg>')}
+      {tab('/account.html', 'Кабинет', 'account', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>')}
+    </nav>'''
+
     return f'''<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>{title} — Русский Урожай</title>
 <meta name="description" content="{desc}" />
+<meta name="theme-color" content="#97C524" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Русский Урожай" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="/manifest.json" />
 <link rel="icon" type="image/svg+xml" href="https://russian-harvest.ru/img/logo.svg" />
+<link rel="apple-touch-icon" href="https://russian-harvest.ru/img/logo.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -344,13 +414,17 @@ def page(title, body, active='', description=None):
 
 {footer()}
 
+{tabbar}
+
 {search_overlay()}
 {onboarding_modal()}
 {login_modal()}
 
 <script src="/assets/js/config.js"></script>
+<script src="/assets/js/cities.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/main.js"></script>
+<script src="/assets/js/tour.js"></script>
 </body>
 </html>'''
 
@@ -657,19 +731,29 @@ def build_index():
       <h1>Покупайте урожай <em>напрямую</em> — быстро, прозрачно и без переплат</h1>
       <p class="lead">Современная B2B-платформа для закупки и продажи сельхозпродукции. Удобный поиск, понятные карточки, живые предложения и сопровождение сделки от заявки до поставки.</p>
 
-      <form class="hero-search" action="/catalog.html" method="get">
+      <form class="hero-search" action="/catalog.html" method="get" id="heroSearchForm">
         <label class="field" for="heroInput">
           <span class="k">Что ищете</span>
-          <input id="heroInput" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" />
+          <input id="heroInput" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
         </label>
-        <div class="field">
+        <label class="field select-field">
           <span class="k">Тип заявки</span>
-          <span class="v">Купить <span class="chev">▾</span></span>
-        </div>
-        <div class="field">
+          <select name="type" id="heroType">
+            <option value="buy">Купить</option>
+            <option value="sell">Продать</option>
+          </select>
+        </label>
+        <label class="field select-field">
           <span class="k">Объём партии</span>
-          <span class="v">от 20 т <span class="chev">▾</span></span>
-        </div>
+          <select name="volume">
+            <option value="">любой</option>
+            <option value="20">от 20 т</option>
+            <option value="50">от 50 т</option>
+            <option value="100">от 100 т</option>
+            <option value="200">от 200 т</option>
+            <option value="500">от 500 т</option>
+          </select>
+        </label>
         <button class="hero-search-submit" type="submit">
           {icon('search')}
           Найти
@@ -737,15 +821,22 @@ def build_index():
         <button class="c-chip">Подсолнечник</button>
         <button class="c-chip">С доставкой</button>
       </div>
-      <a class="btn btn-outline btn-sm" href="/catalog.html">Весь каталог {icon('arrow-sm')}</a>
+      <div class="view-tools">
+        <div class="view-toggle" data-target="homeGrid">
+          <button class="active" data-view="grid" title="Сетка">{icon('grid')}<span>Сетка</span></button>
+          <button data-view="list" title="Список">{icon('list')}<span>Список</span></button>
+        </div>
+        <a class="btn btn-outline btn-sm" href="/catalog.html">Весь каталог {icon('arrow-sm')}</a>
+      </div>
     </div>
   </div>
 
-  <div class="cards-grid">
+  <div class="cards-grid" id="homeGrid">
     {offer_card(OFFERS[0], featured=True)}
-    {offer_card(OFFERS[1])}
-    {offer_card(OFFERS[2])}
-    {offer_card(OFFERS[3])}
+    {''.join(offer_card(o) for o in OFFERS[1:8])}
+  </div>
+  <div style="text-align:center;margin-top:28px">
+    <a class="btn btn-dark btn-lg" href="/catalog.html">Открыть весь каталог · {len(OFFERS)} предложений {icon('arrow-sm')}</a>
   </div>
 </section>
 
@@ -904,60 +995,64 @@ def build_catalog():
         <button class="reset" id="filtersReset">Сбросить</button>
       </div>
 
-      <div class="filter-group">
-        <h4>Культура</h4>
-        <div class="filter-checks">
-          {crop_row('wheat', 'Пшеница')}
-          {crop_row('barley', 'Ячмень')}
-          {crop_row('corn', 'Кукуруза')}
-          {crop_row('sunflower', 'Подсолнечник')}
-          {crop_row('rapeseed', 'Рапс')}
-          {crop_row('oat', 'Овёс')}
-          {crop_row('soy', 'Соя')}
-          {crop_row('pea', 'Горох')}
-          {crop_row('buckwheat', 'Гречиха')}
-        </div>
-      </div>
+      <div class="filters-scroll">
 
-      <div class="filter-group">
-        <h4>Цена, ₽/т</h4>
-        <div class="filter-range">
-          <input type="number" placeholder="от" id="priceMin" />
-          <input type="number" placeholder="до" id="priceMax" />
+        <div class="filter-group">
+          <h4>Культура</h4>
+          <div class="filter-checks">
+            {crop_row('wheat', 'Пшеница')}
+            {crop_row('barley', 'Ячмень')}
+            {crop_row('corn', 'Кукуруза')}
+            {crop_row('sunflower', 'Подсолнечник')}
+            {crop_row('rapeseed', 'Рапс')}
+            {crop_row('oat', 'Овёс')}
+            {crop_row('soy', 'Соя')}
+            {crop_row('pea', 'Горох')}
+            {crop_row('buckwheat', 'Гречиха')}
+          </div>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <h4>Расстояние</h4>
-        <div class="filter-range">
-          <input type="number" placeholder="до вас, км" id="distMax" />
+        <div class="filter-group">
+          <h4>Цена, ₽/т</h4>
+          <div class="filter-range">
+            <input type="number" placeholder="от" id="priceMin" />
+            <input type="number" placeholder="до" id="priceMax" />
+          </div>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <h4>Регионы</h4>
-        <div class="filter-checks" style="max-height:220px;overflow-y:auto">
-          {''.join(region_row(r, n) for r, n in top_regions)}
+        <div class="filter-group">
+          <h4>Расстояние</h4>
+          <div class="filter-range">
+            <input type="number" placeholder="до вас, км" id="distMax" />
+          </div>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <h4>Дополнительно</h4>
-        <label class="filter-switch">
-          <span class="label">С доставкой</span>
-          <input type="checkbox" id="swDelivery">
-          <span class="toggle"></span>
-        </label>
-        <label class="filter-switch">
-          <span class="label">Лабораторный анализ</span>
-          <input type="checkbox" id="swLab">
-          <span class="toggle"></span>
-        </label>
-        <label class="filter-switch">
-          <span class="label">Только с НДС</span>
-          <input type="checkbox" id="swVat">
-          <span class="toggle"></span>
-        </label>
+        <div class="filter-group">
+          <h4>Регионы</h4>
+          <div class="filter-checks">
+            {''.join(region_row(r, n) for r, n in top_regions)}
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Дополнительно</h4>
+          <label class="filter-switch">
+            <span class="label">С доставкой</span>
+            <input type="checkbox" id="swDelivery">
+            <span class="toggle"></span>
+          </label>
+          <label class="filter-switch">
+            <span class="label">Лабораторный анализ</span>
+            <input type="checkbox" id="swLab">
+            <span class="toggle"></span>
+          </label>
+          <label class="filter-switch">
+            <span class="label">Только с НДС</span>
+            <input type="checkbox" id="swVat">
+            <span class="toggle"></span>
+          </label>
+        </div>
+
       </div>
 
       <div class="filter-apply-bar">
@@ -970,13 +1065,17 @@ def build_catalog():
       <div class="catalog-head" style="margin-bottom:18px">
         <div class="top-row">
           <div class="view-tools" style="margin-left:auto">
+            <div class="view-toggle" data-target="offersGrid">
+              <button class="active" data-view="grid" title="Сетка">{icon('grid')}<span>Сетка</span></button>
+              <button data-view="list" title="Список">{icon('list')}<span>Список</span></button>
+            </div>
             <div class="sort-select">
-              <select>
-                <option>По близости (ближайшие сверху)</option>
-                <option>Цена: по возрастанию</option>
-                <option>Цена: по убыванию</option>
-                <option>По рейтингу поставщика</option>
-                <option>Новые</option>
+              <select id="sortSelect">
+                <option value="distance">По близости (ближайшие сверху)</option>
+                <option value="price-asc">Цена: по возрастанию</option>
+                <option value="price-desc">Цена: по убыванию</option>
+                <option value="rating">По рейтингу поставщика</option>
+                <option value="new">Новые</option>
               </select>
             </div>
           </div>
@@ -1199,23 +1298,43 @@ def build_sale():
     <h1>Продавайте урожай напрямую покупателям — быстро, выгодно и надёжно</h1>
     <p>Получайте заявки от проверенных компаний и заключайте выгодные сделки без цепочки посредников.</p>
 
-    <form class="filter-bar" action="#" onsubmit="event.preventDefault()">
+    <form class="filter-bar" id="saleHeroForm" action="#" onsubmit="event.preventDefault();filterRequests();">
       <label class="field">
         <span class="k">Культура</span>
-        <input type="text" placeholder="Пшеница, ячмень, кукуруза…" />
+        <input type="text" id="saleQ" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
       </label>
-      <div class="field">
+      <label class="field select-field">
         <span class="k">Регион покупателя</span>
-        <span class="v">Все <span class="chev">▾</span></span>
-      </div>
-      <div class="field">
+        <select id="saleRegion">
+          <option value="">Все</option>
+          <option>Нижний Новгород</option>
+          <option>Арзамас</option>
+          <option>Дзержинск</option>
+          <option>Балахна</option>
+          <option>Муром</option>
+          <option>Выкса</option>
+          <option>Семёнов</option>
+          <option>Чебоксары</option>
+        </select>
+      </label>
+      <label class="field select-field">
         <span class="k">Минимальный объём</span>
-        <span class="v">от 50 т <span class="chev">▾</span></span>
-      </div>
-      <div class="field">
+        <select id="saleVolume">
+          <option value="0">любой</option>
+          <option value="50">от 50 т</option>
+          <option value="100">от 100 т</option>
+          <option value="200">от 200 т</option>
+          <option value="500">от 500 т</option>
+        </select>
+      </label>
+      <label class="field select-field">
         <span class="k">НДС</span>
-        <span class="v">любой <span class="chev">▾</span></span>
-      </div>
+        <select id="saleVat">
+          <option value="">любой</option>
+          <option value="yes">с НДС</option>
+          <option value="no">без НДС</option>
+        </select>
+      </label>
       <button class="submit" type="submit">{icon('search')} Найти</button>
     </form>
   </div>
@@ -1807,6 +1926,212 @@ def build_dispute():
     ])
 
 
+def build_auction():
+    """Auction page — live bidding."""
+    # Demo auctions with dates
+    import datetime
+    now = datetime.datetime.now(datetime.timezone.utc)
+    def future(hours):
+        return (now + datetime.timedelta(hours=hours)).isoformat()
+
+    auctions = [
+        {'id':'AU-001','title':'Пшеница 3 класс','volume':'500 т','region':'Саратов','distance':689,'starting':13500,'current':14800,'bids':12,'ends_hours':4.5,'quality':'Протеин 12,8 %','ending_soon':False},
+        {'id':'AU-002','title':'Подсолнечник','volume':'250 т','region':'Воронеж','distance':580,'starting':27000,'current':29200,'bids':8,'ends_hours':12,'quality':'Масличность 46 %','ending_soon':False},
+        {'id':'AU-003','title':'Кукуруза','volume':'400 т','region':'Липецк','distance':634,'starting':14500,'current':15400,'bids':23,'ends_hours':1.2,'quality':'Влажность 13 %','ending_soon':True},
+        {'id':'AU-004','title':'Рапс','volume':'180 т','region':'Саранск','distance':413,'starting':30000,'current':32800,'bids':5,'ends_hours':26,'quality':'Масличность 43 %','ending_soon':False},
+        {'id':'AU-005','title':'Ячмень пивоваренный','volume':'300 т','region':'Чебоксары','distance':235,'starting':15800,'current':16900,'bids':14,'ends_hours':8,'quality':'Белок 10,5 %','ending_soon':False},
+        {'id':'AU-006','title':'Соя','volume':'120 т','region':'Казань','distance':407,'starting':38000,'current':40100,'bids':9,'ends_hours':18,'quality':'Протеин 39 %','ending_soon':False},
+    ]
+
+    def auction_card(a):
+        delta_pct = ((a['current'] - a['starting']) / a['starting'] * 100)
+        status_cls = 'ending-soon' if a['ending_soon'] else ''
+        status_text = 'Завершается' if a['ending_soon'] else 'Активный'
+        return f'''<article class="auction-card {status_cls}" data-auction-ends="{future(a['ends_hours'])}" data-auction-id="{a['id']}">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">{a['title']} · {a['volume']}</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">{a['region']} · {a['distance']} км · {a['quality']}</div>
+    </div>
+    <span class="auction-status {status_cls}">{status_text}</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">{a['current']:,} ₽/т</div>
+      <div class="delta">↑ +{delta_pct:.1f}% от старта ({a['starting']:,} ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">{a['bids']}</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article>'''.replace(',', ' ').replace('₽/т ', '₽/т\xa0')  # Russian number format hack
+
+    cards_html = ''.join(auction_card(a) for a in auctions)
+
+    body = f'''<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="/index.html">Главная</a>
+      <span class="sep">/</span>
+      <span>Аукцион</span>
+    </div>
+    <h1>Аукционы в реальном времени</h1>
+    <p>Покупайте крупные партии на открытых торгах. Ставки видны всем участникам, победителем становится автор максимальной ставки к окончанию времени.</p>
+    <div style="margin-top:16px"><span class="live-pulse">LIVE · обновляется каждую секунду</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="catalog-head" style="margin-bottom:20px">
+    <div>
+      <span class="eyebrow">{icon('sparkles')} Активные торги</span>
+      <h2 class="h2">{len(auctions)} активных аукциона</h2>
+      <p class="section-lead">Цены определяются рынком. Все поставщики проверены, эскроу-защита оплаты.</p>
+    </div>
+    <div class="top-row">
+      <div class="catalog-chips">
+        <button class="c-chip active">Все</button>
+        <button class="c-chip">🔥 Завершаются</button>
+        <button class="c-chip">Пшеница</button>
+        <button class="c-chip">Масличные</button>
+        <button class="c-chip">Кукуруза</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auction-grid">
+    {cards_html}
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="reverse-card">
+    <div>
+      <span class="reverse-chip">{icon('clock')} Запуск аукциона за 15 минут</span>
+      <h3>Хотите провести свой аукцион?</h3>
+      <p class="lead">Разместите партию, установите минимальную цену и время окончания — платформа сама соберёт ставки от проверенных покупателей.</p>
+    </div>
+    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка на аукцион отправлена.')">
+      <input type="text" placeholder="Наименование продукта" />
+      <input type="text" placeholder="Объём, тонн" />
+      <div class="sel"><span>Минимальная цена</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Длительность</span><span class="chev">▾</span></div>
+      <button class="submit" type="submit">Запустить аукцион {icon('arrow-sm')}</button>
+    </form>
+  </div>
+</section>'''
+    return page('Аукцион', body, active='auction',
+                description='Онлайн-аукционы сельхозпродукции. Живые торги, прозрачные ставки, эскроу-защита сделки.')
+
+
+def build_prices():
+    """Live market prices / биржа котировок."""
+    quotes = [
+        {'crop':'Пшеница 3 класс',   'ico':'🌾','price':14200,'change':1.8,  'key':'wheat-3'},
+        {'crop':'Пшеница 4 класс',   'ico':'🌾','price':12100,'change':-0.4, 'key':'wheat-4'},
+        {'crop':'Пшеница 5 класс',   'ico':'🌾','price':10800,'change':+0.2, 'key':'wheat-5'},
+        {'crop':'Ячмень кормовой',   'ico':'🌿','price':13050,'change':+0.6, 'key':'barley'},
+        {'crop':'Ячмень пивоваренный','ico':'🍺','price':16400,'change':+1.2,'key':'barley-malt'},
+        {'crop':'Кукуруза',          'ico':'🌽','price':15100,'change':+2.3, 'key':'corn'},
+        {'crop':'Подсолнечник',      'ico':'🌻','price':28400,'change':-1.1, 'key':'sunflower'},
+        {'crop':'Рапс',              'ico':'🌱','price':32100,'change':+3.2, 'key':'rapeseed'},
+        {'crop':'Соя',               'ico':'🫘','price':39500,'change':-0.3, 'key':'soy'},
+        {'crop':'Овёс',              'ico':'🥣','price':10800,'change':+0.8, 'key':'oat'},
+        {'crop':'Горох',             'ico':'🟢','price':18200,'change':+0.9, 'key':'pea'},
+        {'crop':'Гречиха',           'ico':'🟤','price':22400,'change':-2.0, 'key':'buckwheat'},
+        {'crop':'Лён масличный',     'ico':'🌾','price':34800,'change':+1.5, 'key':'flax'},
+        {'crop':'Нут',               'ico':'🫛','price':58200,'change':+0.5, 'key':'chickpea'},
+    ]
+
+    def quote_tile(q):
+        change_cls = 'up' if q['change'] > 0 else ('dn' if q['change'] < 0 else 'neutral')
+        sign = '+' if q['change'] >= 0 else ''
+        return f'''<div class="quote-tile" data-quote-crop="{q['key']}" data-base-price="{q['price']}">
+  <div class="q-crop"><span class="ico">{q['ico']}</span>{q['crop']}</div>
+  <div class="q-price">{q['price']:,} ₽/т</div>
+  <div class="q-meta">
+    <span>1 тонна</span>
+    <span class="q-change {change_cls}">{sign}{q['change']}%</span>
+  </div>
+</div>'''.replace(',', ' ')
+
+    tiles_html = ''.join(quote_tile(q) for q in quotes)
+
+    body = f'''<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="/index.html">Главная</a>
+      <span class="sep">/</span>
+      <span>Биржа цен</span>
+    </div>
+    <h1>Биржа котировок в реальном времени</h1>
+    <p>Актуальные медианные цены по 30+ регионам, обновляются автоматически. Сверяйте свои офферы с рынком — платформа подсветит выгодные предложения.</p>
+    <div style="margin-top:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <span class="live-pulse">LIVE · обновление каждые 3 сек</span>
+      <span style="color:rgba(255,255,255,.6);font-size:13px;font-family:'JetBrains Mono',monospace">Источник: агрегатор 152 закрытых сделок за 24 часа</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="catalog-head" style="margin-bottom:20px">
+    <div>
+      <span class="eyebrow">{icon('sparkles')} Медианные цены</span>
+      <h2 class="h2">Цены по вашему региону</h2>
+      <p class="section-lead">Средние цены последних 24 часов по {len(quotes)} культурам. Для точной цены конкретного склада — смотрите карточку товара в каталоге.</p>
+    </div>
+  </div>
+
+  <div class="quotes-grid">
+    {tiles_html}
+  </div>
+
+  <div style="margin-top:40px;padding:28px;background:var(--paper);border-radius:var(--radius-xl);box-shadow:var(--shadow-md)">
+    <h3 style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:10px">Как формируются цены</h3>
+    <p style="color:var(--slate-600);line-height:1.7;font-size:14.5px">Показанные цены — медиана закрытых сделок на платформе за последние 24 часа по каждой культуре и классу качества, скорректированная на ваш регион с учётом логистики. Мы не включаем единичные экстремальные цены (верхние/нижние 5%), чтобы показать реальную «рабочую» цену рынка. Данные обновляются каждые 3 секунды, график истории цен доступен по клику на карточку.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="reverse-card">
+    <div>
+      <span class="reverse-chip">{icon('clock')} Подписка бесплатно</span>
+      <h3>Получайте сводку цен каждое утро</h3>
+      <p class="lead">Ежедневная рассылка в Telegram/email с изменениями цен по культурам, которые вас интересуют. Настройте один раз и будьте в курсе рынка.</p>
+    </div>
+    <form class="reverse-form" onsubmit="event.preventDefault();alert('Подписка оформлена.')">
+      <input type="text" placeholder="Ваш email или @telegram" />
+      <div class="sel"><span>Культуры</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Частота</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Регион</span><span class="chev">▾</span></div>
+      <button class="submit" type="submit">Подписаться на сводку {icon('arrow-sm')}</button>
+    </form>
+  </div>
+</section>'''
+    return page('Биржа цен', body, active='prices',
+                description='Живая биржа цен на сельхозпродукцию. Медианные цены по 30+ регионам обновляются в реальном времени.')
+
+
 def build_404():
     body = f'''<div class="error-page">
   <div class="error-content">
@@ -1838,13 +2163,13 @@ def build_account():
     <!-- Sidebar -->
     <aside class="account-aside">
       <div class="account-user">
-        <div class="avatar">ВФ</div>
-        <div class="name">Владимир Ф.</div>
-        <div class="company">ИП Фролов В.А.</div>
-        <span class="role-chip">{icon('buyer')} Покупатель</span>
+        <div class="avatar" id="accAvatar">ВФ</div>
+        <div class="name" id="accName">Владимир Ф.</div>
+        <div class="company" id="accCompany">ИП Фролов В.А.</div>
+        <span class="role-chip" id="accRole">{icon('buyer')} Покупатель</span>
         <div class="balance">
           <div class="k">Баланс на эскроу</div>
-          <div class="v">0<small>₽</small></div>
+          <div class="v" id="accBalance">0<small>₽</small></div>
         </div>
       </div>
 
@@ -1872,10 +2197,52 @@ def build_account():
 
       <div class="account-head">
         <div>
-          <h1>Здравствуйте, Владимир 👋</h1>
-          <p>Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 2 часа 40 минут.</p>
+          <h1 id="accGreeting">Здравствуйте, Владимир 👋</h1>
+          <p id="accSubtitle">Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 2 часа 40 минут.</p>
         </div>
         <a href="/catalog.html" class="btn btn-primary">{icon('search')} Найти поставщика</a>
+      </div>
+
+      <!-- ADMIN-ONLY PANEL (shown only for admin role via JS) -->
+      <div class="account-panel admin-only" id="adminPanel" style="display:none;background:linear-gradient(135deg,#FEF3C7 0%,#FFF 60%);border:2px solid #F59E0B">
+        <div class="account-panel-head">
+          <div>
+            <h3 style="display:flex;align-items:center;gap:10px">👑 Админ-панель <span class="admin-badge">Только для администраторов</span></h3>
+            <p style="color:var(--slate-600);margin-top:4px;font-size:13px">Модерация офферов, управление пользователями, статистика платформы.</p>
+          </div>
+        </div>
+
+        <div class="account-stats" style="margin-top:16px">
+          <div class="account-stat" style="background:var(--ink);color:#fff">
+            <div class="k" style="color:rgba(255,255,255,.6)">Пользователей</div>
+            <div class="v" style="color:#fff">2 147</div>
+            <div class="d" style="color:#C7E588">↑ +42 за неделю</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Офферов на модерации</div>
+            <div class="v" style="color:var(--orange-dark)">17</div>
+            <div class="d" style="color:var(--orange-dark)">⚠ требуют проверки</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Сделок в эскроу</div>
+            <div class="v">89</div>
+            <div class="d up">↑ 14.3 млн ₽ в работе</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Оборот платформы</div>
+            <div class="v" style="font-size:20px">127.4 <small style="font-size:14px;color:var(--slate-500);font-family:Manrope">млн ₽</small></div>
+            <div class="d up">↑ +18% к прошлой неделе</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px">
+          <a href="#" class="btn btn-dark">{icon('shield')} Модерация офферов</a>
+          <a href="#" class="btn btn-outline">{icon('user')} Пользователи</a>
+          <a href="#" class="btn btn-outline">{icon('handshake')} Все сделки</a>
+          <a href="#" class="btn btn-outline">{icon('alert')} Споры и жалобы</a>
+          <a href="#" class="btn btn-outline">{icon('chart')} Аналитика</a>
+          <a href="#" class="btn btn-outline">{icon('info')} Настройки платформы</a>
+        </div>
       </div>
 
       <!-- KPI stats -->
@@ -2099,6 +2466,8 @@ def main():
         'catalog.html':     build_catalog(),
         'product.html':     build_product(),
         'sale.html':        build_sale(),
+        'auction.html':     build_auction(),
+        'prices.html':      build_prices(),
         'about.html':       build_about(),
         'how.html':         build_how(),
         'contacts.html':    build_contacts(),

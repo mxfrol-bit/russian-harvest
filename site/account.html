@@ -2,10 +2,17 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Личный кабинет — Русский Урожай</title>
 <meta name="description" content="Личный кабинет Русский Урожай: активные сделки, заявки, история, платежи через эскроу." />
+<meta name="theme-color" content="#97C524" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Русский Урожай" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="manifest.json" />
 <link rel="icon" type="image/svg+xml" href="https://russian-harvest.ru/img/logo.svg" />
+<link rel="apple-touch-icon" href="https://russian-harvest.ru/img/logo.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -24,6 +31,8 @@
     <nav class="nav-main">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
+      <a href="auction.html" class="">Аукцион</a>
+      <a href="prices.html" class="">Биржа</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -58,6 +67,8 @@
     <nav class="drawer-nav">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
+      <a href="auction.html" class="">Аукцион</a>
+      <a href="prices.html" class="">Биржа цен</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -82,13 +93,13 @@
     <!-- Sidebar -->
     <aside class="account-aside">
       <div class="account-user">
-        <div class="avatar">ВФ</div>
-        <div class="name">Владимир Ф.</div>
-        <div class="company">ИП Фролов В.А.</div>
-        <span class="role-chip"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg> Покупатель</span>
+        <div class="avatar" id="accAvatar">ВФ</div>
+        <div class="name" id="accName">Владимир Ф.</div>
+        <div class="company" id="accCompany">ИП Фролов В.А.</div>
+        <span class="role-chip" id="accRole"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg> Покупатель</span>
         <div class="balance">
           <div class="k">Баланс на эскроу</div>
-          <div class="v">0<small>₽</small></div>
+          <div class="v" id="accBalance">0<small>₽</small></div>
         </div>
       </div>
 
@@ -116,10 +127,52 @@
 
       <div class="account-head">
         <div>
-          <h1>Здравствуйте, Владимир 👋</h1>
-          <p>Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 2 часа 40 минут.</p>
+          <h1 id="accGreeting">Здравствуйте, Владимир 👋</h1>
+          <p id="accSubtitle">Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 2 часа 40 минут.</p>
         </div>
         <a href="catalog.html" class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg> Найти поставщика</a>
+      </div>
+
+      <!-- ADMIN-ONLY PANEL (shown only for admin role via JS) -->
+      <div class="account-panel admin-only" id="adminPanel" style="display:none;background:linear-gradient(135deg,#FEF3C7 0%,#FFF 60%);border:2px solid #F59E0B">
+        <div class="account-panel-head">
+          <div>
+            <h3 style="display:flex;align-items:center;gap:10px">👑 Админ-панель <span class="admin-badge">Только для администраторов</span></h3>
+            <p style="color:var(--slate-600);margin-top:4px;font-size:13px">Модерация офферов, управление пользователями, статистика платформы.</p>
+          </div>
+        </div>
+
+        <div class="account-stats" style="margin-top:16px">
+          <div class="account-stat" style="background:var(--ink);color:#fff">
+            <div class="k" style="color:rgba(255,255,255,.6)">Пользователей</div>
+            <div class="v" style="color:#fff">2 147</div>
+            <div class="d" style="color:#C7E588">↑ +42 за неделю</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Офферов на модерации</div>
+            <div class="v" style="color:var(--orange-dark)">17</div>
+            <div class="d" style="color:var(--orange-dark)">⚠ требуют проверки</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Сделок в эскроу</div>
+            <div class="v">89</div>
+            <div class="d up">↑ 14.3 млн ₽ в работе</div>
+          </div>
+          <div class="account-stat">
+            <div class="k">Оборот платформы</div>
+            <div class="v" style="font-size:20px">127.4 <small style="font-size:14px;color:var(--slate-500);font-family:Manrope">млн ₽</small></div>
+            <div class="d up">↑ +18% к прошлой неделе</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px">
+          <a href="#" class="btn btn-dark"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/><path d="m7 10 2 2 4-4"/></svg> Модерация офферов</a>
+          <a href="#" class="btn btn-outline"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg> Пользователи</a>
+          <a href="#" class="btn btn-outline"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 11 2 2 4-4 2 2-8 8-6-6 2-2 2 2 2-2z"/><path d="m15 7 3-3"/></svg> Все сделки</a>
+          <a href="#" class="btn btn-outline"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2 2 16h16z"/><path d="M10 8v4M10 14v.5"/></svg> Споры и жалобы</a>
+          <a href="#" class="btn btn-outline"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="13" y="8" width="3" height="10"/><rect x="19" y="5" width="3" height="13"/></svg> Аналитика</a>
+          <a href="#" class="btn btn-outline"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg> Настройки платформы</a>
+        </div>
       </div>
 
       <!-- KPI stats -->
@@ -374,6 +427,14 @@
   </div>
 </footer>
 
+<nav class="mobile-tabbar">
+      <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
+      <a href="catalog.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
+      <a href="auction.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
+      <a href="prices.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
+      <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
+    </nav>
+
 <div class="so-backdrop" id="soBackdrop"></div>
 <div class="so" id="so">
   <div class="so-in">
@@ -457,6 +518,7 @@
   <div class="login-tabs">
     <button class="login-tab active" data-tab="signin">Вход</button>
     <button class="login-tab" data-tab="signup">Регистрация</button>
+    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
   </div>
 
   <!-- SIGN IN -->
@@ -471,7 +533,7 @@
       <div class="form-group">
         <label>Код из SMS</label>
         <input type="text" placeholder="· · · · ·" maxlength="5" class="mono" style="letter-spacing:8px;text-align:center;font-size:18px" />
-        <div class="form-hint">SMS придёт после ввода телефона</div>
+        <div class="form-hint">SMS придёт после ввода телефона · В демо-режиме код: <b>12345</b></div>
       </div>
       <button class="btn btn-primary btn-lg btn-block" type="submit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
     </form>
@@ -517,10 +579,54 @@
       </p>
     </form>
   </div>
+
+  <!-- DEMO LOGIN -->
+  <div class="login-pane" data-pane="demo" hidden>
+    <h2>Демо-доступ</h2>
+    <p class="login-sub">Войдите в один из тестовых аккаунтов, чтобы оценить интерфейс без регистрации.</p>
+
+    <div class="demo-accounts">
+      <button class="demo-account" data-login="admin" data-pass="admin">
+        <div class="demo-account-ic">👑</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Администратор</div>
+          <div class="demo-account-creds">
+            <code>admin</code> / <code>admin</code>
+          </div>
+          <div class="demo-account-desc">Модерация офферов, управление сделками, статистика платформы</div>
+        </div>
+      </button>
+
+      <button class="demo-account" data-login="user" data-pass="user">
+        <div class="demo-account-ic">👤</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Обычный пользователь</div>
+          <div class="demo-account-creds">
+            <code>user</code> / <code>user</code>
+          </div>
+          <div class="demo-account-desc">Покупатель с активными сделками, заявками и историей</div>
+        </div>
+      </button>
+    </div>
+
+    <form class="login-form" id="demoForm" onsubmit="event.preventDefault();return false">
+      <div class="form-group">
+        <label>Или введите вручную</label>
+        <input type="text" id="demoUsername" placeholder="Логин (admin или user)" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <input type="password" id="demoPassword" placeholder="Пароль" autocomplete="current-password" />
+        <div class="form-hint" id="demoHint">В демо-режиме: <b>admin/admin</b> или <b>user/user</b></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="demoSubmit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
 </div>
 
 <script src="assets/js/config.js"></script>
+<script src="assets/js/cities.js"></script>
 <script src="assets/js/api.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/tour.js"></script>
 </body>
 </html>

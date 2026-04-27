@@ -562,3 +562,445 @@ document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(a => {
     }
   });
 });
+
+/* ===== VIEW TOGGLE: grid vs list ===== */
+(function(){
+  document.querySelectorAll('.view-toggle').forEach(tog => {
+    const targetId = tog.dataset.target;
+    const grid = targetId ? document.getElementById(targetId) : null;
+    if (!grid) return;
+
+    // Load saved preference
+    try {
+      const saved = localStorage.getItem('rh_view_' + targetId);
+      if (saved === 'list') {
+        grid.classList.add('list-view');
+        tog.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.view === 'list'));
+      }
+    } catch(e){}
+
+    tog.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        tog.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        grid.classList.toggle('list-view', view === 'list');
+        try { localStorage.setItem('rh_view_' + targetId, view); } catch(e){}
+      });
+    });
+  });
+})();
+
+/* ===== SORT in catalog ===== */
+(function(){
+  const sortSelect = document.getElementById('sortSelect');
+  const grid = document.getElementById('offersGrid');
+  if (!sortSelect || !grid) return;
+
+  sortSelect.addEventListener('change', () => {
+    const mode = sortSelect.value;
+    const cards = Array.from(grid.querySelectorAll('.card[data-offer]'));
+    cards.sort((a, b) => {
+      switch(mode){
+        case 'price-asc':  return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+        case 'price-desc': return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+        case 'distance':   return parseFloat(a.dataset.distance) - parseFloat(b.dataset.distance);
+        case 'new':        return parseInt(b.dataset.offer) - parseInt(a.dataset.offer);
+        case 'rating':     return 0; // TODO: add rating attr
+        default: return 0;
+      }
+    });
+    cards.forEach(c => grid.appendChild(c));
+  });
+})();
+
+/* ===== HERO SEARCH FORM — route to correct page ===== */
+(function(){
+  const form = document.getElementById('heroSearchForm');
+  if (!form) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = form.querySelector('#heroInput').value.trim();
+    const type = form.querySelector('#heroType').value;
+    const volume = form.querySelector('[name="volume"]').value;
+    const base = type === 'sell' ? '/sale.html' : '/catalog.html';
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (volume) params.set('vol', volume);
+    window.location = base + (params.toString() ? '?' + params : '');
+  });
+})();
+
+/* ===== SALE PAGE: filter requests in real time ===== */
+function filterRequests(){
+  const q = (document.getElementById('saleQ')?.value || '').toLowerCase().trim();
+  const region = document.getElementById('saleRegion')?.value || '';
+  const minVol = parseInt(document.getElementById('saleVolume')?.value || '0');
+  const vat = document.getElementById('saleVat')?.value || '';
+
+  const cards = document.querySelectorAll('.request-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const title = (card.dataset.title || '').toLowerCase();
+    const r = card.dataset.region || '';
+    const v = parseInt(card.dataset.volume || '0');
+    const cardVat = card.dataset.vat || '';
+    let ok = true;
+    if (q && !title.includes(q) && !r.toLowerCase().includes(q)) ok = false;
+    if (ok && region && r !== region) ok = false;
+    if (ok && minVol && v < minVol) ok = false;
+    if (ok && vat === 'yes' && cardVat !== 'yes') ok = false;
+    if (ok && vat === 'no' && cardVat !== 'no') ok = false;
+    card.style.display = ok ? '' : 'none';
+    if (ok) visible++;
+  });
+  const counter = document.getElementById('saleCount');
+  if (counter) counter.textContent = visible;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  ['saleQ','saleRegion','saleVolume','saleVat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', filterRequests);
+    if (el) el.addEventListener('change', filterRequests);
+  });
+  // Apply URL params from hero if landed from home
+  const p = new URLSearchParams(location.search);
+  const q = p.get('q');
+  if (q) {
+    const qInp = document.getElementById('saleQ') || document.getElementById('catalogQ');
+    if (qInp) { qInp.value = q; qInp.dispatchEvent(new Event('input')); }
+  }
+});
+
+/* ===== GEOLOCATION + CITY PICKER ===== */
+(function(){
+  const STORAGE_KEY = 'rh_city';
+  const DEFAULT_CITY = { name: 'Нижний Новгород', region: 'Нижегородская область', lat: 56.3269, lng: 44.0075 };
+
+  function getCurrentCity() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e){}
+    return DEFAULT_CITY;
+  }
+  function setCurrentCity(city) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(city)); } catch(e){}
+    // Update all region-chip buttons in the DOM
+    document.querySelectorAll('.region-chip').forEach(chip => {
+      const text = chip.childNodes[2]; // after icon and space
+      const allText = chip.textContent;
+      // Rebuild safely
+      chip.innerHTML = `<span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span> ${city.name} <span class="change">изменить</span>`;
+    });
+    window.dispatchEvent(new CustomEvent('rh:city-changed', { detail: city }));
+  }
+
+  // Initial setup
+  const current = getCurrentCity();
+  document.addEventListener('DOMContentLoaded', () => {
+    setCurrentCity(current);
+  });
+
+  // Handle clicks on region-chip → open city picker
+  document.addEventListener('click', e => {
+    const chip = e.target.closest('.region-chip');
+    if (!chip) return;
+    e.preventDefault();
+    openCityPicker();
+  });
+
+  function openCityPicker() {
+    let modal = document.getElementById('cityPickerModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'cityPickerModal';
+      modal.className = 'modal modal-city';
+      modal.innerHTML = `
+        <button class="modal-close" aria-label="Закрыть">✕</button>
+        <div class="cp-head">
+          <h2>Выберите ваш город</h2>
+          <p>Мы пересчитаем расстояния до складов и стоимость доставки.</p>
+        </div>
+        <div class="cp-geo">
+          <button class="btn btn-primary btn-block" id="cpGeoBtn">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><circle cx="10" cy="10" r="2" fill="currentColor"/><path d="M10 1v3M10 16v3M1 10h3M16 10h3"/></svg>
+            Определить автоматически
+          </button>
+          <div class="cp-geo-status" id="cpGeoStatus"></div>
+        </div>
+        <div class="cp-search">
+          <input type="text" id="cpSearch" placeholder="Введите название города…" autocomplete="off" />
+        </div>
+        <div class="cp-results" id="cpResults"></div>
+      `;
+      document.body.appendChild(modal);
+
+      const bd = document.createElement('div');
+      bd.id = 'cityPickerBackdrop';
+      bd.className = 'modal-backdrop';
+      document.body.appendChild(bd);
+      bd.addEventListener('click', closeCityPicker);
+      modal.querySelector('.modal-close').addEventListener('click', closeCityPicker);
+
+      // Search
+      const search = modal.querySelector('#cpSearch');
+      const results = modal.querySelector('#cpResults');
+      function renderResults(list) {
+        if (!list.length) {
+          results.innerHTML = '<div class="cp-empty">Город не найден. Проверьте написание.</div>';
+          return;
+        }
+        results.innerHTML = list.map(c =>
+          `<button class="cp-item" data-city='${JSON.stringify(c).replace(/'/g,"&apos;")}'>
+            <div class="cp-item-name">${c.name}</div>
+            <div class="cp-item-region">${c.region}</div>
+          </button>`
+        ).join('');
+        results.querySelectorAll('.cp-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const c = JSON.parse(item.dataset.city.replace(/&apos;/g,"'"));
+            setCurrentCity(c);
+            closeCityPicker();
+          });
+        });
+      }
+      search.addEventListener('input', () => {
+        renderResults(window.RH_CITIES_SEARCH(search.value, 12));
+      });
+      renderResults(window.RH_CITIES_SEARCH('', 12));
+
+      // Geolocation
+      modal.querySelector('#cpGeoBtn').addEventListener('click', () => {
+        const status = modal.querySelector('#cpGeoStatus');
+        if (!navigator.geolocation) {
+          status.textContent = 'Геолокация не поддерживается вашим браузером';
+          return;
+        }
+        status.textContent = 'Определяем ваше местоположение…';
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const c = window.RH_CITIES_FIND_BY_COORDS(pos.coords.latitude, pos.coords.longitude);
+            if (c) {
+              status.innerHTML = `✓ Определено: <b>${c.name}</b> (${c.region})`;
+              status.style.color = 'var(--emerald-600)';
+              setTimeout(() => { setCurrentCity(c); closeCityPicker(); }, 800);
+            } else {
+              status.textContent = 'Не удалось определить город. Введите вручную.';
+            }
+          },
+          err => {
+            status.textContent = err.code === 1
+              ? 'Доступ к геолокации запрещён. Разрешите в настройках браузера.'
+              : 'Не удалось определить местоположение. Попробуйте ввести город вручную.';
+            status.style.color = 'var(--red)';
+          },
+          { timeout: 10000, maximumAge: 60000 }
+        );
+      });
+    }
+    document.getElementById('cityPickerBackdrop').classList.add('on');
+    modal.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => modal.querySelector('#cpSearch')?.focus(), 100);
+  }
+  function closeCityPicker() {
+    const modal = document.getElementById('cityPickerModal');
+    const bd = document.getElementById('cityPickerBackdrop');
+    if (modal) modal.classList.remove('on');
+    if (bd) bd.classList.remove('on');
+    document.body.style.overflow = '';
+  }
+  window.RH_openCityPicker = openCityPicker;
+})();
+
+/* ===== LIVE QUOTES — update prices every 30s with small fluctuations ===== */
+(function(){
+  const quoteEls = document.querySelectorAll('[data-quote-crop]');
+  if (!quoteEls.length) return;
+
+  function fluctuate(){
+    quoteEls.forEach(el => {
+      const base = parseFloat(el.dataset.basePrice || el.dataset.quotePrice || '0');
+      if (!base) return;
+      // ±0.5% random walk
+      const delta = (Math.random() - 0.5) * 0.01;
+      const newPrice = Math.round(base * (1 + delta));
+      const changePct = ((newPrice - base) / base * 100).toFixed(2);
+      const numEl = el.querySelector('.q-price');
+      const chgEl = el.querySelector('.q-change');
+      if (numEl) {
+        numEl.textContent = newPrice.toLocaleString('ru-RU') + ' ₽/т';
+        numEl.classList.remove('flash-up', 'flash-dn');
+        void numEl.offsetWidth; // reflow
+        numEl.classList.add(newPrice > base ? 'flash-up' : 'flash-dn');
+      }
+      if (chgEl) {
+        chgEl.textContent = (changePct >= 0 ? '+' : '') + changePct + '%';
+        chgEl.className = 'q-change ' + (changePct >= 0 ? 'up' : 'dn');
+      }
+    });
+  }
+  setInterval(fluctuate, 3000 + Math.random() * 2000);
+})();
+
+/* ===== AUCTION COUNTDOWN ===== */
+(function(){
+  const cards = document.querySelectorAll('[data-auction-ends]');
+  if (!cards.length) return;
+
+  function fmt(seconds){
+    if (seconds <= 0) return 'Завершён';
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (d > 0) return `${d}д ${h}ч ${m}м`;
+    if (h > 0) return `${h}ч ${m}м ${String(s).padStart(2,'0')}с`;
+    return `${m}м ${String(s).padStart(2,'0')}с`;
+  }
+  function tick(){
+    const now = Date.now();
+    cards.forEach(card => {
+      const endsAt = new Date(card.dataset.auctionEnds).getTime();
+      const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
+      const el = card.querySelector('.auction-timer');
+      if (el) el.textContent = fmt(remaining);
+      // Highlight ending-soon
+      if (remaining < 3600 && remaining > 0) card.classList.add('ending-soon');
+      if (remaining <= 0) { card.classList.add('ended'); card.classList.remove('ending-soon'); }
+    });
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* ===== DEMO LOGIN (admin/admin, user/user) ===== */
+(function(){
+  // One-click demo account buttons
+  document.querySelectorAll('.demo-account').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const username = btn.dataset.login;
+      const password = btn.dataset.pass;
+      const originalBg = btn.style.background;
+      btn.style.background = 'var(--emerald-soft)';
+      btn.style.borderColor = 'var(--emerald)';
+
+      try {
+        if (window.RH_API) {
+          await window.RH_API.loginWithCredentials(username, password);
+        }
+        window.location = '/account.html';
+      } catch (err) {
+        alert('Ошибка входа: ' + err.message);
+        btn.style.background = originalBg;
+        btn.style.borderColor = '';
+      }
+    });
+  });
+
+  // Manual form
+  const demoForm = document.getElementById('demoForm');
+  const demoSubmit = document.getElementById('demoSubmit');
+  const demoHint = document.getElementById('demoHint');
+  const demoUser = document.getElementById('demoUsername');
+  const demoPass = document.getElementById('demoPassword');
+
+  if (demoForm && demoSubmit) {
+    demoSubmit.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const u = demoUser?.value.trim();
+      const p = demoPass?.value.trim();
+      if (!u || !p) {
+        if (demoHint) { demoHint.textContent = 'Заполните логин и пароль'; demoHint.style.color = 'var(--red)'; }
+        return;
+      }
+      demoSubmit.disabled = true;
+      demoSubmit.textContent = 'Проверяем…';
+      try {
+        if (window.RH_API) {
+          await window.RH_API.loginWithCredentials(u, p);
+        }
+        window.location = '/account.html';
+      } catch (err) {
+        if (demoHint) { demoHint.textContent = '⚠ ' + err.message; demoHint.style.color = 'var(--red)'; }
+        demoSubmit.disabled = false;
+        demoSubmit.innerHTML = 'Войти →';
+      }
+    });
+  }
+})();
+
+/* ===== ACCOUNT PAGE: populate from logged-in user ===== */
+(function(){
+  // Only run on account page
+  if (!document.getElementById('accName')) return;
+
+  const user = window.RH_API?.currentUser();
+  if (!user) {
+    // Not logged in — redirect to login
+    setTimeout(() => {
+      alert('Необходимо войти в аккаунт. Используйте admin/admin или user/user.');
+      window.location = '/index.html';
+    }, 100);
+    return;
+  }
+
+  // Build initials
+  const parts = (user.name || '').split(' ').filter(Boolean);
+  const initials = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
+
+  // Update sidebar
+  const avEl = document.getElementById('accAvatar');
+  if (avEl) avEl.textContent = initials;
+  const nameEl = document.getElementById('accName');
+  if (nameEl) nameEl.textContent = user.name || 'Пользователь';
+  const companyEl = document.getElementById('accCompany');
+  if (companyEl) companyEl.textContent = user.company || '';
+
+  const balanceEl = document.getElementById('accBalance');
+  if (balanceEl) {
+    balanceEl.innerHTML = (user.balance || 0).toLocaleString('ru-RU') + '<small>₽</small>';
+  }
+
+  // Role chip
+  const roleEl = document.getElementById('accRole');
+  if (roleEl) {
+    if (user.role === 'admin') {
+      roleEl.innerHTML = '👑 Администратор';
+      roleEl.style.background = '#FEF3C7';
+      roleEl.style.color = '#92400E';
+    } else if (user.role === 'seller') {
+      roleEl.innerHTML = '🌾 Продавец';
+      roleEl.style.background = 'var(--orange-soft)';
+      roleEl.style.color = '#92400E';
+    } else {
+      roleEl.innerHTML = '🛒 Покупатель';
+    }
+  }
+
+  // Greeting
+  const firstName = parts[0] || 'пользователь';
+  const greetEl = document.getElementById('accGreeting');
+  if (greetEl) {
+    if (user.role === 'admin') {
+      greetEl.textContent = `Админ-панель, ${firstName} 👑`;
+    } else {
+      greetEl.textContent = `Здравствуйте, ${firstName} 👋`;
+    }
+  }
+  const subEl = document.getElementById('accSubtitle');
+  if (subEl && user.role === 'admin') {
+    subEl.textContent = 'Полный контроль над платформой: модерация, пользователи, сделки и аналитика.';
+  }
+
+  // Show admin panel for admin role
+  if (user.role === 'admin') {
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) adminPanel.style.display = '';
+  }
+
+  // Update avatar background for admin
+  if (user.role === 'admin' && avEl) {
+    avEl.style.background = 'linear-gradient(135deg, #F59E0B, #D97706)';
+  }
+})();

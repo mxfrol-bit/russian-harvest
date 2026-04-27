@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Страница не найдена — Русский Урожай</title>
-<meta name="description" content="Русский Урожай — онлайн-площадка для покупки и продажи сельхозпродукции напрямую между фермерами и покупателями." />
+<title>Аукцион — Русский Урожай</title>
+<meta name="description" content="Онлайн-аукционы сельхозпродукции. Живые торги, прозрачные ставки, эскроу-защита сделки." />
 <meta name="theme-color" content="#97C524" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -31,7 +31,7 @@
     <nav class="nav-main">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
+      <a href="auction.html" class="active">Аукцион</a>
       <a href="prices.html" class="">Биржа</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
@@ -67,7 +67,7 @@
     <nav class="drawer-nav">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
+      <a href="auction.html" class="active">Аукцион</a>
       <a href="prices.html" class="">Биржа цен</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
@@ -81,17 +81,280 @@
   </div>
 </aside>
 
-<div class="error-page">
-  <div class="error-content">
-    <div class="error-code">404</div>
-    <h1>Страница не найдена</h1>
-    <p>Похоже, такой страницы не существует. Возможно, вы перешли по устаревшей ссылке или ошиблись в адресе.</p>
-    <div class="actions">
-      <a class="btn btn-primary btn-lg" href="index.html">На главную <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-      <a class="btn btn-outline btn-lg" href="catalog.html">Каталог</a>
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="index.html">Главная</a>
+      <span class="sep">/</span>
+      <span>Аукцион</span>
+    </div>
+    <h1>Аукционы в реальном времени</h1>
+    <p>Покупайте крупные партии на открытых торгах. Ставки видны всем участникам, победителем становится автор максимальной ставки к окончанию времени.</p>
+    <div style="margin-top:16px"><span class="live-pulse">LIVE · обновляется каждую секунду</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="catalog-head" style="margin-bottom:20px">
+    <div>
+      <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.4 6.1 6.6.5-5 4.4 1.5 6.4L10 15l-5.5 3.4L6 12 1 7.6l6.6-.5z"/></svg> Активные торги</span>
+      <h2 class="h2">6 активных аукциона</h2>
+      <p class="section-lead">Цены определяются рынком. Все поставщики проверены, эскроу-защита оплаты.</p>
+    </div>
+    <div class="top-row">
+      <div class="catalog-chips">
+        <button class="c-chip active">Все</button>
+        <button class="c-chip">🔥 Завершаются</button>
+        <button class="c-chip">Пшеница</button>
+        <button class="c-chip">Масличные</button>
+        <button class="c-chip">Кукуруза</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <div class="auction-grid">
+    <article class="auction-card " data-auction-ends="2026-04-27T19:11:58.788595+00:00" data-auction-id="AU-001">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Пшеница 3 класс · 500 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Саратов · 689 км · Протеин 12 8 %</div>
+    </div>
+    <span class="auction-status ">Активный</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">14 800 ₽/т</div>
+      <div class="delta">↑ +9.6% от старта (13 500 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">12</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article><article class="auction-card " data-auction-ends="2026-04-28T02:41:58.788595+00:00" data-auction-id="AU-002">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Подсолнечник · 250 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Воронеж · 580 км · Масличность 46 %</div>
+    </div>
+    <span class="auction-status ">Активный</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">29 200 ₽/т</div>
+      <div class="delta">↑ +8.1% от старта (27 000 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">8</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article><article class="auction-card ending-soon" data-auction-ends="2026-04-27T15:53:58.788595+00:00" data-auction-id="AU-003">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Кукуруза · 400 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Липецк · 634 км · Влажность 13 %</div>
+    </div>
+    <span class="auction-status ending-soon">Завершается</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">15 400 ₽/т</div>
+      <div class="delta">↑ +6.2% от старта (14 500 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">23</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article><article class="auction-card " data-auction-ends="2026-04-28T16:41:58.788595+00:00" data-auction-id="AU-004">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Рапс · 180 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Саранск · 413 км · Масличность 43 %</div>
+    </div>
+    <span class="auction-status ">Активный</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">32 800 ₽/т</div>
+      <div class="delta">↑ +9.3% от старта (30 000 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">5</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article><article class="auction-card " data-auction-ends="2026-04-27T22:41:58.788595+00:00" data-auction-id="AU-005">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Ячмень пивоваренный · 300 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Чебоксары · 235 км · Белок 10 5 %</div>
+    </div>
+    <span class="auction-status ">Активный</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">16 900 ₽/т</div>
+      <div class="delta">↑ +7.0% от старта (15 800 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">14</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article><article class="auction-card " data-auction-ends="2026-04-28T08:41:58.788595+00:00" data-auction-id="AU-006">
+  <div class="auction-head">
+    <div>
+      <h3 class="auction-title">Соя · 120 т</h3>
+      <div style="font-size:12px;color:var(--slate-500);margin-top:4px">Казань · 407 км · Протеин 39 %</div>
+    </div>
+    <span class="auction-status ">Активный</span>
+  </div>
+
+  <div class="auction-timer-row">
+    <span class="label">До конца</span>
+    <span class="auction-timer">—</span>
+  </div>
+
+  <div class="auction-bid">
+    <div>
+      <div class="label">Текущая ставка</div>
+      <div class="amount">40 100 ₽/т</div>
+      <div class="delta">↑ +5.5% от старта (38 000 ₽/т)</div>
+    </div>
+  </div>
+
+  <div class="auction-meta">
+    <div class="cell">
+      <div class="k">Ставок</div>
+      <div class="v">9</div>
+    </div>
+    <div class="cell">
+      <div class="k">Минимальный шаг</div>
+      <div class="v">100 ₽</div>
+    </div>
+  </div>
+
+  <div class="auction-actions">
+    <button class="btn btn-primary">Сделать ставку +100 ₽</button>
+    <button class="btn btn-outline">Детали</button>
+  </div>
+</article>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="reverse-card">
+    <div>
+      <span class="reverse-chip"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg> Запуск аукциона за 15 минут</span>
+      <h3>Хотите провести свой аукцион?</h3>
+      <p class="lead">Разместите партию, установите минимальную цену и время окончания — платформа сама соберёт ставки от проверенных покупателей.</p>
+    </div>
+    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка на аукцион отправлена.')">
+      <input type="text" placeholder="Наименование продукта" />
+      <input type="text" placeholder="Объём, тонн" />
+      <div class="sel"><span>Минимальная цена</span><span class="chev">▾</span></div>
+      <div class="sel"><span>Длительность</span><span class="chev">▾</span></div>
+      <button class="submit" type="submit">Запустить аукцион <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
+</section>
 
 <footer class="site-footer">
   <div class="foot-wrap">
@@ -136,7 +399,7 @@
 <nav class="mobile-tabbar">
       <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
       <a href="catalog.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
-      <a href="auction.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
+      <a href="auction.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
       <a href="prices.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
       <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
     </nav>
