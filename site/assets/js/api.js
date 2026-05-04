@@ -636,7 +636,6 @@
     // CONTACT FORM (anonymous OK)
     // ===========================================================
     async sendContactForm(payload) {
-      // Без отдельной таблицы — пишем в audit_log, или просто возвращаем ok
       try {
         const sb = await ensureSupabase();
         await sb.from('audit_log').insert({
@@ -646,6 +645,59 @@
         });
       } catch (e) {}
       return { ok: true, ticket: 'T-' + Date.now().toString().slice(-6) };
+    },
+
+    // ===========================================================
+    // PLATFORM SETTINGS (feature flags)
+    // ===========================================================
+    async getFeatureFlags() {
+      try {
+        const sb = await ensureSupabase();
+        const { data } = await sb.from('platform_settings').select('key, value');
+        const flags = {};
+        (data || []).forEach(row => {
+          if (row.key.startsWith('feature_')) {
+            const key = row.key.replace('feature_', '');
+            flags[key] = !!row.value?.enabled;
+          }
+        });
+        return flags;
+      } catch (e) {
+        console.warn('[features] load failed', e);
+        return {};
+      }
+    },
+
+    async adminToggleFeature(featureKey, enabled) {
+      const sb = await ensureSupabase();
+      const key = 'feature_' + featureKey;
+      const { error } = await sb.from('platform_settings')
+        .update({ value: { enabled }, updated_at: new Date().toISOString() })
+        .eq('key', key);
+      if (error) throw error;
+      return { ok: true };
+    },
+
+    // Apply feature visibility to DOM elements with data-feature attribute
+    async applyFeatureFlags() {
+      const flags = await this.getFeatureFlags();
+      document.querySelectorAll('[data-feature]').forEach(el => {
+        const feat = el.dataset.feature;
+        const enabled = !!flags[feat];
+        el.style.display = enabled ? '' : 'none';
+      });
+      return flags;
+    },
+
+    // ===========================================================
+    // ADMIN ROLE MANAGEMENT
+    // ===========================================================
+    async adminSetUserRole(userId, role) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('profiles')
+        .update({ role }).eq('id', userId).select().single();
+      if (error) throw error;
+      return data;
     }
   };
 

@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1777485213">
+<link rel="stylesheet" href="assets/css/main.css?v=1777876125">
 </head>
 <body>
 
@@ -31,8 +31,8 @@
     <nav class="nav-main">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="active">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа</a>
+      <a href="auction.html" class="nav-item " data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="nav-item " data-feature="prices" style="display:none">Биржа</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -70,8 +70,8 @@
     <nav class="drawer-nav">
       <a href="catalog.html" class="">Купить</a>
       <a href="sale.html" class="active">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа цен</a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none">Биржа цен</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -169,7 +169,7 @@
 
   <div class="tabs-bar">
     <button class="tab-btn active" data-tab="active">
-      Активные <span class="tab-count">30</span>
+      Активные <span class="tab-count" id="saleCount">30</span>
     </button>
     <button class="tab-btn" data-tab="archive">
       В архиве <span class="tab-count">6</span>
@@ -178,7 +178,7 @@
 
   <div class="tab-pane" data-pane="active">
     <div class="req-grid">
-      <article class="req-card">
+      <article class="req-card" data-request="Q-001" data-crop="wheat" data-region="Нижний Новгород" data-volume="200" data-vat="yes" data-title="Пшеница 3 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -211,7 +211,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-002" data-crop="barley" data-region="Дзержинск" data-volume="500" data-vat="yes" data-title="Ячмень кормовой">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -244,7 +244,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-003" data-crop="corn" data-region="Арзамас" data-volume="150" data-vat="yes" data-title="Кукуруза">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -277,7 +277,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-004" data-crop="sunflower" data-region="Нижний Новгород" data-volume="80" data-vat="no" data-title="Подсолнечник">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -310,7 +310,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-005" data-crop="rapeseed" data-region="Балахна" data-volume="100" data-vat="no" data-title="Рапс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -343,7 +343,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-006" data-crop="wheat" data-region="Нижний Новгород" data-volume="350" data-vat="yes" data-title="Пшеница 4 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -376,7 +376,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-007" data-crop="oat" data-region="Семёнов" data-volume="60" data-vat="yes" data-title="Овёс фуражный">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -409,7 +409,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-008" data-crop="soy" data-region="Нижний Новгород" data-volume="70" data-vat="no" data-title="Соя">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -442,7 +442,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-009" data-crop="pea" data-region="Кстово" data-volume="40" data-vat="yes" data-title="Горох">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -475,7 +475,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-010" data-crop="buckwheat" data-region="Нижний Новгород" data-volume="35" data-vat="no" data-title="Гречиха">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -508,7 +508,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-011" data-crop="barley" data-region="Чебоксары" data-volume="250" data-vat="yes" data-title="Ячмень пивоваренный">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -541,7 +541,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-012" data-crop="wheat" data-region="Муром" data-volume="180" data-vat="yes" data-title="Пшеница 3 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -574,7 +574,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-013" data-crop="corn" data-region="Арзамас" data-volume="120" data-vat="yes" data-title="Кукуруза">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -607,7 +607,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-014" data-crop="sunflower" data-region="Нижний Новгород" data-volume="150" data-vat="no" data-title="Подсолнечник">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -640,7 +640,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-015" data-crop="rapeseed" data-region="Дзержинск" data-volume="200" data-vat="no" data-title="Рапс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -673,7 +673,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-016" data-crop="wheat" data-region="Нижний Новгород" data-volume="400" data-vat="yes" data-title="Пшеница 5 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -706,7 +706,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-017" data-crop="barley" data-region="Балахна" data-volume="220" data-vat="yes" data-title="Ячмень кормовой">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -739,7 +739,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-018" data-crop="wheat" data-region="Выкса" data-volume="500" data-vat="yes" data-title="Пшеница 4 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -772,7 +772,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-019" data-crop="soy" data-region="Нижний Новгород" data-volume="120" data-vat="no" data-title="Соя">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -805,7 +805,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-020" data-crop="pea" data-region="Арзамас" data-volume="80" data-vat="yes" data-title="Горох">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -838,7 +838,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-021" data-crop="corn" data-region="Нижний Новгород" data-volume="300" data-vat="yes" data-title="Кукуруза">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -871,7 +871,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-022" data-crop="sunflower" data-region="Семёнов" data-volume="90" data-vat="no" data-title="Подсолнечник">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -904,7 +904,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-023" data-crop="wheat" data-region="Муром" data-volume="250" data-vat="yes" data-title="Пшеница 3 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -937,7 +937,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-024" data-crop="oat" data-region="Нижний Новгород" data-volume="50" data-vat="yes" data-title="Овёс голозёрный">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -970,7 +970,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-025" data-crop="barley" data-region="Чебоксары" data-volume="180" data-vat="yes" data-title="Ячмень пивоваренный">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1003,7 +1003,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-026" data-crop="rapeseed" data-region="Балахна" data-volume="150" data-vat="no" data-title="Рапс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1036,7 +1036,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-027" data-crop="buckwheat" data-region="Нижний Новгород" data-volume="45" data-vat="no" data-title="Гречиха">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1069,7 +1069,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-028" data-crop="wheat" data-region="Дзержинск" data-volume="600" data-vat="yes" data-title="Пшеница 4 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1102,7 +1102,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-029" data-crop="corn" data-region="Богородск" data-volume="200" data-vat="yes" data-title="Кукуруза">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1135,7 +1135,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Откликнуться <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
-</article><article class="req-card">
+</article><article class="req-card" data-request="Q-030" data-crop="sunflower" data-region="Выкса" data-volume="110" data-vat="no" data-title="Подсолнечник">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1173,7 +1173,7 @@
   </div>
   <div class="tab-pane" data-pane="archive" style="display:none">
     <div class="req-grid">
-      <article class="req-card req-archive">
+      <article class="req-card req-archive" data-request="Q-901" data-crop="wheat" data-region="Нижний Новгород" data-volume="300" data-vat="yes" data-title="Пшеница 3 класс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1206,7 +1206,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Закрыта </a>
   </div>
-</article><article class="req-card req-archive">
+</article><article class="req-card req-archive" data-request="Q-902" data-crop="barley" data-region="Дзержинск" data-volume="400" data-vat="yes" data-title="Ячмень кормовой">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1239,7 +1239,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Закрыта </a>
   </div>
-</article><article class="req-card req-archive">
+</article><article class="req-card req-archive" data-request="Q-903" data-crop="corn" data-region="Арзамас" data-volume="200" data-vat="yes" data-title="Кукуруза">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1272,7 +1272,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Закрыта </a>
   </div>
-</article><article class="req-card req-archive">
+</article><article class="req-card req-archive" data-request="Q-904" data-crop="sunflower" data-region="Нижний Новгород" data-volume="120" data-vat="no" data-title="Подсолнечник">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1305,7 +1305,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Закрыта </a>
   </div>
-</article><article class="req-card req-archive">
+</article><article class="req-card req-archive" data-request="Q-905" data-crop="rapeseed" data-region="Балахна" data-volume="90" data-vat="no" data-title="Рапс">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1338,7 +1338,7 @@
     <span class="req-buyer">Покупатель проверен · <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg> ★ 4.9</span>
     <a class="cta" href="#">Закрыта </a>
   </div>
-</article><article class="req-card req-archive">
+</article><article class="req-card req-archive" data-request="Q-906" data-crop="soy" data-region="Нижний Новгород" data-volume="80" data-vat="no" data-title="Соя">
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1468,8 +1468,9 @@
 <nav class="mobile-tabbar">
       <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
       <a href="catalog.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
-      <a href="auction.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
-      <a href="prices.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
+      <a href="sale.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2.5 2.5 0 0 1 0 5h-3a2.5 2.5 0 0 0 0 5H15"/></svg><span>Продать</span></a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
       <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
     </nav>
 
@@ -1667,11 +1668,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1777485213"></script>
-<script src="assets/js/cities.js?v=1777485213"></script>
-<script src="assets/js/api.js?v=1777485213"></script>
-<script src="assets/js/main.js?v=1777485213"></script>
-<script src="assets/js/admin.js?v=1777485213"></script>
-<script src="assets/js/tour.js?v=1777485213"></script>
+<script src="assets/js/config.js?v=1777876125"></script>
+<script src="assets/js/cities.js?v=1777876125"></script>
+<script src="assets/js/api.js?v=1777876125"></script>
+<script src="assets/js/main.js?v=1777876125"></script>
+<script src="assets/js/admin.js?v=1777876125"></script>
+<script src="assets/js/tour.js?v=1777876125"></script>
 </body>
 </html>

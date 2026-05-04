@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1777485213">
+<link rel="stylesheet" href="assets/css/main.css?v=1777876125">
 </head>
 <body>
 
@@ -31,8 +31,8 @@
     <nav class="nav-main">
       <a href="catalog.html" class="active">Купить</a>
       <a href="sale.html" class="">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа</a>
+      <a href="auction.html" class="nav-item " data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="nav-item " data-feature="prices" style="display:none">Биржа</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -70,8 +70,8 @@
     <nav class="drawer-nav">
       <a href="catalog.html" class="active">Купить</a>
       <a href="sale.html" class="">Продать</a>
-      <a href="auction.html" class="">Аукцион</a>
-      <a href="prices.html" class="">Биржа цен</a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none">Биржа цен</a>
       <a href="about.html" class="">О компании</a>
       <a href="how.html" class="">Помощь</a>
       <a href="contacts.html" class="">Контакты</a>
@@ -269,8 +269,9 @@
 <nav class="mobile-tabbar">
       <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
       <a href="catalog.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
-      <a href="auction.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
-      <a href="prices.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
+      <a href="sale.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2.5 2.5 0 0 1 0 5h-3a2.5 2.5 0 0 0 0 5H15"/></svg><span>Продать</span></a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
       <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
     </nav>
 
@@ -468,11 +469,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1777485213"></script>
-<script src="assets/js/cities.js?v=1777485213"></script>
-<script src="assets/js/api.js?v=1777485213"></script>
-<script src="assets/js/main.js?v=1777485213"></script>
-<script src="assets/js/admin.js?v=1777485213"></script>
-<script src="assets/js/tour.js?v=1777485213"></script>
+<script src="assets/js/config.js?v=1777876125"></script>
+<script src="assets/js/cities.js?v=1777876125"></script>
+<script src="assets/js/api.js?v=1777876125"></script>
+<script src="assets/js/main.js?v=1777876125"></script>
+<script src="assets/js/admin.js?v=1777876125"></script>
+<script src="assets/js/tour.js?v=1777876125"></script>
 </body>
 </html>

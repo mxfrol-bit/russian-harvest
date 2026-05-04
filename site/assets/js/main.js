@@ -71,13 +71,7 @@
     });
   });
 
-  // ---------- Catalog chips ----------
-  document.querySelectorAll('.c-chip').forEach(c => {
-    c.addEventListener('click', () => {
-      document.querySelectorAll('.c-chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
-    });
-  });
+  // ---------- Catalog/sale chips: handled by per-group handlers below in filterRequests / catalog filters ----------
 
   // ---------- Popular chips → hero input ----------
   document.querySelectorAll('.pq').forEach(c => {
@@ -682,40 +676,111 @@ document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(a => {
 function filterRequests(){
   const q = (document.getElementById('saleQ')?.value || '').toLowerCase().trim();
   const region = document.getElementById('saleRegion')?.value || '';
-  const minVol = parseInt(document.getElementById('saleVolume')?.value || '0');
+  const minVol = parseInt(document.getElementById('saleVolume')?.value || '0') || 0;
   const vat = document.getElementById('saleVat')?.value || '';
 
-  const cards = document.querySelectorAll('.request-card');
+  // Map Russian search terms to crop keys
+  const cropKeyMap = {
+    'пшениц': 'wheat', 'ячмен': 'barley', 'кукуруз': 'corn',
+    'подсолнечник': 'sunflower', 'овёс': 'oat', 'овес': 'oat',
+    'рапс': 'rapeseed', 'соя': 'soy', 'горох': 'pea', 'гречих': 'buckwheat'
+  };
+  let queryCrop = '';
+  for (const [keyword, key] of Object.entries(cropKeyMap)) {
+    if (q.includes(keyword)) { queryCrop = key; break; }
+  }
+
+  const cards = document.querySelectorAll('.req-card');
   let visible = 0;
   cards.forEach(card => {
     const title = (card.dataset.title || '').toLowerCase();
+    const cropKey = (card.dataset.crop || '').toLowerCase();
     const r = card.dataset.region || '';
-    const v = parseInt(card.dataset.volume || '0');
+    const v = parseInt(card.dataset.volume || '0') || 0;
     const cardVat = card.dataset.vat || '';
+
     let ok = true;
-    if (q && !title.includes(q) && !r.toLowerCase().includes(q)) ok = false;
+    // Search by query: match against crop key, title, or region
+    if (q) {
+      const matchesQuery =
+        title.includes(q) ||
+        r.toLowerCase().includes(q) ||
+        (queryCrop && cropKey === queryCrop);
+      if (!matchesQuery) ok = false;
+    }
     if (ok && region && r !== region) ok = false;
     if (ok && minVol && v < minVol) ok = false;
     if (ok && vat === 'yes' && cardVat !== 'yes') ok = false;
     if (ok && vat === 'no' && cardVat !== 'no') ok = false;
+
     card.style.display = ok ? '' : 'none';
     if (ok) visible++;
   });
   const counter = document.getElementById('saleCount');
   if (counter) counter.textContent = visible;
+
+  // Update active tab badges
+  const activeTabBadge = document.querySelector('.tab-btn.active .tab-count');
+  if (activeTabBadge && cards.length > 0) {
+    activeTabBadge.textContent = visible;
+  }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
   ['saleQ','saleRegion','saleVolume','saleVat'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', filterRequests);
-    if (el) el.addEventListener('change', filterRequests);
+    if (el) {
+      el.addEventListener('input', filterRequests);
+      el.addEventListener('change', filterRequests);
+    }
   });
-  // Apply URL params from hero if landed from home
+
+  // Wire chip tabs (Все запросы / Срочные / Пшеница / etc.) to filter
+  document.querySelectorAll('.req-chips .c-chip, .catalog-chips .c-chip').forEach(chip => {
+    if (chip.tagName === 'A') return; // skip <a> chips on home (they're links)
+    chip.addEventListener('click', () => {
+      // visual active state
+      const siblings = chip.parentElement?.querySelectorAll('.c-chip');
+      siblings?.forEach(s => s.classList.remove('active'));
+      chip.classList.add('active');
+
+      // Apply chip-based filter
+      const text = chip.textContent.toLowerCase().trim();
+      const qInput = document.getElementById('saleQ');
+      if (!qInput) return;
+
+      if (text.includes('все') || text.includes('срочн')) {
+        qInput.value = '';
+      } else {
+        // Extract just crop name (without count)
+        const cropMatch = text.match(/(пшениц|ячмен|кукуруз|подсолнечник|рапс|овёс|овес|соя|горох|гречих)\S*/);
+        qInput.value = cropMatch ? cropMatch[0] : '';
+      }
+      filterRequests();
+    });
+  });
+
+  // Apply URL params from hero
   const p = new URLSearchParams(location.search);
   const q = p.get('q');
   if (q) {
-    const qInp = document.getElementById('saleQ') || document.getElementById('catalogQ');
-    if (qInp) { qInp.value = q; qInp.dispatchEvent(new Event('input')); }
+    const qInp = document.getElementById('saleQ');
+    if (qInp) { qInp.value = q; }
+  }
+  const vol = p.get('vol');
+  if (vol) {
+    const volSel = document.getElementById('saleVolume');
+    if (volSel) {
+      // Match closest available option
+      const target = parseInt(vol);
+      const opts = Array.from(volSel.options).map(o => parseInt(o.value) || 0);
+      const closest = opts.reduce((a, b) => Math.abs(b - target) < Math.abs(a - target) ? b : a);
+      volSel.value = String(closest);
+    }
+  }
+  // Run initial filter (catches URL params and any default state)
+  if (document.querySelectorAll('.req-card').length > 0) {
+    filterRequests();
   }
 });
 

@@ -84,8 +84,8 @@ def header(active=''):
     <nav class="nav-main">
       {nav_item('/catalog.html', 'Купить', 'catalog')}
       {nav_item('/sale.html', 'Продать', 'sale')}
-      {nav_item('/auction.html', 'Аукцион', 'auction')}
-      {nav_item('/prices.html', 'Биржа', 'prices')}
+      <a href="/auction.html" class="nav-item {'active' if active=='auction' else ''}" data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="/prices.html" class="nav-item {'active' if active=='prices' else ''}" data-feature="prices" style="display:none">Биржа</a>
       {nav_item('/about.html', 'О компании', 'about')}
       {nav_item('/how.html', 'Помощь', 'how')}
       {nav_item('/contacts.html', 'Контакты', 'contacts')}
@@ -123,8 +123,8 @@ def header(active=''):
     <nav class="drawer-nav">
       <a href="/catalog.html" class="{'active' if active=='catalog' else ''}">Купить</a>
       <a href="/sale.html" class="{'active' if active=='sale' else ''}">Продать</a>
-      <a href="/auction.html" class="{'active' if active=='auction' else ''}">Аукцион</a>
-      <a href="/prices.html" class="{'active' if active=='prices' else ''}">Биржа цен</a>
+      <a href="/auction.html" class="{'active' if active=='auction' else ''}" data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="/prices.html" class="{'active' if active=='prices' else ''}" data-feature="prices" style="display:none">Биржа цен</a>
       <a href="/about.html" class="{'active' if active=='about' else ''}">О компании</a>
       <a href="/how.html" class="{'active' if active=='how' else ''}">Помощь</a>
       <a href="/contacts.html" class="{'active' if active=='contacts' else ''}">Контакты</a>
@@ -388,15 +388,17 @@ def page(title, body, active='', description=None):
     desc = description or 'Русский Урожай — онлайн-площадка для покупки и продажи сельхозпродукции напрямую между фермерами и покупателями.'
 
     # Mobile app-style bottom tabbar
-    def tab(href, label, key, svg):
+    def tab(href, label, key, svg, feature=None):
         cls = 'active' if active == key else ''
-        return f'<a href="{href}" class="{cls}">{svg}<span>{label}</span></a>'
+        attrs = f' data-feature="{feature}" style="display:none"' if feature else ''
+        return f'<a href="{href}" class="{cls}"{attrs}>{svg}<span>{label}</span></a>'
 
     tabbar = f'''<nav class="mobile-tabbar">
       {tab('/index.html', 'Главная', 'home', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg>')}
       {tab('/catalog.html', 'Каталог', 'catalog', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>')}
-      {tab('/auction.html', 'Аукцион', 'auction', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg>')}
-      {tab('/prices.html', 'Биржа', 'prices', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg>')}
+      {tab('/sale.html', 'Продать', 'sale', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2.5 2.5 0 0 1 0 5h-3a2.5 2.5 0 0 0 0 5H15"/></svg>')}
+      {tab('/auction.html', 'Аукцион', 'auction', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg>', feature='auctions')}
+      {tab('/prices.html', 'Биржа', 'prices', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg>', feature='prices')}
       {tab('/account.html', 'Кабинет', 'account', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>')}
     </nav>'''
 
@@ -648,7 +650,45 @@ def request_card(data):
 
     cta = 'Закрыта' if data.get('archive') else 'Откликнуться'
 
-    return f'''<article class="{cls}">
+    # Normalize crop key for filtering
+    title = data['title']
+    crop_key = 'other'
+    title_lower = title.lower()
+    if 'пшениц' in title_lower: crop_key = 'wheat'
+    elif 'ячмен' in title_lower: crop_key = 'barley'
+    elif 'кукуруз' in title_lower: crop_key = 'corn'
+    elif 'подсолнечник' in title_lower: crop_key = 'sunflower'
+    elif 'овёс' in title_lower or 'овес' in title_lower: crop_key = 'oat'
+    elif 'рапс' in title_lower: crop_key = 'rapeseed'
+    elif 'соя' in title_lower: crop_key = 'soy'
+    elif 'горох' in title_lower: crop_key = 'pea'
+    elif 'гречих' in title_lower: crop_key = 'buckwheat'
+
+    # Numeric volume for >= comparison
+    vol_match = data['volume'].replace(' ', '').replace('т', '').strip()
+    try:
+        volume_num = int(''.join(c for c in vol_match if c.isdigit())) if vol_match else 0
+    except:
+        volume_num = 0
+
+    # VAT flag
+    vat_str = data.get('vat', '')
+    vat_flag = 'yes' if 'с НДС' in vat_str or 'с ндс' in vat_str.lower() else ('no' if 'без' in vat_str.lower() else '')
+
+    # Region for filter (extract from delivery_where like "Нижний Новгород")
+    delivery = data['delivery_where']
+    region_match = delivery.split(',')[0].strip()
+
+    data_attrs = (
+        f'data-request="{data["id"]}" '
+        f'data-crop="{crop_key}" '
+        f'data-region="{region_match}" '
+        f'data-volume="{volume_num}" '
+        f'data-vat="{vat_flag}" '
+        f'data-title="{title}"'
+    )
+
+    return f'''<article class="{cls}" {data_attrs}>
   <div class="req-card-head">
     <div>
       <div class="req-badges">
@@ -1388,7 +1428,7 @@ def build_sale():
 
   <div class="tabs-bar">
     <button class="tab-btn active" data-tab="active">
-      Активные <span class="tab-count">{len(REQUESTS)}</span>
+      Активные <span class="tab-count" id="saleCount">{len(REQUESTS)}</span>
     </button>
     <button class="tab-btn" data-tab="archive">
       В архиве <span class="tab-count">{len(ARCHIVE_REQUESTS)}</span>
@@ -2260,213 +2300,86 @@ def build_account():
         </div>
       </div>
 
-      <!-- KPI stats -->
+      <!-- KPI stats — values populated by admin.js from real DB -->
       <div class="account-stats">
         <div class="account-stat">
           <div class="k">Активных сделок</div>
-          <div class="v">3</div>
-          <div class="d up">↑ 1 за неделю</div>
+          <div class="v" id="userActiveDeals">0</div>
+          <div class="d up" id="userActiveDealsHint" style="opacity:.5">нет данных</div>
         </div>
         <div class="account-stat">
           <div class="k">Ожидают отклика</div>
-          <div class="v">2</div>
-          <div class="d" style="color:var(--orange-dark)">⏱ 5 ч до отклика</div>
+          <div class="v" id="userPendingDeals">0</div>
+          <div class="d" id="userPendingDealsHint" style="color:var(--orange-dark);opacity:.5">нет данных</div>
         </div>
         <div class="account-stat">
           <div class="k">Закрыто всего</div>
-          <div class="v">14</div>
-          <div class="d up">↑ 3 в этом месяце</div>
+          <div class="v" id="userCompletedDeals">0</div>
+          <div class="d up" id="userCompletedDealsHint" style="opacity:.5">нет данных</div>
         </div>
         <div class="account-stat">
           <div class="k">Оборот · 2026</div>
-          <div class="v" style="font-size:20px">4.2 <small style="font-size:14px;color:var(--slate-500);font-family:Manrope">млн ₽</small></div>
-          <div class="d up">↑ +28% к 2025</div>
+          <div class="v" id="userTurnover" style="font-size:20px">0 <small style="font-size:14px;color:var(--slate-500);font-family:Manrope">₽</small></div>
+          <div class="d up" id="userTurnoverHint" style="opacity:.5">нет данных</div>
         </div>
       </div>
 
-      <!-- Active deals -->
+      <!-- Active deals — populated dynamically -->
       <div class="account-panel">
         <div class="account-panel-head">
           <h3>Активные сделки</h3>
-          <a href="#" class="btn btn-outline btn-sm">Все сделки {icon('arrow-sm')}</a>
+          <a href="/catalog.html" class="btn btn-outline btn-sm">Найти поставщика {icon('arrow-sm')}</a>
         </div>
-        <div class="deals-list">
-
-          <div class="deal-row">
-            <div class="deal-status active">{icon('truck')}</div>
-            <div class="deal-info">
-              <div class="title">Пшеница 3 класс · 120 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4721</span>
-                <span class="dot">·</span>
-                <span>Балаково → Н.Новгород</span>
-                <span class="dot">·</span>
-                <span>539,4 км</span>
-              </div>
-            </div>
-            <div class="deal-price">1 920 000 ₽<small>с доставкой</small></div>
-            <span class="deal-label active">В пути</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Чат</a>
-              <a href="#" class="btn btn-dark btn-sm">Открыть</a>
-            </div>
+        <div class="deals-list" id="activeDealsList">
+          <div class="empty-state" style="padding:40px 20px;text-align:center;color:var(--slate-500)">
+            <div style="font-size:42px;opacity:.4;margin-bottom:10px">📦</div>
+            <h4 style="font-size:15px;color:var(--ink);margin-bottom:6px">Нет активных сделок</h4>
+            <p style="font-size:13px;max-width:340px;margin:0 auto 14px">Найдите поставщика в каталоге или разместите заявку — все ваши сделки появятся здесь.</p>
+            <a href="/catalog.html" class="btn btn-primary btn-sm">Открыть каталог</a>
           </div>
-
-          <div class="deal-row">
-            <div class="deal-status pending">{icon('clock')}</div>
-            <div class="deal-info">
-              <div class="title">Ячмень кормовой · 40 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4698</span>
-                <span class="dot">·</span>
-                <span>Балахна</span>
-                <span class="dot">·</span>
-                <span>39 км</span>
-              </div>
-            </div>
-            <div class="deal-price">538 000 ₽<small>ожидаем подпись</small></div>
-            <span class="deal-label pending">Подписание</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Чат</a>
-              <a href="#" class="btn btn-primary btn-sm">Подписать</a>
-            </div>
-          </div>
-
-          <div class="deal-row">
-            <div class="deal-status active">{icon('coins')}</div>
-            <div class="deal-info">
-              <div class="title">Кукуруза · 80 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4665</span>
-                <span class="dot">·</span>
-                <span>Дзержинск</span>
-                <span class="dot">·</span>
-                <span>38 км</span>
-              </div>
-            </div>
-            <div class="deal-price">1 236 000 ₽<small>оплачено · эскроу</small></div>
-            <span class="deal-label active">Оплачено</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Чат</a>
-              <a href="#" class="btn btn-dark btn-sm">Открыть</a>
-            </div>
-          </div>
-
         </div>
       </div>
 
-      <!-- Open requests -->
+      <!-- Open requests — populated dynamically -->
       <div class="account-panel">
         <div class="account-panel-head">
-          <h3>Ваши заявки на закупку</h3>
-          <a href="#" class="btn btn-outline btn-sm">Создать заявку {icon('arrow-sm')}</a>
+          <h3 id="openRequestsTitle">Ваши заявки на закупку</h3>
+          <button class="btn btn-outline btn-sm" id="createRequestBtn">Создать заявку {icon('arrow-sm')}</button>
         </div>
-        <div class="deals-list">
-
-          <div class="deal-row">
-            <div class="deal-status pending">{icon('message')}</div>
-            <div class="deal-info">
-              <div class="title">Подсолнечник · 200 т</div>
-              <div class="meta">
-                <span>Заявка Q-2041 · опубликована 18.04</span>
-                <span class="dot">·</span>
-                <span>Целевая цена 27 800 ₽/т</span>
-              </div>
-            </div>
-            <div class="deal-price">7 откликов<small>за 2 дня</small></div>
-            <span class="deal-label pending">Сбор откликов</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-primary btn-sm">Посмотреть</a>
-            </div>
+        <div class="deals-list" id="openRequestsList">
+          <div class="empty-state" style="padding:30px 20px;text-align:center;color:var(--slate-500)">
+            <div style="font-size:36px;opacity:.4;margin-bottom:8px">💬</div>
+            <p style="font-size:13px">У вас пока нет активных заявок. Разместите первую — поставщики откликнутся.</p>
           </div>
-
-          <div class="deal-row">
-            <div class="deal-status active">{icon('message')}</div>
-            <div class="deal-info">
-              <div class="title">Пшеница 4 класс · 300 т</div>
-              <div class="meta">
-                <span>Заявка Q-2039 · опубликована 15.04</span>
-                <span class="dot">·</span>
-                <span>Целевая цена 11 900 ₽/т</span>
-              </div>
-            </div>
-            <div class="deal-price">12 откликов<small>3 подходят</small></div>
-            <span class="deal-label active">3 кандидата</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-primary btn-sm">Выбрать</a>
-            </div>
-          </div>
-
         </div>
       </div>
 
-      <!-- History (archive) -->
+      <!-- My offers (only for sellers) -->
+      <div class="account-panel" id="myOffersPanel" style="display:none">
+        <div class="account-panel-head">
+          <h3>Мои офферы</h3>
+          <button class="btn btn-primary btn-sm" id="createOfferBtn2">+ Разместить оффер</button>
+        </div>
+        <div class="deals-list" id="myOffersList">
+          <div class="empty-state" style="padding:30px 20px;text-align:center;color:var(--slate-500)">
+            <p style="font-size:13px">Вы ещё не разместили ни одного оффера.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- History — populated dynamically -->
       <div class="account-panel">
         <div class="account-panel-head">
           <h3>История сделок</h3>
-          <a href="#" class="btn btn-outline btn-sm">Весь архив {icon('arrow-sm')}</a>
         </div>
-        <div class="deals-list">
-
-          <div class="deal-row">
-            <div class="deal-status done">✓</div>
-            <div class="deal-info">
-              <div class="title">Пшеница 3 класс · 150 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4502</span>
-                <span class="dot">·</span>
-                <span>Муром</span>
-                <span class="dot">·</span>
-                <span>Завершена 12.03.2026</span>
-              </div>
-            </div>
-            <div class="deal-price">2 220 000 ₽<small>★ 5.0 · оценено</small></div>
-            <span class="deal-label done">Закрыта</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Акты</a>
-            </div>
+        <div class="deals-list" id="historyDealsList">
+          <div class="empty-state" style="padding:30px 20px;text-align:center;color:var(--slate-500)">
+            <p style="font-size:13px;opacity:.7">История появится после первой завершённой сделки.</p>
           </div>
-
-          <div class="deal-row">
-            <div class="deal-status done">✓</div>
-            <div class="deal-info">
-              <div class="title">Ячмень кормовой · 60 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4488</span>
-                <span class="dot">·</span>
-                <span>Выкса</span>
-                <span class="dot">·</span>
-                <span>Завершена 28.02.2026</span>
-              </div>
-            </div>
-            <div class="deal-price">780 000 ₽<small>★ 4.9 · оценено</small></div>
-            <span class="deal-label done">Закрыта</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Акты</a>
-            </div>
-          </div>
-
-          <div class="deal-row">
-            <div class="deal-status cancelled">✕</div>
-            <div class="deal-info">
-              <div class="title">Кукуруза · 100 т</div>
-              <div class="meta">
-                <span>Сделка №СД-4471</span>
-                <span class="dot">·</span>
-                <span>Рязань</span>
-                <span class="dot">·</span>
-                <span>Отменена 20.02.2026</span>
-              </div>
-            </div>
-            <div class="deal-price">—<small>возврат на эскроу</small></div>
-            <span class="deal-label cancelled">Отменена</span>
-            <div class="deal-actions">
-              <a href="#" class="btn btn-outline btn-sm">Детали</a>
-            </div>
-          </div>
-
         </div>
       </div>
+
+      <!-- (rest of old sections removed and replaced above) -->
 
     </div>
   </div>
