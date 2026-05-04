@@ -212,7 +212,7 @@
       let q = sb.from('offers').select(`
         *,
         crop:crops(name, emoji, category),
-        seller:profiles(id, company_name, full_name, rating, deals_count, is_verified, city, region)
+        seller:profiles!offers_seller_id_fkey(id, company_name, full_name, rating, deals_count, is_verified, city, region)
       `).eq('status', 'active').order('created_at', { ascending: false });
 
       if (filters.crop_id) q = q.eq('crop_id', filters.crop_id);
@@ -234,7 +234,7 @@
       const { data, error } = await sb.from('offers').select(`
         *,
         crop:crops(*),
-        seller:profiles(*)
+        seller:profiles!offers_seller_id_fkey(*)
       `).eq('id', id).single();
       if (error) throw error;
       // increment views
@@ -310,7 +310,7 @@
       let q = sb.from('buyer_requests').select(`
         *,
         crop:crops(name, emoji),
-        buyer:profiles(id, company_name, full_name, rating, is_verified, region)
+        buyer:profiles!buyer_requests_buyer_id_fkey(id, company_name, full_name, rating, is_verified, region)
       `).eq('status', 'open').order('created_at', { ascending: false });
 
       if (filters.crop_id) q = q.eq('crop_id', filters.crop_id);
@@ -412,7 +412,7 @@
       let q = sb.from('auctions').select(`
         *,
         crop:crops(name, emoji),
-        seller:profiles(company_name, rating)
+        seller:profiles!auctions_seller_id_fkey(company_name, rating)
       `).order('ends_at', { ascending: true });
       if (status === 'active') {
         q = q.in('status', ['active', 'ending_soon']);
@@ -429,7 +429,7 @@
       const { data, error } = await sb.from('auctions').select(`
         *,
         crop:crops(*),
-        seller:profiles(*),
+        seller:profiles!auctions_seller_id_fkey(*),
         bids:auction_bids(amount_kopecks, created_at, bidder:profiles(company_name))
       `).eq('id', id).single();
       if (error) throw error;
@@ -566,7 +566,7 @@
     async adminListPendingOffers() {
       const sb = await ensureSupabase();
       const { data, error } = await sb.from('offers')
-        .select('*, crop:crops(name, emoji), seller:profiles(company_name, full_name, inn)')
+        .select('*, crop:crops(name, emoji), seller:profiles!offers_seller_id_fkey(company_name, full_name, inn)')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -610,25 +610,83 @@
 
     async adminStats() {
       const sb = await ensureSupabase();
-      const [users, offers, deals, auctions] = await Promise.all([
+      // Use count-only queries to avoid embed issues and reduce payload
+      const [
+        usersCount, sellersCount, buyersCount, adminsCount, verifiedCount,
+        offersAll, offersPending, offersActive, offersSold, offersRejected, offersArchived,
+        dealsAll, dealsPaid, dealsShipping, dealsCompleted, dealsCancelled, dealsDisputed,
+        requestsAll, requestsOpen, requestsClosed,
+        auctionsCount,
+        // For totals — need actual data
+        completedDealsAmounts, escrowDealsAmounts
+      ] = await Promise.all([
         sb.from('profiles').select('id', { count: 'exact', head: true }),
-        sb.from('offers').select('id, status', { count: 'exact' }),
-        sb.from('deals').select('grand_total_kopecks, status'),
-        sb.from('auctions').select('id, status', { count: 'exact', head: true })
+        sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'seller'),
+        sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'buyer'),
+        sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'admin'),
+        sb.from('profiles').select('id', { count: 'exact', head: true }).eq('is_verified', true),
+
+        sb.from('offers').select('id', { count: 'exact', head: true }),
+        sb.from('offers').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        sb.from('offers').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        sb.from('offers').select('id', { count: 'exact', head: true }).eq('status', 'sold'),
+        sb.from('offers').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
+        sb.from('offers').select('id', { count: 'exact', head: true }).eq('status', 'archived'),
+
+        sb.from('deals').select('id', { count: 'exact', head: true }),
+        sb.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'paid'),
+        sb.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'shipping'),
+        sb.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        sb.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'cancelled'),
+        sb.from('deals').select('id', { count: 'exact', head: true }).eq('status', 'disputed'),
+
+        sb.from('buyer_requests').select('id', { count: 'exact', head: true }),
+        sb.from('buyer_requests').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+        sb.from('buyer_requests').select('id', { count: 'exact', head: true }).eq('status', 'closed'),
+
+        sb.from('auctions').select('id', { count: 'exact', head: true }),
+
+        sb.from('deals').select('grand_total_kopecks').eq('status', 'completed'),
+        sb.from('deals').select('grand_total_kopecks').in('status', ['paid', 'shipping'])
       ]);
-      const pendingOffers = (offers.data || []).filter(o => o.status === 'pending').length;
-      const escrowDeals = (deals.data || []).filter(d => ['paid','shipping'].includes(d.status));
-      const totalTurnover = (deals.data || []).reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
-      const escrowAmount = escrowDeals.reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
+
+      const totalRevenue = (completedDealsAmounts.data || [])
+        .reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
+      const inEscrow = (escrowDealsAmounts.data || [])
+        .reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
+
       return {
-        users_count: users.count,
-        offers_count: offers.count,
-        pending_offers: pendingOffers,
-        deals_count: (deals.data || []).length,
-        escrow_deals: escrowDeals.length,
-        escrow_amount_kopecks: escrowAmount,
-        total_turnover_kopecks: totalTurnover,
-        auctions_count: auctions.count,
+        users_count: usersCount.count || 0,
+        sellers_count: sellersCount.count || 0,
+        buyers_count: buyersCount.count || 0,
+        admins_count: adminsCount.count || 0,
+        verified_count: verifiedCount.count || 0,
+
+        offers_count: offersAll.count || 0,
+        pending_offers: offersPending.count || 0,
+        active_offers: offersActive.count || 0,
+        sold_offers: offersSold.count || 0,
+        rejected_offers: offersRejected.count || 0,
+        archived_offers: offersArchived.count || 0,
+
+        deals_count: dealsAll.count || 0,
+        paid_deals: dealsPaid.count || 0,
+        shipping_deals: dealsShipping.count || 0,
+        completed_deals: dealsCompleted.count || 0,
+        cancelled_deals: dealsCancelled.count || 0,
+        disputed_deals: dealsDisputed.count || 0,
+        escrow_deals: (dealsPaid.count || 0) + (dealsShipping.count || 0),
+
+        requests_count: requestsAll.count || 0,
+        open_requests: requestsOpen.count || 0,
+        closed_requests: requestsClosed.count || 0,
+
+        auctions_count: auctionsCount.count || 0,
+
+        total_revenue_kopecks: totalRevenue,
+        total_turnover_kopecks: totalRevenue,
+        in_escrow_kopecks: inEscrow,
+        escrow_amount_kopecks: inEscrow,
       };
     },
 
@@ -716,7 +774,7 @@
       let q = sb.from('offers').select(`
         *,
         crop:crops(name, emoji),
-        seller:profiles(id, company_name, full_name, inn, email)
+        seller:profiles!offers_seller_id_fkey(id, company_name, full_name, inn, email)
       `).order('created_at', { ascending: false });
       if (status) q = q.eq('status', status);
       const { data, error } = await q;
@@ -778,7 +836,7 @@
       let q = sb.from('buyer_requests').select(`
         *,
         crop:crops(name, emoji),
-        buyer:profiles(id, company_name, full_name, email)
+        buyer:profiles!buyer_requests_buyer_id_fkey(id, company_name, full_name, email)
       `).order('created_at', { ascending: false });
       if (status) q = q.eq('status', status);
       const { data, error } = await q;
@@ -790,6 +848,64 @@
       const sb = await ensureSupabase();
       const { data, error } = await sb.from('buyer_requests')
         .update({ status }).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminUpdateRequest(id, updates) {
+      const sb = await ensureSupabase();
+      // Convert price field if present
+      const payload = { ...updates };
+      if (payload.target_price !== undefined) {
+        payload.target_price_kopecks = payload.target_price ? k(parseFloat(payload.target_price)) : null;
+        delete payload.target_price;
+      }
+      if (payload.volume_tons !== undefined) {
+        payload.volume_tons = parseFloat(payload.volume_tons);
+      }
+      const { data, error } = await sb.from('buyer_requests')
+        .update(payload).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminGetRequest(id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('buyer_requests').select(`
+        *,
+        crop:crops(*),
+        buyer:profiles!buyer_requests_buyer_id_fkey(id, company_name, full_name, email, phone, inn)
+      `).eq('id', id).single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminUpdateOffer(id, updates) {
+      const sb = await ensureSupabase();
+      const payload = { ...updates };
+      if (payload.price_per_ton !== undefined) {
+        payload.price_kopecks = payload.price_per_ton ? k(parseFloat(payload.price_per_ton)) : null;
+        delete payload.price_per_ton;
+      }
+      if (payload.volume_tons !== undefined) {
+        payload.volume_tons = parseFloat(payload.volume_tons);
+      }
+      if (payload.harvest_year !== undefined) {
+        payload.harvest_year = parseInt(payload.harvest_year);
+      }
+      const { data, error } = await sb.from('offers')
+        .update(payload).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminGetOffer(id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('offers').select(`
+        *,
+        crop:crops(*),
+        seller:profiles!offers_seller_id_fkey(id, company_name, full_name, email, phone, inn)
+      `).eq('id', id).single();
       if (error) throw error;
       return data;
     },

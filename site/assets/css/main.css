@@ -1786,3 +1786,17 @@ input,select,textarea{font-family:inherit}
   .adm-table{font-size:12px}
   .adm-table th,.adm-table td{padding:8px 4px}
 }
+
+/* ===============================================
+   ВРЕМЕННО: скрыть цены доставки в карточках товаров
+   (Включается обратно админом когда логистика будет готова)
+   =============================================== */
+.distance-cost,
+.delivery-tag {
+  display: none !important;
+}
+
+/* После удаления delivery-tag нужно центрировать кнопку «Купить» в card-foot */
+.card-foot {
+  justify-content: flex-end;
+}

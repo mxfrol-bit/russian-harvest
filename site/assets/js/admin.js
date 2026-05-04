@@ -394,7 +394,7 @@
           <div id="creqError" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
         </form>
         <div style="padding:18px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
-          <button class="btn btn-outline" id="creqCancel">Отмена</button>
+          <button class="btn btn-outline modal-close" id="creqCancel">Отмена</button>
           <button class="btn btn-primary" id="creqSubmit">Опубликовать</button>
         </div>
       </div>
@@ -403,10 +403,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#creqClose').addEventListener('click', close);
-    wrap.querySelector('#creqCancel').addEventListener('click', close);
-    wrap.querySelector('#creqBackdrop').addEventListener('click', close);
 
     wrap.querySelector('#creqSubmit').addEventListener('click', async () => {
       const form = wrap.querySelector('#creqForm');
@@ -542,9 +538,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#ffClose').addEventListener('click', close);
-    wrap.querySelector('#ffBackdrop').addEventListener('click', close);
 
     wrap.querySelectorAll('[data-feature-key]').forEach(cb => {
       cb.addEventListener('change', async () => {
@@ -606,9 +599,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#modClose').addEventListener('click', close);
-    wrap.querySelector('#modBackdrop').addEventListener('click', close);
 
     let currentStatus = '';
 
@@ -746,9 +736,6 @@
     const wrap = document.createElement('div');
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
-    const close = () => wrap.remove();
-    wrap.querySelector('#usrClose').addEventListener('click', close);
-    wrap.querySelector('#usrBackdrop').addEventListener('click', close);
 
     let currentRole = '';
     const me = await api.currentUser().catch(() => null);
@@ -919,9 +906,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#dlsClose').addEventListener('click', close);
-    wrap.querySelector('#dlsBackdrop').addEventListener('click', close);
 
     let currentStatus = initialStatus || '';
 
@@ -1047,9 +1031,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#rqsClose').addEventListener('click', close);
-    wrap.querySelector('#rqsBackdrop').addEventListener('click', close);
 
     try {
       const requests = await api.adminListAllRequests();
@@ -1066,13 +1047,13 @@
               <th>Покупатель</th>
               <th>Цена / Объём</th>
               <th>Статус</th>
-              <th></th>
+              <th>Действия</th>
             </tr>
           </thead>
           <tbody>
             ${requests.map(r => `
-              <tr data-request-id="${r.id}">
-                <td>
+              <tr data-request-id="${r.id}" style="cursor:pointer">
+                <td data-action="open-details">
                   <div style="font-weight:600">${r.crop?.emoji || '📦'} ${escapeHtml(r.title || r.crop?.name || 'Заявка')}</div>
                   <div style="font-size:11px;color:var(--slate-500)">${escapeHtml(r.delivery_region)} · ${new Date(r.created_at).toLocaleDateString('ru-RU')}</div>
                 </td>
@@ -1085,14 +1066,15 @@
                   <small style="color:var(--slate-500)">${r.volume_tons} т</small>
                 </td>
                 <td>
-                  <select data-action="req-status" class="adm-select">
+                  <select data-action="req-status" class="adm-select" onclick="event.stopPropagation()">
                     <option value="open"    ${r.status==='open'?'selected':''}>🟢 Открыта</option>
                     <option value="matched" ${r.status==='matched'?'selected':''}>🤝 Матч</option>
                     <option value="closed"  ${r.status==='closed'?'selected':''}>🔒 Закрыта</option>
                     <option value="expired" ${r.status==='expired'?'selected':''}>⏱ Истекла</option>
                   </select>
                 </td>
-                <td>
+                <td onclick="event.stopPropagation()" style="white-space:nowrap">
+                  <button class="btn btn-outline btn-sm" data-action="req-edit" title="Редактировать" style="font-size:11px;padding:6px 10px;margin-right:4px">✏ Изменить</button>
                   <button class="btn-icon-del" data-action="req-delete" title="Удалить заявку">🗑</button>
                 </td>
               </tr>
@@ -1101,9 +1083,34 @@
         </table>
       `;
 
+      // Click on row → open details/edit
+      list.querySelectorAll('tr[data-request-id]').forEach(row => {
+        row.addEventListener('click', e => {
+          if (e.target.closest('[data-action]')) return;  // ignore if clicked on button
+          if (e.target.closest('select')) return;
+          openEditRequestModal(row.dataset.requestId, () => {
+            // Refresh list after edit
+            wrap.remove();
+            openRequestsModal();
+          });
+        });
+      });
+
+      list.querySelectorAll('[data-action="req-edit"]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const row = btn.closest('[data-request-id]');
+          openEditRequestModal(row.dataset.requestId, () => {
+            wrap.remove();
+            openRequestsModal();
+          });
+        });
+      });
+
       list.querySelectorAll('[data-action="req-status"]').forEach(sel => {
         const orig = sel.value;
-        sel.addEventListener('change', async () => {
+        sel.addEventListener('change', async (e) => {
+          e.stopPropagation();
           const row = sel.closest('[data-request-id]');
           sel.disabled = true;
           try {
@@ -1119,7 +1126,8 @@
       });
 
       list.querySelectorAll('[data-action="req-delete"]').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
           const row = btn.closest('[data-request-id]');
           if (!confirm('Удалить заявку?')) return;
           btn.disabled = true; btn.textContent = '...';
@@ -1141,13 +1149,171 @@
   }
 
   // ============================================================
+  // EDIT REQUEST MODAL — admin can edit ALL fields
+  // ============================================================
+  async function openEditRequestModal(requestId, onSaved) {
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:560px;max-height:92vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:22px;font-weight:700">Редактирование заявки</h2>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px;font-family:'JetBrains Mono',monospace">ID ${requestId.slice(0,8)}…</p>
+        </div>
+        <div id="editReqBody" style="overflow-y:auto;padding:20px 28px;flex:1">Загружаем...</div>
+        <div id="editReqFooter" style="padding:18px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end;display:none">
+          <button class="btn btn-outline" data-action="cancel">Отмена</button>
+          <button class="btn btn-primary" id="editReqSubmit">Сохранить</button>
+        </div>
+      </div>
+    `;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+
+    try {
+      const [request, crops] = await Promise.all([
+        api.adminGetRequest(requestId),
+        api.listCrops()
+      ]);
+
+      const body = wrap.querySelector('#editReqBody');
+      body.innerHTML = `
+        <form id="editReqForm">
+          <!-- Заявитель (read-only) -->
+          <div style="background:var(--slate-50);padding:14px 16px;border-radius:12px;margin-bottom:16px">
+            <div style="font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:6px">Покупатель</div>
+            <div style="font-weight:600;color:var(--ink)">${escapeHtml(request.buyer?.company_name || request.buyer?.full_name || '—')}</div>
+            <div style="font-size:12px;color:var(--slate-500);margin-top:2px">
+              ${escapeHtml(request.buyer?.email || '')} · ИНН ${escapeHtml(request.buyer?.inn || '—')}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Заголовок заявки</label>
+            <input name="title" required value="${escapeHtml(request.title || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Культура</label>
+            <select name="crop_id" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
+              <option value="">— любая —</option>
+              ${crops.map(c => `<option value="${c.id}" ${c.id === request.crop_id ? 'selected' : ''}>${c.emoji || ''} ${c.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label>Объём, т *</label>
+              <input name="volume_tons" type="number" min="0" step="1" required value="${request.volume_tons}" />
+            </div>
+            <div class="form-group">
+              <label>Целевая цена, ₽/т</label>
+              <input name="target_price" type="number" min="0" step="100" value="${request.target_price_kopecks ? request.target_price_kopecks/100 : ''}" placeholder="—" />
+            </div>
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label>НДС</label>
+              <select name="vat" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
+                <option value="with_vat_10" ${request.vat === 'with_vat_10' ? 'selected' : ''}>с НДС 10%</option>
+                <option value="with_vat_20" ${request.vat === 'with_vat_20' ? 'selected' : ''}>с НДС 20%</option>
+                <option value="without_vat" ${request.vat === 'without_vat' ? 'selected' : ''}>без НДС</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Нужно к дате</label>
+              <input name="needed_by" type="date" value="${request.needed_by || ''}" />
+            </div>
+          </div>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label>Регион доставки *</label>
+              <input name="delivery_region" required value="${escapeHtml(request.delivery_region || '')}" />
+            </div>
+            <div class="form-group">
+              <label>Город доставки</label>
+              <input name="delivery_city" value="${escapeHtml(request.delivery_city || '')}" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Статус</label>
+            <select name="status" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
+              <option value="open" ${request.status === 'open' ? 'selected' : ''}>🟢 Открыта</option>
+              <option value="matched" ${request.status === 'matched' ? 'selected' : ''}>🤝 Матч</option>
+              <option value="closed" ${request.status === 'closed' ? 'selected' : ''}>🔒 Закрыта</option>
+              <option value="expired" ${request.status === 'expired' ? 'selected' : ''}>⏱ Истекла</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" rows="4" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical">${escapeHtml(request.description || '')}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Кол-во откликов (ручной ввод)</label>
+            <input name="responses_count" type="number" min="0" value="${request.responses_count || 0}" />
+          </div>
+          <div id="editReqError" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
+          <div style="font-size:11px;color:var(--slate-400);margin-top:14px">
+            Создано: ${new Date(request.created_at).toLocaleString('ru-RU')} ·
+            Обновлено: ${new Date(request.updated_at).toLocaleString('ru-RU')}
+          </div>
+        </form>
+      `;
+
+      wrap.querySelector('#editReqFooter').style.display = 'flex';
+
+      wrap.querySelector('[data-action="cancel"]').addEventListener('click', () => {
+        wrap.remove();
+      });
+
+      wrap.querySelector('#editReqSubmit').addEventListener('click', async () => {
+        const form = wrap.querySelector('#editReqForm');
+        const errEl = wrap.querySelector('#editReqError');
+        errEl.style.display = 'none';
+
+        const fd = new FormData(form);
+        const payload = {
+          title: fd.get('title')?.trim() || null,
+          crop_id: fd.get('crop_id') || null,
+          volume_tons: fd.get('volume_tons'),
+          target_price: fd.get('target_price') || null,
+          vat: fd.get('vat'),
+          needed_by: fd.get('needed_by') || null,
+          delivery_region: fd.get('delivery_region')?.trim(),
+          delivery_city: fd.get('delivery_city')?.trim() || null,
+          status: fd.get('status'),
+          description: fd.get('description')?.trim() || null,
+          responses_count: parseInt(fd.get('responses_count') || '0') || 0
+        };
+
+        const submit = wrap.querySelector('#editReqSubmit');
+        submit.disabled = true;
+        submit.textContent = 'Сохраняем...';
+
+        try {
+          await api.adminUpdateRequest(requestId, payload);
+          wrap.remove();
+          showToast('✓ Заявка обновлена');
+          if (onSaved) onSaved();
+        } catch(err) {
+          errEl.textContent = err.message;
+          errEl.style.display = '';
+          submit.disabled = false;
+          submit.textContent = 'Сохранить';
+        }
+      });
+    } catch(err) {
+      wrap.querySelector('#editReqBody').innerHTML = `<div style="color:var(--red);padding:20px">Ошибка: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  // ============================================================
   // ANALYTICS MODAL — platform stats
   // ============================================================
   async function openAnalyticsModal() {
     const html = `
-      <div class="modal-backdrop on" id="anlBackdrop"></div>
-      <div class="modal on" id="anlModal" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column">
-        <button class="modal-close" id="anlClose">✕</button>
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
         <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
           <h2 style="font-size:22px;font-weight:700">Аналитика платформы</h2>
         </div>
@@ -1157,50 +1323,31 @@
     const wrap = document.createElement('div');
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
-    const close = () => wrap.remove();
-    wrap.querySelector('#anlClose').addEventListener('click', close);
-    wrap.querySelector('#anlBackdrop').addEventListener('click', close);
 
     try {
-      const [stats, users, offers, deals, requests] = await Promise.all([
-        api.adminStats(),
-        api.adminListUsers(),
-        api.adminListAllOffers(),
-        api.adminListAllDeals(),
-        api.adminListAllRequests()
-      ]);
-
-      const usersByRole = users.reduce((a, u) => { a[u.role] = (a[u.role]||0) + 1; return a; }, {});
-      const offersByStatus = offers.reduce((a, o) => { a[o.status] = (a[o.status]||0) + 1; return a; }, {});
-      const dealsByStatus = deals.reduce((a, d) => { a[d.status] = (a[d.status]||0) + 1; return a; }, {});
-      const verified = users.filter(u => u.is_verified).length;
-
-      const totalRevenue = deals.filter(d => d.status === 'completed')
-        .reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
-      const inEscrow = deals.filter(d => ['paid','shipping'].includes(d.status))
-        .reduce((s, d) => s + (d.grand_total_kopecks || 0), 0);
+      const stats = await api.adminStats();
 
       wrap.querySelector('#anlBody').innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
           <div class="anl-stat">
             <div class="k">Пользователей</div>
-            <div class="v">${users.length}</div>
-            <div class="d">${verified} проверены</div>
+            <div class="v">${stats.users_count}</div>
+            <div class="d">${stats.verified_count} проверены</div>
           </div>
           <div class="anl-stat">
             <div class="k">Офферов</div>
-            <div class="v">${offers.length}</div>
-            <div class="d">${offersByStatus.active || 0} активных</div>
+            <div class="v">${stats.offers_count}</div>
+            <div class="d">${stats.active_offers} активных</div>
           </div>
           <div class="anl-stat">
             <div class="k">Сделок</div>
-            <div class="v">${deals.length}</div>
-            <div class="d">${dealsByStatus.completed || 0} завершено</div>
+            <div class="v">${stats.deals_count}</div>
+            <div class="d">${stats.completed_deals} завершено</div>
           </div>
           <div class="anl-stat">
             <div class="k">Заявок</div>
-            <div class="v">${requests.length}</div>
-            <div class="d">${requests.filter(r => r.status==='open').length} открыто</div>
+            <div class="v">${stats.requests_count}</div>
+            <div class="d">${stats.open_requests} открыто</div>
           </div>
         </div>
 
@@ -1208,41 +1355,37 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
           <div class="anl-stat" style="background:var(--brand-soft)">
             <div class="k">Оборот завершённых сделок</div>
-            <div class="v" style="color:#3D5C19">${api.formatRub(totalRevenue)}</div>
+            <div class="v" style="color:#3D5C19">${api.formatRub(stats.total_revenue_kopecks)}</div>
           </div>
           <div class="anl-stat" style="background:#FEF3C7">
             <div class="k">В эскроу сейчас</div>
-            <div class="v" style="color:#92400E">${api.formatRub(inEscrow)}</div>
+            <div class="v" style="color:#92400E">${api.formatRub(stats.in_escrow_kopecks)}</div>
           </div>
         </div>
 
         <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px">Распределение ролей</h3>
         <div style="display:flex;gap:14px;margin-bottom:24px">
-          <div class="anl-mini">🛒 Покупатели<br><b>${usersByRole.buyer || 0}</b></div>
-          <div class="anl-mini">🌾 Продавцы<br><b>${usersByRole.seller || 0}</b></div>
-          <div class="anl-mini">👑 Админы<br><b>${usersByRole.admin || 0}</b></div>
+          <div class="anl-mini">🛒 Покупатели<br><b>${stats.buyers_count}</b></div>
+          <div class="anl-mini">🌾 Продавцы<br><b>${stats.sellers_count}</b></div>
+          <div class="anl-mini">👑 Админы<br><b>${stats.admins_count}</b></div>
         </div>
 
         <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px">Статусы офферов</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:24px">
-          ${['pending','active','sold','rejected','archived'].map(s => `
-            <div class="anl-mini">
-              ${({pending:'⏳',active:'✓',sold:'💰',rejected:'✕',archived:'📦'})[s]}
-              ${({pending:'Модерация',active:'Активные',sold:'Проданы',rejected:'Отклонены',archived:'Архив'})[s]}
-              <br><b>${offersByStatus[s] || 0}</b>
-            </div>
-          `).join('')}
+          <div class="anl-mini">⏳ Модерация<br><b>${stats.pending_offers}</b></div>
+          <div class="anl-mini">✓ Активные<br><b>${stats.active_offers}</b></div>
+          <div class="anl-mini">💰 Проданы<br><b>${stats.sold_offers}</b></div>
+          <div class="anl-mini">✕ Отклонены<br><b>${stats.rejected_offers}</b></div>
+          <div class="anl-mini">📦 Архив<br><b>${stats.archived_offers}</b></div>
         </div>
 
         <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px">Статусы сделок</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
-          ${['pending','paid','shipping','completed','cancelled','disputed'].map(s => `
-            <div class="anl-mini">
-              ${({pending:'⏳',paid:'💰',shipping:'🚚',completed:'✓',cancelled:'✕',disputed:'⚠'})[s]}
-              ${({pending:'Ожидание',paid:'Оплачено',shipping:'В пути',completed:'Завершено',cancelled:'Отменено',disputed:'Спор'})[s]}
-              <br><b>${dealsByStatus[s] || 0}</b>
-            </div>
-          `).join('')}
+          <div class="anl-mini">💰 Оплачено<br><b>${stats.paid_deals}</b></div>
+          <div class="anl-mini">🚚 В пути<br><b>${stats.shipping_deals}</b></div>
+          <div class="anl-mini">✓ Завершено<br><b>${stats.completed_deals}</b></div>
+          <div class="anl-mini">✕ Отменено<br><b>${stats.cancelled_deals}</b></div>
+          <div class="anl-mini">⚠ Спор<br><b>${stats.disputed_deals}</b></div>
         </div>
       `;
     } catch(err) {
@@ -1329,7 +1472,7 @@
           <div id="cofError" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
         </form>
         <div style="padding:18px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
-          <button class="btn btn-outline" id="cofCancel">Отмена</button>
+          <button class="btn btn-outline modal-close" id="cofCancel">Отмена</button>
           <button class="btn btn-primary" id="cofSubmit">Разместить</button>
         </div>
       </div>
@@ -1338,10 +1481,6 @@
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 
-    const close = () => wrap.remove();
-    wrap.querySelector('#cofClose').addEventListener('click', close);
-    wrap.querySelector('#cofCancel').addEventListener('click', close);
-    wrap.querySelector('#cofBackdrop').addEventListener('click', close);
 
     // Toggle delivery group
     const delCb = wrap.querySelector('input[name="has_delivery"]');
@@ -1435,6 +1574,74 @@
     document.addEventListener('rh:user-loaded', () => {
       if (document.getElementById('accName')) loadAccountPage();
     });
+
+    // ===== GLOBAL MODAL CLOSE HANDLER =====
+    // Работает ТОЛЬКО для динамически созданных модалок (admin-панель, edit-форма и т.д.)
+    // Статические модалки login/onboarding/cityPicker имеют свои data-close обработчики (в main.js)
+    document.addEventListener('click', e => {
+      // Close button — only inside DYNAMIC modal wraps
+      const closeBtn = e.target.closest('.modal-close');
+      if (closeBtn && !closeBtn.hasAttribute('data-close')) {
+        const wrap = findModalWrap(closeBtn);
+        if (wrap) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeModalWrap(wrap);
+        }
+        return;
+      }
+      // Backdrop click — only on backdrop in dynamic wrap
+      if (e.target.classList.contains('modal-backdrop')
+          && e.target.classList.contains('on')
+          && !e.target.id.match(/^(loginBackdrop|onbBackdrop|cityPickerBackdrop|soBackdrop|drawerBackdrop)$/)) {
+        const wrap = findModalWrap(e.target);
+        if (wrap) closeModalWrap(wrap);
+      }
+    }, true);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        // Close topmost dynamic modal
+        const wraps = Array.from(document.body.children).filter(c =>
+          c.tagName === 'DIV'
+          && !c.id  // dynamic wraps have no id
+          && c.querySelector('.modal-backdrop.on')
+          && c.querySelector('.modal.on')
+          && !c._closing
+        );
+        if (wraps.length) {
+          closeModalWrap(wraps[wraps.length - 1]);
+        }
+      }
+    });
+  }
+
+  // Find the wrapper div that contains a dynamic modal element.
+  // A dynamic wrap is a direct child of <body> with NO id and contains both backdrop and modal.
+  function findModalWrap(el) {
+    let cur = el;
+    while (cur && cur.parentNode !== document.body) cur = cur.parentNode;
+    if (!cur || cur.tagName !== 'DIV') return null;
+    // Static modals (loginModal, onbModal, cityPickerModal) have an id — skip them.
+    if (cur.id) return null;
+    // Verify wrap actually contains both backdrop and modal
+    if (cur.querySelector('.modal-backdrop') && cur.querySelector('.modal')) {
+      return cur;
+    }
+    return null;
+  }
+
+  // Close modal wrap with fade-out animation
+  function closeModalWrap(wrap) {
+    if (!wrap || wrap._closing) return;
+    wrap._closing = true;
+    const bd = wrap.querySelector('.modal-backdrop');
+    const modal = wrap.querySelector('.modal');
+    if (bd) bd.classList.remove('on');
+    if (modal) modal.classList.remove('on');
+    setTimeout(() => {
+      try { wrap.remove(); } catch(e) {}
+    }, 250);
   }
 
   if (document.readyState === 'loading') {
