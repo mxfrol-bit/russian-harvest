@@ -429,75 +429,105 @@
   if (!window.RH_API) return;
   const api = window.RH_API;
 
-  // ---- Login form (SMS flow) ----
-  const signinForm = document.querySelector('[data-pane="signin"] form');
+  // ---- SIGN IN (email + password) ----
+  const signinForm = document.getElementById('signinForm');
   if (signinForm) {
-    const phoneInput = signinForm.querySelector('input[type="tel"]');
-    const codeInput = signinForm.querySelector('input[type="text"]');
-    const hint = signinForm.querySelector('.form-hint');
-    let smsSent = false;
-
-    // When user types 11+ chars of phone, trigger SMS send
-    if (phoneInput) {
-      phoneInput.addEventListener('blur', async () => {
-        const phone = phoneInput.value.replace(/\D/g, '');
-        if (phone.length >= 11 && !smsSent) {
-          try {
-            const r = await api.sendSmsCode(phone);
-            smsSent = true;
-            if (hint) hint.innerHTML = (api.isDemo ? '✓ ' + r.message : '✓ Код отправлен на ' + phoneInput.value);
-            if (hint) hint.style.color = 'var(--emerald-600)';
-          } catch (e) {
-            if (hint) { hint.textContent = '⚠ ' + e.message; hint.style.color = 'var(--red)'; }
-          }
-        }
-      });
-    }
+    const hint = document.getElementById('signinHint');
+    const submit = document.getElementById('signinSubmit');
 
     signinForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const phone = phoneInput.value.replace(/\D/g, '');
-      const code = (codeInput?.value || '').trim();
-      if (!code) {
-        if (hint) { hint.textContent = 'Введите код из SMS'; hint.style.color = 'var(--red)'; }
+      const fd = new FormData(signinForm);
+      const email = fd.get('email')?.trim();
+      const password = fd.get('password');
+
+      if (!email || !password) {
+        if (hint) { hint.textContent = 'Заполните все поля'; hint.style.color = 'var(--red)'; }
         return;
       }
+
+      submit.disabled = true;
+      submit.textContent = 'Входим…';
+      if (hint) { hint.textContent = ''; hint.style.color = ''; }
+
       try {
-        const btn = signinForm.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Проверяем…'; }
-        await api.verifyCode(phone, code);
+        await api.signIn({ email, password });
         window.location = '/account.html';
       } catch (err) {
-        if (hint) { hint.textContent = '⚠ ' + err.message; hint.style.color = 'var(--red)'; }
-        const btn = signinForm.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = false; btn.innerHTML = 'Войти →'; }
+        if (hint) {
+          hint.textContent = '⚠ ' + (err.message === 'Invalid login credentials'
+            ? 'Неверный email или пароль'
+            : err.message);
+          hint.style.color = 'var(--red)';
+        }
+        submit.disabled = false;
+        submit.innerHTML = 'Войти →';
       }
     });
   }
 
-  // ---- Signup form ----
-  const signupForm = document.querySelector('[data-pane="signup"] form');
+  // ---- SIGN UP ----
+  const signupForm = document.getElementById('signupForm');
   if (signupForm) {
+    const hint = document.getElementById('signupHint');
+    const submit = document.getElementById('signupSubmit');
+    const roleInput = signupForm.querySelector('input[name="role"]');
+
+    // Sync segmented role buttons to hidden input
+    signupForm.querySelectorAll('.seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (roleInput) roleInput.value = btn.dataset.role;
+      });
+    });
+
     signupForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const inputs = signupForm.querySelectorAll('input');
-      const role = signupForm.querySelector('.seg-btn.active')?.dataset.role || 'buyer';
+      const fd = new FormData(signupForm);
       const payload = {
-        company: inputs[0]?.value,
-        inn: inputs[1]?.value,
-        phone: inputs[2]?.value,
-        email: inputs[3]?.value,
-        role,
+        email: fd.get('email')?.trim(),
+        password: fd.get('password'),
+        full_name: fd.get('full_name'),
+        company_name: fd.get('company_name'),
+        inn: fd.get('inn'),
+        phone: fd.get('phone'),
+        role: fd.get('role') || 'buyer',
       };
+
+      if (payload.password.length < 6) {
+        if (hint) { hint.textContent = 'Пароль не короче 6 символов'; hint.style.color = 'var(--red)'; }
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = 'Создаём…';
+      if (hint) { hint.textContent = ''; hint.style.color = ''; }
+
       try {
-        const btn = signupForm.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Создаём…'; }
-        await api.register(payload);
-        window.location = '/account.html';
+        const res = await api.signUp(payload);
+        // If email confirmation is required, session won't be set
+        if (res.session) {
+          window.location = '/account.html';
+        } else {
+          if (hint) {
+            hint.innerHTML = '✓ Регистрация успешна! Проверьте email для подтверждения.';
+            hint.style.color = 'var(--brand-dark)';
+          }
+          submit.disabled = false;
+          submit.innerHTML = 'Перейти ко входу →';
+          submit.onclick = () => {
+            document.querySelector('.login-tab[data-tab="signin"]')?.click();
+          };
+        }
       } catch (err) {
-        alert('Ошибка регистрации: ' + err.message);
-        const btn = signupForm.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = false; btn.innerHTML = 'Создать аккаунт →'; }
+        if (hint) {
+          let msg = err.message;
+          if (msg.includes('already registered')) msg = 'Этот email уже зарегистрирован';
+          else if (msg.includes('Password')) msg = 'Пароль слишком слабый';
+          hint.textContent = '⚠ ' + msg;
+          hint.style.color = 'var(--red)';
+        }
+        submit.disabled = false;
+        submit.innerHTML = 'Создать аккаунт →';
       }
     });
   }
@@ -548,24 +578,23 @@
   document.querySelectorAll('[data-action="logout"]').forEach(btn => {
     btn.addEventListener('click', async e => {
       e.preventDefault();
-      await api.logout();
+      try { await api.signOut(); } catch(e) {}
       window.location = '/index.html';
     });
   });
 
-  // ---- Show user info in header if logged in ----
-  const user = api.currentUser();
-  if (user) {
-    // Replace "Войти" button with user name/avatar
-    document.querySelectorAll('[data-open="login"]').forEach(b => {
-      b.style.display = 'none';
-    });
-    // Optionally update "Кабинет" button to show name
-    const cabinetBtn = document.querySelector('.bar a.btn-primary[href*="account"]');
-    if (cabinetBtn && user.name) {
-      cabinetBtn.innerHTML = `👤 ${user.name.split(' ')[0]}`;
+  // ---- Show user info in header if logged in (async) ----
+  api.currentUser().then(user => {
+    if (user) {
+      document.querySelectorAll('[data-open="login"]').forEach(b => {
+        b.style.display = 'none';
+      });
+      const cabinetBtn = document.querySelector('.bar a.btn-primary[href*="account"]');
+      if (cabinetBtn && user.full_name) {
+        cabinetBtn.innerHTML = `👤 ${user.full_name.split(' ')[0]}`;
+      }
     }
-  }
+  }).catch(() => {});
 
 })();
 
@@ -892,38 +921,87 @@ document.addEventListener('DOMContentLoaded', () => {
   tick(); setInterval(tick, 1000);
 })();
 
-/* ===== DEMO LOGIN (admin/admin, user/user) ===== */
+/* ===== DEMO LOGIN (admin@russian-harvest.ru / user@russian-harvest.ru) ===== */
 (function(){
-  // One-click demo account buttons
+  // Demo credentials map: short id → real email + password
+  const DEMO_ACCOUNTS = {
+    admin: {
+      email: 'admin@russian-harvest.ru',
+      password: 'AdminDemo2026!',
+      profile: {
+        full_name: 'Администратор Платформы',
+        company_name: 'Русский Урожай',
+        role: 'admin',
+        inn: '5253000000'
+      }
+    },
+    user: {
+      email: 'user@russian-harvest.ru',
+      password: 'UserDemo2026!',
+      profile: {
+        full_name: 'Демо Пользователь',
+        company_name: 'ИП Тестовый В.А.',
+        role: 'buyer',
+        inn: '525300000001'
+      }
+    }
+  };
+
+  async function demoLogin(key) {
+    const acc = DEMO_ACCOUNTS[key];
+    if (!acc || !window.RH_API) throw new Error('Демо-аккаунт не найден');
+    const api = window.RH_API;
+
+    // Try to sign in first — if account doesn't exist, create it
+    try {
+      await api.signIn({ email: acc.email, password: acc.password });
+    } catch (err) {
+      if (err.message?.includes('Invalid login')) {
+        // Create the demo account
+        const res = await api.signUp({
+          email: acc.email,
+          password: acc.password,
+          ...acc.profile
+        });
+        // If email confirmation is on, just sign in
+        if (!res.session) {
+          await new Promise(r => setTimeout(r, 500));
+          await api.signIn({ email: acc.email, password: acc.password }).catch(() => {});
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  // One-click demo buttons
   document.querySelectorAll('.demo-account').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const username = btn.dataset.login;
-      const password = btn.dataset.pass;
-      const originalBg = btn.style.background;
-      btn.style.background = 'var(--emerald-soft)';
-      btn.style.borderColor = 'var(--emerald)';
-
+      const key = btn.dataset.login; // 'admin' or 'user'
+      const originalText = btn.innerHTML;
+      btn.style.borderColor = 'var(--brand)';
+      const status = document.createElement('div');
+      status.style.cssText = 'margin-top:8px;font-size:12px;color:var(--brand-dark)';
+      status.textContent = 'Входим...';
+      btn.appendChild(status);
       try {
-        if (window.RH_API) {
-          await window.RH_API.loginWithCredentials(username, password);
-        }
+        await demoLogin(key);
         window.location = '/account.html';
       } catch (err) {
-        alert('Ошибка входа: ' + err.message);
-        btn.style.background = originalBg;
-        btn.style.borderColor = '';
+        status.textContent = '⚠ ' + err.message;
+        status.style.color = 'var(--red)';
+        setTimeout(() => { status.remove(); btn.style.borderColor = ''; }, 3000);
       }
     });
   });
 
   // Manual form
-  const demoForm = document.getElementById('demoForm');
   const demoSubmit = document.getElementById('demoSubmit');
   const demoHint = document.getElementById('demoHint');
   const demoUser = document.getElementById('demoUsername');
   const demoPass = document.getElementById('demoPassword');
 
-  if (demoForm && demoSubmit) {
+  if (demoSubmit) {
     demoSubmit.addEventListener('click', async (e) => {
       e.preventDefault();
       const u = demoUser?.value.trim();
@@ -935,8 +1013,12 @@ document.addEventListener('DOMContentLoaded', () => {
       demoSubmit.disabled = true;
       demoSubmit.textContent = 'Проверяем…';
       try {
-        if (window.RH_API) {
-          await window.RH_API.loginWithCredentials(u, p);
+        // Map short logins to real demo accounts
+        if (u === 'admin' || u === 'user') {
+          await demoLogin(u);
+        } else {
+          // Treat as email
+          await window.RH_API.signIn({ email: u, password: p });
         }
         window.location = '/account.html';
       } catch (err) {
@@ -948,77 +1030,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 })();
 
-/* ===== ACCOUNT PAGE: populate from logged-in user ===== */
-(function(){
-  // Only run on account page
-  if (!document.getElementById('accName')) return;
+/* ===== ACCOUNT PAGE: handled by admin.js (which uses async API) ===== */
 
-  const user = window.RH_API?.currentUser();
-  if (!user) {
-    // Not logged in — redirect to login
-    setTimeout(() => {
-      alert('Необходимо войти в аккаунт. Используйте admin/admin или user/user.');
-      window.location = '/index.html';
-    }, 100);
-    return;
-  }
-
-  // Build initials
-  const parts = (user.name || '').split(' ').filter(Boolean);
-  const initials = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
-
-  // Update sidebar
-  const avEl = document.getElementById('accAvatar');
-  if (avEl) avEl.textContent = initials;
-  const nameEl = document.getElementById('accName');
-  if (nameEl) nameEl.textContent = user.name || 'Пользователь';
-  const companyEl = document.getElementById('accCompany');
-  if (companyEl) companyEl.textContent = user.company || '';
-
-  const balanceEl = document.getElementById('accBalance');
-  if (balanceEl) {
-    balanceEl.innerHTML = (user.balance || 0).toLocaleString('ru-RU') + '<small>₽</small>';
-  }
-
-  // Role chip
-  const roleEl = document.getElementById('accRole');
-  if (roleEl) {
-    if (user.role === 'admin') {
-      roleEl.innerHTML = '👑 Администратор';
-      roleEl.style.background = '#FEF3C7';
-      roleEl.style.color = '#92400E';
-    } else if (user.role === 'seller') {
-      roleEl.innerHTML = '🌾 Продавец';
-      roleEl.style.background = 'var(--orange-soft)';
-      roleEl.style.color = '#92400E';
-    } else {
-      roleEl.innerHTML = '🛒 Покупатель';
-    }
-  }
-
-  // Greeting
-  const firstName = parts[0] || 'пользователь';
-  const greetEl = document.getElementById('accGreeting');
-  if (greetEl) {
-    if (user.role === 'admin') {
-      greetEl.textContent = `Админ-панель, ${firstName} 👑`;
-    } else {
-      greetEl.textContent = `Здравствуйте, ${firstName} 👋`;
-    }
-  }
-  const subEl = document.getElementById('accSubtitle');
-  if (subEl && user.role === 'admin') {
-    subEl.textContent = 'Полный контроль над платформой: модерация, пользователи, сделки и аналитика.';
-  }
-
-  // Show admin panel for admin role
-  if (user.role === 'admin') {
-    const adminPanel = document.getElementById('adminPanel');
-    if (adminPanel) adminPanel.style.display = '';
-  }
-
-  // Update avatar background for admin
-  if (user.role === 'admin' && avEl) {
-    avEl.style.background = 'linear-gradient(135deg, #F59E0B, #D97706)';
-  }
-})();

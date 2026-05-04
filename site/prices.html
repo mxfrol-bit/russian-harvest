@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1777303077">
+<link rel="stylesheet" href="assets/css/main.css?v=1777485213">
 </head>
 <body>
 
@@ -40,6 +40,9 @@
     <div class="spacer"></div>
     <button class="icon-btn" id="siteSearchBtn" title="Поиск по сайту (⌘K)" aria-label="Поиск">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+    </button>
+    <button class="icon-btn" id="tourHelpBtn" title="Подсказки по странице" aria-label="Обучение">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     </button>
     <button class="region-chip" title="Ваш адрес доставки — все расстояния считаются от него">
       <span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span>
@@ -368,30 +371,26 @@
   <!-- SIGN IN -->
   <div class="login-pane" data-pane="signin">
     <h2 id="loginTitle">Вход в личный кабинет</h2>
-    <p class="login-sub">Введите телефон — мы отправим SMS с кодом подтверждения.</p>
-    <form class="login-form" onsubmit="event.preventDefault();window.location='/account.html'">
+    <p class="login-sub">Введите email и пароль вашего аккаунта.</p>
+    <form class="login-form" id="signinForm">
       <div class="form-group">
-        <label>Телефон <span class="req">*</span></label>
-        <input type="tel" required placeholder="+7 (___) ___-__-__" value="+7 " />
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="email" required placeholder="mail@company.ru" autocomplete="email" />
       </div>
       <div class="form-group">
-        <label>Код из SMS</label>
-        <input type="text" placeholder="· · · · ·" maxlength="5" class="mono" style="letter-spacing:8px;text-align:center;font-size:18px" />
-        <div class="form-hint">SMS придёт после ввода телефона · В демо-режиме код: <b>12345</b></div>
+        <label>Пароль <span class="req">*</span></label>
+        <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password" minlength="6" />
+        <div class="form-hint" id="signinHint">Минимум 6 символов</div>
       </div>
-      <button class="btn btn-primary btn-lg btn-block" type="submit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="signinSubmit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
     </form>
-    <div class="login-divider"><span>или</span></div>
-    <div class="login-alt">
-      <button class="btn btn-outline btn-block"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg> Войти через Telegram</button>
-    </div>
   </div>
 
   <!-- SIGN UP -->
   <div class="login-pane" data-pane="signup" hidden>
     <h2>Регистрация на платформе</h2>
-    <p class="login-sub">Всего 1 минута — потом заполните профиль из кабинета.</p>
-    <form class="login-form" onsubmit="event.preventDefault();window.location='/account.html'">
+    <p class="login-sub">Создайте аккаунт за 1 минуту.</p>
+    <form class="login-form" id="signupForm">
       <div class="form-row">
         <div class="form-group">
           <label>Я хочу</label>
@@ -399,25 +398,35 @@
             <button type="button" class="seg-btn active" data-role="buyer">Покупать</button>
             <button type="button" class="seg-btn" data-role="seller">Продавать</button>
           </div>
+          <input type="hidden" name="role" value="buyer" />
         </div>
       </div>
       <div class="form-group">
         <label>Название компании <span class="req">*</span></label>
-        <input type="text" required placeholder="ООО «АгроКомпания» / ИП Иванов" />
+        <input type="text" name="company_name" required placeholder="ООО «АгроКомпания» / ИП Иванов" />
+      </div>
+      <div class="form-group">
+        <label>ФИО контактного лица <span class="req">*</span></label>
+        <input type="text" name="full_name" required placeholder="Иванов Иван Иванович" />
       </div>
       <div class="form-group">
         <label>ИНН <span class="req">*</span></label>
-        <input type="text" required placeholder="10 или 12 цифр" maxlength="12" inputmode="numeric" />
+        <input type="text" name="inn" required placeholder="10 или 12 цифр" maxlength="12" inputmode="numeric" pattern="[0-9]+" />
       </div>
       <div class="form-group">
-        <label>Телефон <span class="req">*</span></label>
-        <input type="tel" required placeholder="+7 (___) ___-__-__" value="+7 " />
+        <label>Телефон</label>
+        <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" />
       </div>
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" placeholder="mail@company.ru" />
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="email" required placeholder="mail@company.ru" autocomplete="email" />
       </div>
-      <button class="btn btn-primary btn-lg btn-block" type="submit">Создать аккаунт <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+      <div class="form-group">
+        <label>Пароль <span class="req">*</span></label>
+        <input type="password" name="password" required minlength="6" placeholder="Минимум 6 символов" autocomplete="new-password" />
+        <div class="form-hint" id="signupHint"></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="signupSubmit">Создать аккаунт <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
       <p class="form-note" style="margin-top:12px">
         Нажимая «Создать аккаунт», вы принимаете <a href="offer.html">оферту</a> и <a href="policy.html">политику конфиденциальности</a>.
       </p>
@@ -467,10 +476,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1777303077"></script>
-<script src="assets/js/cities.js?v=1777303077"></script>
-<script src="assets/js/api.js?v=1777303077"></script>
-<script src="assets/js/main.js?v=1777303077"></script>
-<script src="assets/js/tour.js?v=1777303077"></script>
+<script src="assets/js/config.js?v=1777485213"></script>
+<script src="assets/js/cities.js?v=1777485213"></script>
+<script src="assets/js/api.js?v=1777485213"></script>
+<script src="assets/js/main.js?v=1777485213"></script>
+<script src="assets/js/admin.js?v=1777485213"></script>
+<script src="assets/js/tour.js?v=1777485213"></script>
 </body>
 </html>
