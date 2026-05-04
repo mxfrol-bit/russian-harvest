@@ -20,13 +20,46 @@
 
     encode gzip zstd
 
-    # Security headers (applied to all responses)
+    # ====================================================================
+    # SECURITY HEADERS — applied to all responses
+    # ====================================================================
     header {
+        # Запрещает встраивать сайт в iframe (защита от clickjacking)
         X-Frame-Options "SAMEORIGIN"
+
+        # Браузер не угадывает MIME-тип (защита от MIME confusion attacks)
         X-Content-Type-Options "nosniff"
+
+        # Referrer не передаётся на сторонние сайты с полным URL
         Referrer-Policy "strict-origin-when-cross-origin"
-        Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+
+        # Запрещаем браузерные API для трекинга/скрытного шпионажа
+        Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()"
+
+        # Принудительный HTTPS на год (важно после первого захода)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+        # Изоляция window'а от других origin (защита от Spectre/Meltdown)
+        Cross-Origin-Opener-Policy "same-origin"
+
+        # Защита от XS-Leaks через ресурсы
+        Cross-Origin-Resource-Policy "same-site"
+
+        # Content Security Policy — главная защита от XSS
+        # Разрешаем:
+        #  - default-src 'self' — только свои ресурсы
+        #  - script-src 'self' + jsdelivr (для Supabase SDK) + 'unsafe-inline' (нужно для inline-handlers)
+        #  - style-src 'self' + Google Fonts + 'unsafe-inline' (нужно для динамических стилей)
+        #  - img-src — свои + русский урожай logo + data: для inline SVG
+        #  - connect-src — Supabase API + свой домен
+        #  - frame-ancestors 'self' — двойная защита от clickjacking
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://russian-harvest.ru https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+
+        # Скрыть версию сервера
         -Server
+
+        # Скрыть Caddy header
+        -X-Powered-By
     }
 
     # Pretty URLs: /catalog → /catalog.html

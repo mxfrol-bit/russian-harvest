@@ -2294,6 +2294,7 @@ def build_account():
           <a href="#" class="btn btn-dark">{icon('shield')} Модерация офферов</a>
           <a href="#" class="btn btn-outline">{icon('user')} Пользователи</a>
           <a href="#" class="btn btn-outline">{icon('handshake')} Все сделки</a>
+          <a href="#" class="btn btn-outline">{icon('message')} Все заявки</a>
           <a href="#" class="btn btn-outline">{icon('alert')} Споры и жалобы</a>
           <a href="#" class="btn btn-outline">{icon('chart')} Аналитика</a>
           <a href="#" class="btn btn-outline">{icon('info')} Настройки платформы</a>

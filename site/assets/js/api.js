@@ -698,6 +698,134 @@
         .update({ role }).eq('id', userId).select().single();
       if (error) throw error;
       return data;
+    },
+
+    async adminDeleteUser(userId) {
+      const sb = await ensureSupabase();
+      // Cascade delete: profile delete cascades to offers/requests/deals via FK
+      const { error } = await sb.from('profiles').delete().eq('id', userId);
+      if (error) throw error;
+      return { ok: true };
+    },
+
+    // ===========================================================
+    // ADMIN: ALL OFFERS / DEALS / REQUESTS (across platform)
+    // ===========================================================
+    async adminListAllOffers(status = null) {
+      const sb = await ensureSupabase();
+      let q = sb.from('offers').select(`
+        *,
+        crop:crops(name, emoji),
+        seller:profiles(id, company_name, full_name, inn, email)
+      `).order('created_at', { ascending: false });
+      if (status) q = q.eq('status', status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+
+    async adminUpdateOfferStatus(id, status) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('offers')
+        .update({ status }).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminDeleteOffer(id) {
+      const sb = await ensureSupabase();
+      const { error } = await sb.from('offers').delete().eq('id', id);
+      if (error) throw error;
+      return { ok: true };
+    },
+
+    async adminListAllDeals(status = null) {
+      const sb = await ensureSupabase();
+      let q = sb.from('deals').select(`
+        *,
+        crop:crops(name, emoji),
+        buyer:profiles!deals_buyer_id_fkey(id, company_name, full_name, email),
+        seller:profiles!deals_seller_id_fkey(id, company_name, full_name, email)
+      `).order('created_at', { ascending: false });
+      if (status) q = q.eq('status', status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+
+    async adminUpdateDealStatus(id, status) {
+      const sb = await ensureSupabase();
+      const updates = { status };
+      // Set timestamps based on status transitions
+      if (status === 'paid') updates.paid_at = new Date().toISOString();
+      if (status === 'delivered') updates.delivered_at = new Date().toISOString();
+      if (status === 'completed') updates.completed_at = new Date().toISOString();
+      const { data, error } = await sb.from('deals')
+        .update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminDeleteDeal(id) {
+      const sb = await ensureSupabase();
+      const { error } = await sb.from('deals').delete().eq('id', id);
+      if (error) throw error;
+      return { ok: true };
+    },
+
+    async adminListAllRequests(status = null) {
+      const sb = await ensureSupabase();
+      let q = sb.from('buyer_requests').select(`
+        *,
+        crop:crops(name, emoji),
+        buyer:profiles(id, company_name, full_name, email)
+      `).order('created_at', { ascending: false });
+      if (status) q = q.eq('status', status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data;
+    },
+
+    async adminUpdateRequestStatus(id, status) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('buyer_requests')
+        .update({ status }).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+
+    async adminDeleteRequest(id) {
+      const sb = await ensureSupabase();
+      const { error } = await sb.from('buyer_requests').delete().eq('id', id);
+      if (error) throw error;
+      return { ok: true };
+    },
+
+    // Admin can create offers/requests/deals on behalf of users
+    async adminCreateOffer(payload) {
+      const sb = await ensureSupabase();
+      // seller_id required
+      if (!payload.seller_id) throw new Error('Укажите продавца');
+      const offer = {
+        seller_id: payload.seller_id,
+        crop_id: payload.crop_id,
+        title: payload.title,
+        description: payload.description,
+        price_kopecks: k(parseFloat(payload.price_per_ton)),
+        vat: payload.vat || 'with_vat_10',
+        volume_tons: parseFloat(payload.volume_tons),
+        harvest_year: parseInt(payload.harvest_year) || new Date().getFullYear(),
+        region: payload.region,
+        city: payload.city,
+        has_delivery: !!payload.has_delivery,
+        delivery_price_per_ton_kopecks: payload.delivery_price ? k(parseFloat(payload.delivery_price)) : 0,
+        has_lab_analysis: !!payload.has_lab_analysis,
+        quality: payload.quality || {},
+        status: payload.status || 'active'  // admin-created offers active by default
+      };
+      const { data, error } = await sb.from('offers').insert(offer).select().single();
+      if (error) throw error;
+      return data;
     }
   };
 
