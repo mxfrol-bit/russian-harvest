@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: russian-harvest:latest
+    container_name: russian-harvest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Uncomment to add Caddy for automatic HTTPS
+  # caddy:
+  #   image: caddy:2-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./scripts/Caddyfile:/etc/caddy/Caddyfile
+  #     - caddy_data:/data
+  #   depends_on:
+  #     - web
+
+# volumes:
+#   caddy_data:

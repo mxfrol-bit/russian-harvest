@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Страница не найдена — Русский Урожай</title>
+<meta name="description" content="Русский Урожай — онлайн-площадка для покупки и продажи сельхозпродукции напрямую между фермерами и покупателями." />
+<meta name="theme-color" content="#97C524" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Русский Урожай" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/svg+xml" href="https://russian-harvest.ru/img/logo.svg" />
+<link rel="apple-touch-icon" href="https://russian-harvest.ru/img/logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css?v=1777880413">
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="index.html">
+      <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+      <div class="brand-sub"><span class="s">Растим будущее агробизнеса</span></div>
+    </a>
+    <nav class="nav-main">
+      <a href="catalog.html" class="">Купить</a>
+      <a href="sale.html" class="">Продать</a>
+      <a href="auction.html" class="nav-item " data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="nav-item " data-feature="prices" style="display:none">Биржа</a>
+      <a href="about.html" class="">О компании</a>
+      <a href="how.html" class="">Помощь</a>
+      <a href="contacts.html" class="">Контакты</a>
+    </nav>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="siteSearchBtn" title="Поиск по сайту (⌘K)" aria-label="Поиск">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+    </button>
+    <button class="icon-btn" id="tourHelpBtn" title="Подсказки по странице" aria-label="Обучение">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+    <button class="region-chip" title="Ваш адрес доставки — все расстояния считаются от него">
+      <span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span>
+      Нижний Новгород
+      <span class="change">изменить</span>
+    </button>
+    <span class="phone-link">
+      <span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 4-2 1s1 3 4 6l1-2 4 2v4a2 2 0 0 1-2 2A14 14 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg></span>
+      <a href="tel:+79300129797">+7 930 012-97-97</a>
+    </span>
+    <button class="btn btn-ghost btn-sm" data-open="login">Войти</button>
+    <a class="btn btn-primary btn-sm" href="account.html">Кабинет</a>
+    <button class="menu-trigger" id="menuTrigger" aria-label="Меню"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+    <button class="drawer-close" id="drawerClose" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <nav class="drawer-nav">
+      <a href="catalog.html" class="">Купить</a>
+      <a href="sale.html" class="">Продать</a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none">Аукцион</a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none">Биржа цен</a>
+      <a href="about.html" class="">О компании</a>
+      <a href="how.html" class="">Помощь</a>
+      <a href="contacts.html" class="">Контакты</a>
+    </nav>
+  </div>
+  <div class="drawer-foot">
+    <a href="tel:+79300129797" class="phone"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h4l2 4-2 1s1 3 4 6l1-2 4 2v4a2 2 0 0 1-2 2A14 14 0 0 1 2 6a2 2 0 0 1 2-2z"/></svg> +7 930 012-97-97</a>
+    <a class="btn btn-primary btn-block" href="account.html">Личный кабинет</a>
+    <button class="btn btn-outline btn-block" data-open="login">Войти</button>
+  </div>
+</aside>
+
+<div class="error-page">
+  <div class="error-content">
+    <div class="error-code">404</div>
+    <h1>Страница не найдена</h1>
+    <p>Похоже, такой страницы не существует. Возможно, вы перешли по устаревшей ссылке или ошиблись в адресе.</p>
+    <div class="actions">
+      <a class="btn btn-primary btn-lg" href="index.html">На главную <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+      <a class="btn btn-outline btn-lg" href="catalog.html">Каталог</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="foot-wrap">
+    <div class="foot-brand">
+      <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
+      <p>Онлайн-площадка для прямых сделок между фермерами и покупателями сельхозпродукции. Прозрачно, быстро, надёжно.</p>
+      <span class="mono" style="font-size:11px;color:var(--slate-400)">ИП Фролов В.А.</span>
+    </div>
+    <div class="foot-col">
+      <h5>Разделы</h5>
+      <a href="catalog.html">Купить</a>
+      <a href="sale.html">Продать</a>
+      <a href="about.html">О компании</a>
+      <a href="how.html">Помощь</a>
+      <a href="contacts.html">Контакты</a>
+    </div>
+    <div class="foot-col">
+      <h5>Документы</h5>
+      <a href="offer.html">Публичная оферта</a>
+      <a href="regulations.html">Правила площадки</a>
+      <a href="policy.html">Политика конфиденциальности</a>
+      <a href="dispute.html">Регламент споров</a>
+    </div>
+    <div class="foot-col">
+      <h5>Контакты</h5>
+      <a href="tel:+79300129797">+7 930 012-97-97</a>
+      <a href="mailto:support@russian-harvest.ru">support@russian-harvest.ru</a>
+      <span class="txt">Нижний Новгород</span>
+      <div class="foot-soc" style="margin-top:8px">
+        <a href="https://t.me/tdrusagro" title="Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg></a>
+        <a href="#" title="VK"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8 17.2c-5.6 0-8.8-3.8-8.9-10.1h2.8c.1 4.6 2.1 6.5 3.7 6.9V7.1h2.6v4c1.6-.2 3.3-2 3.9-4h2.6c-.4 2.5-2.2 4.3-3.5 5 1.3.6 3.4 2.2 4.2 5.1h-2.9c-.6-2-2.1-3.5-3.9-3.8v3.8h-.6z"/></svg></a>
+        <a href="#" title="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bot">
+    <span class="c">© 2026 Русский Урожай</span>
+    <span style="font-size:12px;color:var(--slate-400)">Сайт использует файлы cookies для улучшения работы.</span>
+  </div>
+</footer>
+
+<nav class="mobile-tabbar">
+      <a href="index.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></a>
+      <a href="catalog.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Каталог</span></a>
+      <a href="sale.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h4.5a2.5 2.5 0 0 1 0 5h-3a2.5 2.5 0 0 0 0 5H15"/></svg><span>Продать</span></a>
+      <a href="auction.html" class="" data-feature="auctions" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l7 7-4 4-7-7zM12 11l-7 7 3 3 7-7zM4 22h10"/></svg><span>Аукцион</span></a>
+      <a href="prices.html" class="" data-feature="prices" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M17 7h4v4"/></svg><span>Биржа</span></a>
+      <a href="account.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg><span>Кабинет</span></a>
+    </nav>
+
+<div class="so-backdrop" id="soBackdrop"></div>
+<div class="so" id="so">
+  <div class="so-in">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+    <input type="text" id="soInput" placeholder="Поиск по сайту: культуры, регионы, поставщики…" autocomplete="off" />
+    <span class="esc">Esc</span>
+  </div>
+  <div class="so-body">
+    <div class="sd-sec">
+      <div class="sd-title">Популярные запросы</div>
+      <div class="sd-chips">
+        <button class="sd-chip">пшеница 3 класс</button>
+        <button class="sd-chip">кукуруза с НДС</button>
+        <button class="sd-chip">рапс с доставкой</button>
+        <button class="sd-chip">ячмень кормовой</button>
+        <button class="sd-chip">подсолнечник опт</button>
+      </div>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
+      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Регионы</div>
+      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+    <div class="sd-sec">
+      <div class="sd-title">Разделы сайта</div>
+      <a class="sd-item" href="how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Как работает эскроу</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
+    </div>
+  </div>
+  <div class="so-ft">
+    <div class="hints">
+      <span><kbd>↑</kbd><kbd>↓</kbd> навигация</span>
+      <span><kbd>↵</kbd> открыть</span>
+      <span><kbd>Esc</kbd> закрыть</span>
+    </div>
+    <span class="all">Все результаты →</span>
+  </div>
+</div>
+<div class="modal-backdrop" id="onbBackdrop"></div>
+<div class="modal modal-onb" id="onbModal" role="dialog" aria-labelledby="onbTitle">
+  <button class="modal-close" data-close="onb" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  <div class="onb-head">
+    <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" class="onb-logo" />
+    <h2 id="onbTitle">Здравствуйте! Что вас интересует?</h2>
+    <p>Выберите сценарий — мы подстроим интерфейс под ваши задачи. Это можно будет изменить в любой момент.</p>
+  </div>
+  <div class="onb-choices">
+    <button class="onb-choice" data-role="buyer">
+      <div class="onb-choice-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></div>
+      <div class="onb-choice-body">
+        <h3>Я хочу купить урожай</h3>
+        <p>Покажем каталог офферов, биржу цен и калькулятор доставки до вашего склада.</p>
+        <span class="onb-choice-go">Перейти в каталог <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span>
+      </div>
+    </button>
+    <button class="onb-choice" data-role="seller">
+      <div class="onb-choice-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h18v12H3zM7 8V5a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v3"/><path d="M9 12h6"/></svg></div>
+      <div class="onb-choice-body">
+        <h3>Я хочу продать урожай</h3>
+        <p>Покажем заявки покупателей, подскажем рыночную цену и поможем разместить оффер.</p>
+        <span class="onb-choice-go">Смотреть заявки <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span>
+      </div>
+    </button>
+  </div>
+  <div class="onb-foot">
+    <button class="onb-skip" data-close="onb">Пропустить — я просто смотрю</button>
+    <button class="onb-login" data-open="login" data-close="onb">Уже есть аккаунт? Войти</button>
+  </div>
+</div>
+<div class="modal-backdrop" id="loginBackdrop"></div>
+<div class="modal modal-login" id="loginModal" role="dialog" aria-labelledby="loginTitle">
+  <button class="modal-close" data-close="login" aria-label="Закрыть"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+
+  <div class="login-tabs">
+    <button class="login-tab active" data-tab="signin">Вход</button>
+    <button class="login-tab" data-tab="signup">Регистрация</button>
+    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
+  </div>
+
+  <!-- SIGN IN -->
+  <div class="login-pane" data-pane="signin">
+    <h2 id="loginTitle">Вход в личный кабинет</h2>
+    <p class="login-sub">Введите email и пароль вашего аккаунта.</p>
+    <form class="login-form" id="signinForm">
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="email" required placeholder="mail@company.ru" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label>Пароль <span class="req">*</span></label>
+        <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password" minlength="6" />
+        <div class="form-hint" id="signinHint">Минимум 6 символов</div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="signinSubmit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
+
+  <!-- SIGN UP -->
+  <div class="login-pane" data-pane="signup" hidden>
+    <h2>Регистрация на платформе</h2>
+    <p class="login-sub">Создайте аккаунт за 1 минуту.</p>
+    <form class="login-form" id="signupForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Я хочу</label>
+          <div class="seg">
+            <button type="button" class="seg-btn active" data-role="buyer">Покупать</button>
+            <button type="button" class="seg-btn" data-role="seller">Продавать</button>
+          </div>
+          <input type="hidden" name="role" value="buyer" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Название компании <span class="req">*</span></label>
+        <input type="text" name="company_name" required placeholder="ООО «АгроКомпания» / ИП Иванов" />
+      </div>
+      <div class="form-group">
+        <label>ФИО контактного лица <span class="req">*</span></label>
+        <input type="text" name="full_name" required placeholder="Иванов Иван Иванович" />
+      </div>
+      <div class="form-group">
+        <label>ИНН <span class="req">*</span></label>
+        <input type="text" name="inn" required placeholder="10 или 12 цифр" maxlength="12" inputmode="numeric" pattern="[0-9]+" />
+      </div>
+      <div class="form-group">
+        <label>Телефон</label>
+        <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" />
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="email" required placeholder="mail@company.ru" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label>Пароль <span class="req">*</span></label>
+        <input type="password" name="password" required minlength="6" placeholder="Минимум 6 символов" autocomplete="new-password" />
+        <div class="form-hint" id="signupHint"></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="signupSubmit">Создать аккаунт <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+      <p class="form-note" style="margin-top:12px">
+        Нажимая «Создать аккаунт», вы принимаете <a href="offer.html">оферту</a> и <a href="policy.html">политику конфиденциальности</a>.
+      </p>
+    </form>
+  </div>
+
+  <!-- DEMO LOGIN -->
+  <div class="login-pane" data-pane="demo" hidden>
+    <h2>Демо-доступ</h2>
+    <p class="login-sub">Войдите в один из тестовых аккаунтов, чтобы оценить интерфейс без регистрации.</p>
+
+    <div class="demo-accounts">
+      <button class="demo-account" data-login="admin" data-pass="admin">
+        <div class="demo-account-ic">👑</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Администратор</div>
+          <div class="demo-account-creds">
+            <code>admin</code> / <code>admin</code>
+          </div>
+          <div class="demo-account-desc">Модерация офферов, управление сделками, статистика платформы</div>
+        </div>
+      </button>
+
+      <button class="demo-account" data-login="user" data-pass="user">
+        <div class="demo-account-ic">👤</div>
+        <div class="demo-account-body">
+          <div class="demo-account-name">Обычный пользователь</div>
+          <div class="demo-account-creds">
+            <code>user</code> / <code>user</code>
+          </div>
+          <div class="demo-account-desc">Покупатель с активными сделками, заявками и историей</div>
+        </div>
+      </button>
+    </div>
+
+    <form class="login-form" id="demoForm" onsubmit="event.preventDefault();return false">
+      <div class="form-group">
+        <label>Или введите вручную</label>
+        <input type="text" id="demoUsername" placeholder="Логин (admin или user)" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <input type="password" id="demoPassword" placeholder="Пароль" autocomplete="current-password" />
+        <div class="form-hint" id="demoHint">В демо-режиме: <b>admin/admin</b> или <b>user/user</b></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="demoSubmit">Войти <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/config.js?v=1777880413"></script>
+<script src="assets/js/cities.js?v=1777880413"></script>
+<script src="assets/js/api.js?v=1777880413"></script>
+<script src="assets/js/main.js?v=1777880413"></script>
+<script src="assets/js/admin.js?v=1777880413"></script>
+<script src="assets/js/tour.js?v=1777880413"></script>
+</body>
+</html>

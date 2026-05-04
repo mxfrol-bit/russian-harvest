@@ -1,0 +1,47 @@
+{
+  "name": "Русский Урожай",
+  "short_name": "Урожай",
+  "description": "B2B-платформа для прямых сделок между фермерами и покупателями сельхозпродукции",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#97C524",
+  "background_color": "#FAFBF7",
+  "categories": ["business", "productivity", "shopping"],
+  "icons": [
+    {
+      "src": "https://russian-harvest.ru/img/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Каталог",
+      "short_name": "Каталог",
+      "url": "/catalog.html",
+      "description": "Каталог предложений от фермеров"
+    },
+    {
+      "name": "Аукцион",
+      "short_name": "Аукцион",
+      "url": "/auction.html",
+      "description": "Живые торги"
+    },
+    {
+      "name": "Биржа цен",
+      "short_name": "Биржа",
+      "url": "/prices.html",
+      "description": "Котировки в реальном времени"
+    },
+    {
+      "name": "Кабинет",
+      "short_name": "Кабинет",
+      "url": "/account.html"
+    }
+  ]
+}

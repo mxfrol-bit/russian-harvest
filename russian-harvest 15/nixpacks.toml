@@ -1,0 +1,10 @@
+[phases.setup]
+nixPkgs = ["python311", "caddy"]
+
+[phases.build]
+cmds = [
+  "python3 scripts/build.py"
+]
+
+[start]
+cmd = "caddy run --config Caddyfile --adapter caddyfile"
