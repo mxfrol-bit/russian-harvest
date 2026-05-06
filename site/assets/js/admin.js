@@ -116,6 +116,7 @@
       await Promise.all([
         loadUserDeals(user),
         loadUserRequests(user),
+        loadUserThreads(user),
         loadUserKpis(user)
       ]);
 
@@ -375,7 +376,7 @@
   function wireViewDealButtons(container) {
     container.querySelectorAll('[data-action="view-deal"]').forEach(btn => {
       btn.addEventListener('click', () => {
-        showToast(`Сделка ${btn.dataset.deal} · ${btn.dataset.status}`);
+        openChatModal({ deal_id: btn.dataset.dealId });
       });
     });
   }
@@ -383,8 +384,11 @@
   function renderDealRow(d, user, isHistory = false) {
     const isBuyer = d.buyer_id === user.id;
     const counterparty = isBuyer ? d.seller : d.buyer;
+    const cpHandle = counterparty?.handle || (isBuyer ? 'Продавец' : 'Покупатель');
+    const cpVerified = counterparty?.is_verified ? ' · ✓' : '';
+    const cpRating = counterparty?.rating > 0 ? ` · ★ ${parseFloat(counterparty.rating).toFixed(1)}` : '';
     const statusLabel = ({
-      pending: 'Ожидает', paid: 'Оплачено', shipping: 'В пути',
+      pending: 'Ожидает оплаты', paid: 'Оплачено', shipping: 'В пути',
       delivered: 'Доставлено', completed: 'Завершена',
       cancelled: 'Отменена', disputed: 'Спор'
     })[d.status] || d.status;
@@ -400,13 +404,13 @@
           <div class="meta">
             <span>Сделка ${d.deal_number}</span>
             <span class="dot">·</span>
-            <span>${escapeHtml(counterparty?.company_name || counterparty?.full_name || 'Контрагент')}</span>
+            <span>${escapeHtml(cpHandle)}${cpRating}${cpVerified}</span>
           </div>
         </div>
         <div class="deal-price">${api.formatRub(d.grand_total_kopecks)}<small>${isBuyer ? 'покупка' : 'продажа'}</small></div>
         <span class="deal-label ${statusCls}">${statusLabel}</span>
         <div class="deal-actions">
-          <button class="btn btn-outline btn-sm" data-action="view-deal" data-deal="${d.deal_number}" data-status="${statusLabel}">Детали</button>
+          <button class="btn btn-primary btn-sm" data-action="view-deal" data-deal-id="${d.id}">Открыть чат →</button>
         </div>
       </div>
     `;
@@ -646,6 +650,10 @@
           b.removeAttribute('href');
           b.style.cursor = 'pointer';
           b.addEventListener('click', e => { e.preventDefault(); openDealsModal(); });
+        } else if (text.includes('чаты платформы') || text.includes('чаты')) {
+          b.removeAttribute('href');
+          b.style.cursor = 'pointer';
+          b.addEventListener('click', e => { e.preventDefault(); openThreadsModal(); });
         } else if (text.includes('все заявки')) {
           b.removeAttribute('href');
           b.style.cursor = 'pointer';
@@ -660,9 +668,58 @@
           b.addEventListener('click', e => { e.preventDefault(); openAnalyticsModal(); });
         }
       });
+
+      // Version footer
+      const cfg = window.RH_CONFIG || {};
+      const tag = panel.querySelector('#adminVersionTag');
+      const dateEl = panel.querySelector('#adminVersionDate');
+      const footer = panel.querySelector('#adminVersionFooter');
+      if (tag) tag.textContent = 'v' + (cfg.VERSION || '?');
+      if (dateEl) dateEl.textContent = cfg.BUILD_DATE || '';
+      if (footer) {
+        footer.addEventListener('click', () => openChangelogModal());
+      }
     } catch(err) {
       console.error('[Admin] Stats load failed:', err);
     }
+  }
+
+  // ============================================================
+  // CHANGELOG MODAL — release history for admins
+  // ============================================================
+  function openChangelogModal() {
+    const log = (window.RH_CONFIG && window.RH_CONFIG.CHANGELOG) || [];
+    const releasesHtml = log.length ? log.map(rel => `
+      <div style="border-left:3px solid var(--brand);padding:14px 18px;margin-bottom:14px;background:#fafbfc;border-radius:0 10px 10px 0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap">
+          <div>
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--brand-dark)">v${escapeHtml(rel.version)}</span>
+            <span style="margin-left:10px;font-size:14px;color:var(--ink);font-weight:600">${escapeHtml(rel.summary || '')}</span>
+          </div>
+          <span style="font-size:12px;color:var(--slate-500)">${escapeHtml(rel.date || '')}</span>
+        </div>
+        ${rel.changes && rel.changes.length ? `
+          <ul style="margin-top:10px;padding-left:18px;color:var(--slate-700);font-size:13px;line-height:1.65">
+            ${rel.changes.map(c => `<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
+        ` : ''}
+      </div>
+    `).join('') : '<p style="color:var(--slate-500);text-align:center;padding:30px">Записей пока нет.</p>';
+
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:760px;max-height:90vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:22px;font-weight:700">📦 Журнал релизов</h2>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">История обновлений платформы. Последняя версия — наверху.</p>
+        </div>
+        <div style="overflow-y:auto;padding:22px 28px;flex:1">
+          ${releasesHtml}
+        </div>
+      </div>
+    `;
+    openModal(html);
   }
 
   // ============================================================
@@ -1103,6 +1160,7 @@
                 <th>Стороны</th>
                 <th>Сумма</th>
                 <th>Статус</th>
+                <th>Чат</th>
                 <th></th>
               </tr>
             </thead>
@@ -1114,8 +1172,8 @@
                     <div style="font-size:11px;color:var(--slate-500)">${d.deal_number} · ${d.volume_tons} т · ${new Date(d.created_at).toLocaleDateString('ru-RU')}</div>
                   </td>
                   <td style="font-size:12px">
-                    <div>🛒 ${escapeHtml(d.buyer?.company_name || d.buyer?.full_name || '—')}</div>
-                    <div>🌾 ${escapeHtml(d.seller?.company_name || d.seller?.full_name || '—')}</div>
+                    <div title="${escapeHtml(d.buyer?.email || '')}">🛒 ${escapeHtml(d.buyer?.company_name || d.buyer?.full_name || '—')}</div>
+                    <div title="${escapeHtml(d.seller?.email || '')}">🌾 ${escapeHtml(d.seller?.company_name || d.seller?.full_name || '—')}</div>
                   </td>
                   <td style="font-family:'JetBrains Mono',monospace;font-weight:700">${api.formatRub(d.grand_total_kopecks)}</td>
                   <td>
@@ -1130,6 +1188,9 @@
                     </select>
                   </td>
                   <td>
+                    <button class="btn btn-outline btn-sm" data-action="deal-chat" title="Открыть чат сделки">💬</button>
+                  </td>
+                  <td>
                     <button class="btn-icon-del" data-action="deal-delete" title="Удалить сделку">🗑</button>
                   </td>
                 </tr>
@@ -1137,6 +1198,13 @@
             </tbody>
           </table>
         `;
+
+        list.querySelectorAll('[data-action="deal-chat"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const row = btn.closest('[data-deal-id]');
+            openChatModal({ deal_id: row.dataset.dealId });
+          });
+        });
 
         list.querySelectorAll('[data-action="deal-status"]').forEach(sel => {
           const orig = sel.value;
@@ -1187,6 +1255,120 @@
     });
 
     loadList();
+  }
+
+  // ============================================================
+  // THREADS MODAL — admin overview of all chats on the platform
+  // ============================================================
+  async function openThreadsModal() {
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:1100px;max-height:92vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:22px;font-weight:700">💬 Чаты платформы</h2>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">Все переговоры между покупателями и продавцами. Клик по строке — открыть чат, написать как модератор.</p>
+          <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap" id="thrFilters">
+            <button class="ff-tab active" data-filter="active">Активные</button>
+            <button class="ff-tab" data-filter="with_deal">Со сделкой</button>
+            <button class="ff-tab" data-filter="no_deal">Без сделки</button>
+            <button class="ff-tab" data-filter="all">Все</button>
+          </div>
+        </div>
+        <div id="thrList" style="overflow-y:auto;padding:0;flex:1">
+          <div style="padding:40px;text-align:center;color:var(--slate-500)">Загружаем…</div>
+        </div>
+      </div>
+    `;
+    const wrap = openModal(html);
+    let currentFilter = 'active';
+    let allThreads = [];
+
+    function applyFilter(threads, f) {
+      if (f === 'with_deal') return threads.filter(t => t.deal_id);
+      if (f === 'no_deal')   return threads.filter(t => !t.deal_id);
+      if (f === 'active')    return threads.filter(t => !t.deal_status || ['pending','paid','shipping','delivered','disputed'].includes(t.deal_status));
+      return threads;
+    }
+
+    function renderList(threads) {
+      const list = wrap.querySelector('#thrList');
+      if (!threads.length) {
+        list.innerHTML = '<div style="padding:60px;text-align:center;color:var(--slate-500)">Нет чатов в этой категории.</div>';
+        return;
+      }
+      list.innerHTML = `
+        <table class="adm-table" style="margin:0">
+          <thead>
+            <tr>
+              <th>Контекст</th>
+              <th>Покупатель</th>
+              <th>Продавец</th>
+              <th>Сделка</th>
+              <th>Сообщений</th>
+              <th>Последнее</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${threads.map(t => {
+              const ctx = t.deal_id    ? `🤝 <b>${t.deal_number || 'сделка'}</b>`
+                        : t.offer_id   ? `💼 ${escapeHtml((t.offer_title || '').slice(0, 30))}`
+                        : t.request_id ? `📋 ${escapeHtml((t.request_title || 'заявка').slice(0, 30))}`
+                        : 'Чат';
+              const dealLabel = t.deal_status ? ({
+                pending: '⏳', paid: '💰', shipping: '🚚', delivered: '📦',
+                completed: '✓', cancelled: '✕', disputed: '⚠'
+              })[t.deal_status] + ' ' + ({
+                pending: 'Ожидает', paid: 'Оплачено', shipping: 'В пути', delivered: 'Доставлено',
+                completed: 'Завершена', cancelled: 'Отменена', disputed: 'Спор'
+              })[t.deal_status] : '—';
+              const lastTime = t.last_message_at ? new Date(t.last_message_at).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+              const lastBody = t.last_message_body ? escapeHtml(t.last_message_body.slice(0, 60)) + (t.last_message_body.length > 60 ? '…' : '') : '<i style="color:var(--slate-400)">пусто</i>';
+              return `
+                <tr data-thread-id="${t.id}" style="cursor:pointer">
+                  <td style="font-size:13px">${ctx}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${escapeHtml(t.buyer_handle || '—')}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${escapeHtml(t.seller_handle || '—')}</td>
+                  <td style="font-size:12px">${dealLabel}</td>
+                  <td style="text-align:center;font-weight:700">${t.message_count || 0}</td>
+                  <td style="font-size:11.5px;color:var(--slate-600);max-width:240px">
+                    <div>${lastBody}</div>
+                    <div style="color:var(--slate-400);font-size:10.5px">${lastTime}</div>
+                  </td>
+                  <td><button class="btn btn-primary btn-sm" data-action="open-thread">Открыть →</button></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+      list.querySelectorAll('[data-thread-id]').forEach(row => {
+        row.addEventListener('click', () => openChatModal({ thread_id: row.dataset.threadId }));
+      });
+    }
+
+    async function loadThreads() {
+      const list = wrap.querySelector('#thrList');
+      list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--slate-500)">Загружаем…</div>';
+      try {
+        allThreads = await api.adminListThreads(false);
+        renderList(applyFilter(allThreads, currentFilter));
+      } catch(e) {
+        list.innerHTML = `<div style="padding:30px;color:var(--red)">Ошибка: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    wrap.querySelectorAll('#thrFilters .ff-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        wrap.querySelectorAll('#thrFilters .ff-tab').forEach(x => x.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        renderList(applyFilter(allThreads, currentFilter));
+      });
+    });
+
+    loadThreads();
   }
 
   // ============================================================
@@ -2267,10 +2449,19 @@
     if (!user) return;
 
     const offerId = await findOfferIdAsync(btn);
-    if (!offerId) showToast('Не удалось определить оффер'); return;
+    if (!offerId) { showToast('Не удалось определить оффер. Откройте страницу товара.'); return; }
 
     const offer = await api.getOffer(offerId).catch(() => null);
-    if (!offer) showToast('Оффер не найден'); return;
+    if (!offer) { showToast('Оффер не найден или удалён'); return; }
+
+    if (user.role === 'seller' && offer.seller_id === user.id) {
+      showToast('Это ваш собственный оффер');
+      return;
+    }
+    if (user.role === 'seller') {
+      showToast('Откликаются на офферы только покупатели');
+      return;
+    }
 
     const currentPrice = api.formatRub(offer.price_kopecks);
 
@@ -2280,29 +2471,24 @@
         <button class="modal-close">✕</button>
         <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
           <h2 style="font-size:20px;font-weight:700">Ценовое предложение</h2>
-          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">${escapeHtml(offer.title)} · ${offer.volume_tons} т</p>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">${escapeHtml(offer.title)} · ${offer.volume_tons} т · продавец ${escapeHtml(offer.seller?.handle || '—')}</p>
         </div>
         <form id="proposeForm" style="padding:20px 28px;flex:1;overflow-y:auto">
           <div style="background:var(--slate-50);padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px">
             Текущая цена: <b>${currentPrice}/т</b>
           </div>
           <div class="form-group">
-            <label>Ваша цена, ₽/т *</label>
-            <input name="price" type="number" min="0" step="100" required placeholder="${Math.round(offer.price_kopecks/100*0.95)}" />
+            <label>Сообщение продавцу *</label>
+            <textarea name="message" rows="4" required placeholder="Готов взять ${Math.min(50, offer.volume_tons)} т по ${Math.round(offer.price_kopecks/100*0.95)} ₽/т, оплата по факту, самовывоз. Готовы обсудить?" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
           </div>
-          <div class="form-group">
-            <label>Объём, т *</label>
-            <input name="volume" type="number" min="1" step="1" required value="${offer.volume_tons}" />
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;background:var(--emerald-soft);padding:10px 14px;border-radius:8px">
+            💬 Откроется чат с продавцом. Реквизиты компании скрыты до оформления сделки через эскроу.
           </div>
-          <div class="form-group">
-            <label>Комментарий</label>
-            <textarea name="comment" rows="3" placeholder="Условия, сроки, требования к качеству..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
-          </div>
-          <div id="proposeError" style="color:var(--red);font-size:13px;display:none"></div>
+          <div id="proposeError" style="color:var(--red);font-size:13px;display:none;margin-top:10px"></div>
         </form>
         <div style="padding:16px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
           <button class="btn btn-outline modal-close">Отмена</button>
-          <button class="btn btn-primary" id="proposeSubmit">Отправить предложение</button>
+          <button class="btn btn-primary" id="proposeSubmit">Открыть чат с продавцом</button>
         </div>
       </div>
     `;
@@ -2310,36 +2496,30 @@
 
     wrap.querySelector('#proposeSubmit').addEventListener('click', async () => {
       const fd = new FormData(wrap.querySelector('#proposeForm'));
-      const price = parseFloat(fd.get('price'));
-      const volume = parseFloat(fd.get('volume'));
-      const comment = fd.get('comment')?.trim() || '';
+      const message = (fd.get('message') || '').trim();
       const errEl = wrap.querySelector('#proposeError');
 
-      if (!price || price <= 0) { errEl.textContent = 'Укажите цену'; errEl.style.display = ''; return; }
-      if (!volume || volume <= 0) { errEl.textContent = 'Укажите объём'; errEl.style.display = ''; return; }
+      if (!message || message.length < 5) {
+        errEl.textContent = 'Напишите сообщение продавцу (минимум 5 символов)';
+        errEl.style.display = '';
+        return;
+      }
 
       const submit = wrap.querySelector('#proposeSubmit');
       submit.disabled = true;
-      submit.textContent = 'Отправляем...';
+      submit.textContent = 'Открываем чат…';
 
       try {
-        await api.createRequest({
-          crop_id: offer.crop_id,
-          title: 'Ценовое предложение: ' + offer.title,
-          target_price: price,
-          vat: offer.vat,
-          volume_tons: volume,
-          delivery_region: user.region || 'Нижегородская область',
-          delivery_city: user.city || '',
-          description: 'Предложение к лоту ' + (offer.id || '').slice(-8) + '. ' + comment
-        });
+        const result = await api.respondToOffer(offerId, message);
         wrap.remove();
-        showToast('✓ Предложение отправлено! Отслеживайте в кабинете → Заявки');
+        showToast('✓ Чат открыт');
+        // Open the chat modal with full thread
+        openChatModal({ thread_id: result.thread_id });
       } catch(err) {
         errEl.textContent = err.message;
         errEl.style.display = '';
         submit.disabled = false;
-        submit.textContent = 'Отправить предложение';
+        submit.textContent = 'Открыть чат с продавцом';
       }
     });
   }
@@ -2360,16 +2540,20 @@
           <button class="btn btn-outline modal-close">Понятно</button>
         </div>
       `;
-      const wrap = openModal(html);
+      openModal(html);
       return;
     }
 
     const requestId = btn.dataset.requestId;
-    if (!requestId) showToast('Не удалось определить заявку'); return;
+    if (!requestId || !requestId.includes('-')) {
+      showToast('Эта карточка демонстрационная — откликнитесь на реальную заявку');
+      return;
+    }
 
     // Get request card info from DOM
     const card = btn.closest('.req-card, [data-request]');
     const title = card?.querySelector('.req-card-title')?.textContent || 'Заявка';
+    const cardVolume = parseFloat(card?.dataset?.volume) || '';
 
     const html = `
       <div class="modal-backdrop on"></div>
@@ -2386,21 +2570,24 @@
           </div>
           <div class="form-group">
             <label>Ваш объём, т *</label>
-            <input name="volume" type="number" min="1" step="1" required placeholder="100" />
+            <input name="volume" type="number" min="1" step="1" required ${cardVolume ? `value="${cardVolume}"` : 'placeholder="100"'} />
           </div>
           <div class="form-group">
             <label>Регион / город склада *</label>
             <input name="region" required value="${escapeHtml(user.region || user.city || 'Нижегородская область')}" />
           </div>
           <div class="form-group">
-            <label>Комментарий к отклику</label>
-            <textarea name="comment" rows="3" placeholder="Качество, условия отгрузки, готовность..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
+            <label>Сообщение покупателю *</label>
+            <textarea name="message" rows="3" required placeholder="Качество — 3 класс, ИДК 78, влажность 12%. Готов отгрузить в течение 5 дней. Самовывоз или доставка." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
           </div>
-          <div id="respondError" style="color:var(--red);font-size:13px;display:none"></div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;background:var(--emerald-soft);padding:10px 14px;border-radius:8px">
+            💬 Откроется чат с покупателем. Реквизиты компании скрыты до оформления сделки через эскроу.
+          </div>
+          <div id="respondError" style="color:var(--red);font-size:13px;display:none;margin-top:10px"></div>
         </form>
         <div style="padding:16px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
           <button class="btn btn-outline modal-close">Отмена</button>
-          <button class="btn btn-primary" id="respondSubmit">Отправить отклик</button>
+          <button class="btn btn-primary" id="respondSubmit">Открыть чат и отправить</button>
         </div>
       </div>
     `;
@@ -2410,43 +2597,392 @@
       const fd = new FormData(wrap.querySelector('#respondForm'));
       const price = parseFloat(fd.get('price'));
       const volume = parseFloat(fd.get('volume'));
-      const region = fd.get('region')?.trim();
-      const comment = fd.get('comment')?.trim() || '';
+      const region = (fd.get('region') || '').trim();
+      const message = (fd.get('message') || '').trim();
       const errEl = wrap.querySelector('#respondError');
 
-      if (!price) { errEl.textContent = 'Укажите цену'; errEl.style.display = ''; return; }
-      if (!volume) { errEl.textContent = 'Укажите объём'; errEl.style.display = ''; return; }
+      if (!price || price <= 0) { errEl.textContent = 'Укажите цену'; errEl.style.display = ''; return; }
+      if (!volume || volume <= 0) { errEl.textContent = 'Укажите объём'; errEl.style.display = ''; return; }
       if (!region) { errEl.textContent = 'Укажите регион'; errEl.style.display = ''; return; }
+      if (message.length < 5) { errEl.textContent = 'Напишите сообщение покупателю'; errEl.style.display = ''; return; }
 
       const submit = wrap.querySelector('#respondSubmit');
       submit.disabled = true;
-      submit.textContent = 'Отправляем...';
+      submit.textContent = 'Отправляем…';
 
       try {
-        // Create offer as response to buyer request
-        await api.createOffer({
-          crop_id: card?.dataset?.crop || 'wheat-3',
-          title: 'Отклик: ' + title,
-          price_per_ton: price,
-          vat: 'with_vat_10',
-          volume_tons: volume,
-          region: region,
-          city: '',
-          description: 'Отклик на заявку ' + requestId.slice(-8) + '. ' + comment,
-          has_delivery: false
+        const result = await api.respondToRequest(requestId, {
+          price_per_ton: price, volume_tons: volume, message, region
         });
         wrap.remove();
         btn.disabled = true;
         btn.textContent = '✓ Отклик отправлен';
         btn.style.opacity = '.6';
-        showToast('✓ Отклик отправлен! Отслеживайте в кабинете → Мои офферы');
+        showToast('✓ Чат с покупателем открыт');
+        openChatModal({ thread_id: result.thread_id });
       } catch(err) {
         errEl.textContent = err.message;
         errEl.style.display = '';
         submit.disabled = false;
-        submit.textContent = 'Отправить отклик';
+        submit.textContent = 'Открыть чат и отправить';
       }
     });
+  }
+
+  // ============================================================
+  // CHAT MODAL — full conversation + role-based deal actions
+  // ============================================================
+
+  const DEAL_STATUS_LABELS = {
+    pending:   { label: 'Ожидает оплаты', cls: 'pending', icon: '⏳' },
+    paid:      { label: 'Оплачено · в эскроу', cls: 'active', icon: '💰' },
+    shipping:  { label: 'В пути', cls: 'active', icon: '🚚' },
+    delivered: { label: 'Доставлено', cls: 'active', icon: '📦' },
+    completed: { label: 'Завершена', cls: 'done', icon: '✅' },
+    cancelled: { label: 'Отменена', cls: 'cancelled', icon: '❌' },
+    disputed:  { label: 'Спор', cls: 'cancelled', icon: '⚠️' }
+  };
+
+  // Build the action button list visible to the current user given a deal status & role.
+  function dealActionsFor(deal, my_role) {
+    const out = [];
+    if (!deal) return out;
+    const isBuyer  = my_role === 'buyer';
+    const isSeller = my_role === 'seller';
+
+    if (deal.status === 'pending') {
+      if (isBuyer) out.push({ key: 'paid',     label: 'Я оплатил',           cls: 'btn-primary' });
+      out.push(           { key: 'cancelled',  label: 'Отменить сделку',     cls: 'btn-outline' });
+    }
+    if (deal.status === 'paid') {
+      if (isSeller) out.push({ key: 'shipping', label: 'Отгрузил товар',     cls: 'btn-primary' });
+      out.push(            { key: 'disputed',   label: 'Открыть спор',       cls: 'btn-outline' });
+    }
+    if (deal.status === 'shipping') {
+      if (isSeller) out.push({ key: 'delivered', label: 'Доставлено',        cls: 'btn-primary' });
+      out.push(            { key: 'disputed',    label: 'Открыть спор',      cls: 'btn-outline' });
+    }
+    if (deal.status === 'delivered') {
+      if (isBuyer) out.push({ key: 'completed', label: 'Подтверждаю получение', cls: 'btn-primary' });
+      out.push(           { key: 'disputed',    label: 'Открыть спор',           cls: 'btn-outline' });
+    }
+    return out;
+  }
+
+  function renderMessage(m, myId) {
+    const isMine = m.sender_id === myId;
+    const isSystem = /^[✅🚚📦🎉❌⚠️💼🤝]/u.test(m.body || '');
+    const time = new Date(m.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const handle = m.sender?.handle || (isMine ? 'Вы' : '—');
+    if (isSystem) {
+      return `
+        <div style="text-align:center;margin:16px 0">
+          <div style="display:inline-block;background:var(--slate-50);color:var(--slate-700);padding:8px 14px;border-radius:14px;font-size:12.5px;line-height:1.5;max-width:90%;white-space:pre-wrap;text-align:left">${escapeHtml(m.body)}</div>
+          <div style="font-size:10.5px;color:var(--slate-400);margin-top:4px">${time}</div>
+        </div>
+      `;
+    }
+    const align = isMine ? 'flex-end' : 'flex-start';
+    const bg = isMine ? 'var(--brand)' : 'var(--slate-50)';
+    const fg = isMine ? '#fff' : 'var(--ink)';
+    return `
+      <div style="display:flex;justify-content:${align};margin:6px 0">
+        <div style="max-width:75%">
+          <div style="font-size:11px;color:var(--slate-500);margin-bottom:3px;text-align:${isMine?'right':'left'}">
+            ${isMine ? 'Вы' : escapeHtml(handle)} · ${time}
+          </div>
+          <div style="background:${bg};color:${fg};padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word">${escapeHtml(m.body)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderChatHeader(thread, deal) {
+    const cp = thread.counterparty;
+    const cpRating = cp?.rating > 0 ? ` · ★ ${parseFloat(cp.rating).toFixed(1)}` : '';
+    const cpRegion = cp?.city || cp?.region ? ` · ${escapeHtml(cp.city || cp.region)}` : '';
+    const cpVerified = cp?.is_verified ? ' <span style="color:var(--brand);font-size:11px">✓ проверен</span>' : '';
+
+    let contextLine = '';
+    let title = 'Переговоры';
+    if (deal) {
+      title = `Сделка ${deal.deal_number}`;
+      contextLine = `${deal.crop?.emoji || '📦'} ${escapeHtml(deal.crop?.name || '')} · ${deal.volume_tons} т · ${api.formatRub(deal.grand_total_kopecks)}`;
+    } else if (thread.offer) {
+      title = `Переговоры: ${escapeHtml(thread.offer.title)}`;
+      contextLine = `${thread.offer.crop?.emoji || '📦'} ${api.formatRub(thread.offer.price_kopecks)}/т · ${thread.offer.volume_tons} т доступно`;
+    } else if (thread.request) {
+      title = `Заявка: ${escapeHtml(thread.request.title)}`;
+      contextLine = `${thread.request.crop?.emoji || '🌾'} ${thread.request.target_price_kopecks ? api.formatRub(thread.request.target_price_kopecks) + '/т · ' : ''}${thread.request.volume_tons} т нужно`;
+    }
+
+    let statusBadge = '';
+    if (deal) {
+      const s = DEAL_STATUS_LABELS[deal.status] || { label: deal.status, cls: 'pending', icon: '·' };
+      statusBadge = `<span class="deal-label ${s.cls}" style="margin-left:auto">${s.icon} ${s.label}</span>`;
+    }
+
+    return `
+      <div style="padding:18px 24px;border-bottom:1px solid var(--slate-100);display:flex;align-items:flex-start;gap:14px">
+        <button class="modal-close" style="position:absolute;right:14px;top:14px">✕</button>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h2 style="font-size:17px;font-weight:700;margin:0">${title}</h2>
+            ${statusBadge}
+          </div>
+          <div style="margin-top:6px;font-size:13px;color:var(--slate-600)">${contextLine}</div>
+          <div style="margin-top:4px;font-size:12.5px;color:var(--slate-500)">
+            Контрагент: <b>${escapeHtml(cp?.handle || '—')}</b>${cpRating}${cpRegion}${cpVerified}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // The chat-modal element is reused (not recreated) across opens to keep WS alive on close-and-reopen.
+  let _chatChannel = null;
+  let _chatDealChannel = null;
+
+  async function openChatModal({ thread_id, deal_id }) {
+    const user = await requireLogin('открыть чат');
+    if (!user) return;
+
+    // Resolve thread_id from deal_id if needed
+    if (!thread_id && deal_id) {
+      try {
+        const r = await api.startDealThread(deal_id);
+        thread_id = r.thread_id;
+      } catch(e) {
+        showToast(e.message || 'Не удалось открыть чат сделки');
+        return;
+      }
+    }
+    if (!thread_id) { showToast('Чат не найден'); return; }
+
+    // Open empty modal first so user sees instant feedback
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:640px;width:96vw;height:90vh;display:flex;flex-direction:column;padding:0;position:relative">
+        <div id="chatHeader">
+          <div style="padding:40px;text-align:center;color:var(--slate-500)">Загрузка чата…</div>
+        </div>
+        <div id="chatBody" style="flex:1;overflow-y:auto;padding:14px 22px;background:#fafbfc"></div>
+        <div id="chatActions" style="padding:10px 22px;border-top:1px solid var(--slate-100);display:none;flex-wrap:wrap;gap:8px"></div>
+        <div id="chatComposer" style="padding:14px 22px;border-top:1px solid var(--slate-100);background:#fff">
+          <form id="msgForm" style="display:flex;gap:10px;align-items:flex-end">
+            <textarea id="msgInput" rows="2" placeholder="Напишите сообщение…" style="flex:1;padding:10px 14px;border:1px solid var(--slate-200);border-radius:12px;font-family:inherit;font-size:14px;resize:none;max-height:120px"></textarea>
+            <button class="btn btn-primary" id="msgSend" type="submit" style="height:44px;padding:0 18px">Отправить</button>
+          </form>
+        </div>
+      </div>
+    `;
+    const wrap = openModal(html);
+
+    const headerEl   = wrap.querySelector('#chatHeader');
+    const bodyEl     = wrap.querySelector('#chatBody');
+    const actionsEl  = wrap.querySelector('#chatActions');
+    const formEl     = wrap.querySelector('#msgForm');
+    const inputEl    = wrap.querySelector('#msgInput');
+    const sendBtn    = wrap.querySelector('#msgSend');
+    const myId = user.id;
+
+    let thread = null;
+    let messages = [];
+
+    async function refreshHeader() {
+      try {
+        thread = await api.getThread(thread_id);
+        const deal = thread.deal || null;
+        headerEl.innerHTML = renderChatHeader(thread, deal);
+        // Render action buttons
+        const acts = dealActionsFor(deal, thread.my_role);
+        if (acts.length === 0) {
+          actionsEl.style.display = 'none';
+          actionsEl.innerHTML = '';
+        } else {
+          actionsEl.style.display = 'flex';
+          actionsEl.innerHTML = acts.map(a => `
+            <button class="btn ${a.cls} btn-sm" data-deal-action="${a.key}">${a.label}</button>
+          `).join('');
+          actionsEl.querySelectorAll('[data-deal-action]').forEach(btn => {
+            btn.addEventListener('click', () => onDealAction(btn.dataset.dealAction, deal));
+          });
+        }
+        // If thread has no deal yet AND I am the buyer, show "Оформить сделку" bar
+        if (!deal && thread.my_role === 'buyer') {
+          const offerPrice = thread.offer?.price_kopecks ? thread.offer.price_kopecks/100 : '';
+          const offerVol = thread.offer?.volume_tons || thread.request?.volume_tons || '';
+          actionsEl.style.display = 'flex';
+          actionsEl.innerHTML = `<button class="btn btn-primary btn-sm" id="createDealBtn">🤝 Оформить сделку</button>`;
+          actionsEl.querySelector('#createDealBtn').addEventListener('click', () => onCreateDeal(thread, offerPrice, offerVol));
+        }
+      } catch(e) {
+        console.warn('[chat header]', e);
+      }
+    }
+
+    async function refreshMessages(scroll=true) {
+      try {
+        messages = await api.listMessages(thread_id);
+        bodyEl.innerHTML = messages.map(m => renderMessage(m, myId)).join('') ||
+          `<div style="padding:40px;text-align:center;color:var(--slate-500);font-size:14px">Сообщений пока нет — напишите первое.</div>`;
+        if (scroll) bodyEl.scrollTop = bodyEl.scrollHeight;
+      } catch(e) { console.warn('[chat messages]', e); }
+    }
+
+    async function onDealAction(key, deal) {
+      let comment = '';
+      if (key === 'cancelled' || key === 'disputed') {
+        comment = window.prompt(key === 'cancelled' ? 'Причина отмены?' : 'Опишите проблему:') || '';
+        if (key === 'disputed' && !comment.trim()) { showToast('Опишите суть спора'); return; }
+      }
+      try {
+        await api.advanceDeal(deal.id, key, comment);
+        showToast('✓ Статус сделки обновлён');
+        await refreshHeader();
+        await refreshMessages();
+      } catch(e) {
+        showToast(e.message || 'Не удалось обновить статус');
+      }
+    }
+
+    async function onCreateDeal(thread, defaultPrice, defaultVolume) {
+      const priceStr  = window.prompt('Финальная цена за тонну (₽)?', defaultPrice ? String(Math.round(defaultPrice)) : '');
+      if (priceStr === null) return;
+      const volumeStr = window.prompt('Объём (т)?', defaultVolume ? String(defaultVolume) : '');
+      if (volumeStr === null) return;
+      const addr      = window.prompt('Адрес доставки (опционально):', '') || '';
+
+      const price = parseFloat(priceStr);
+      const volume = parseFloat(volumeStr);
+      if (!price || !volume) { showToast('Цена и объём обязательны'); return; }
+
+      try {
+        const r = await api.createDealFromThread(thread.id, {
+          price_per_ton: price, volume_tons: volume, delivery_address: addr
+        });
+        showToast('✓ Сделка оформлена. Покупатель — переходите к оплате.');
+        await refreshHeader();
+        await refreshMessages();
+        // Subscribe to the newly-created deal for realtime status updates
+        if (r?.deal_id && !_chatDealChannel) {
+          _chatDealChannel = await api.subscribeToDeal(r.deal_id, async () => {
+            await refreshHeader();
+          });
+        }
+      } catch(e) {
+        showToast(e.message || 'Не удалось оформить сделку');
+      }
+    }
+
+    // Submit handler
+    formEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = inputEl.value.trim();
+      if (!body) return;
+      sendBtn.disabled = true;
+      try {
+        await api.sendMessage(thread_id, body);
+        inputEl.value = '';
+      } catch(err) {
+        showToast(err.message || 'Не удалось отправить');
+      } finally {
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+    });
+
+    // Enter to send, Shift+Enter for new line
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        formEl.requestSubmit();
+      }
+    });
+
+    // Initial load
+    await refreshHeader();
+    await refreshMessages();
+    api.markThreadRead(thread_id);
+
+    // Realtime subscription — new messages append, deal updates re-render header
+    if (_chatChannel) { try { _chatChannel.unsubscribe(); } catch(_){} _chatChannel = null; }
+    if (_chatDealChannel) { try { _chatDealChannel.unsubscribe(); } catch(_){} _chatDealChannel = null; }
+
+    _chatChannel = await api.subscribeToThread(thread_id, async (event, payload) => {
+      if (event === 'new_message') {
+        // If it's our own message we already have it from the optimistic INSERT; skip duplicate
+        if (messages.some(m => m.id === payload.id)) return;
+        await refreshMessages();
+        if (payload.sender_id !== myId) {
+          api.markThreadRead(thread_id);
+        }
+      }
+    });
+
+    if (thread.deal_id) {
+      _chatDealChannel = await api.subscribeToDeal(thread.deal_id, async () => {
+        await refreshHeader();
+      });
+    }
+
+    // Cleanup on close
+    const cleanup = () => {
+      if (_chatChannel) { try { _chatChannel.unsubscribe(); } catch(_){} _chatChannel = null; }
+      if (_chatDealChannel) { try { _chatDealChannel.unsubscribe(); } catch(_){} _chatDealChannel = null; }
+    };
+    // openModal binds modal-close click → wrap.remove(); piggyback via MutationObserver
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(wrap)) { cleanup(); observer.disconnect(); }
+    });
+    observer.observe(document.body, { childList: true });
+  }
+
+  // Expose for direct linking from elsewhere
+  window.openChatModal = openChatModal;
+
+  // ============================================================
+  // THREAD LIST — pre-deal negotiations panel in account page
+  // ============================================================
+
+  async function loadUserThreads(user) {
+    const list = document.getElementById('threadsList');
+    if (!list) return;
+    try {
+      const threads = await api.listMyThreads();
+      // Show only threads without a deal (active negotiations)
+      const active = threads.filter(t => !t.deal_id);
+      if (!active.length) {
+        return; // keep empty state
+      }
+      list.innerHTML = active.slice(0, 20).map(t => {
+        const cp = t.counterparty;
+        const cpHandle = cp?.handle || '—';
+        const ctx = t.offer ? ('💼 ' + (t.offer.title || ''))
+                  : t.request ? ('📋 ' + (t.request.title || 'Заявка'))
+                  : 'Чат';
+        const last = t.last_message_at ? new Date(t.last_message_at).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+        const unread = t.unread_count > 0 ? `<span style="background:var(--brand);color:#fff;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;margin-left:6px">${t.unread_count}</span>` : '';
+        return `
+          <div class="deal-row" data-action="open-thread" data-thread-id="${t.id}" style="cursor:pointer">
+            <div class="deal-status pending">💬</div>
+            <div class="deal-info">
+              <div class="title">${escapeHtml(ctx)}${unread}</div>
+              <div class="meta">
+                <span>с ${escapeHtml(cpHandle)}</span>
+                ${last ? `<span class="dot">·</span><span>${last}</span>` : ''}
+              </div>
+            </div>
+            <div class="deal-actions">
+              <button class="btn btn-primary btn-sm">Открыть чат →</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('[data-action="open-thread"]').forEach(row => {
+        row.addEventListener('click', () => openChatModal({ thread_id: row.dataset.threadId }));
+      });
+    } catch(e) { console.warn('[threads]', e); }
   }
 
   // Find the wrapper div that contains a dynamic modal element.
@@ -2533,9 +3069,46 @@
 
       grid.innerHTML = offers.map(o => renderCatalogCard(o)).join('');
 
-      // Update counter
+      // Update total counter (filter sidebar)
       const counter = document.getElementById('filterCount');
       if (counter) counter.textContent = offers.length;
+
+      // Re-compute per-crop counts: group by crop family (wheat-3/4/5 → "wheat", barley-malt → "barley", etc.)
+      const cropCounts = {};
+      const familyOf = (id) => {
+        if (!id) return null;
+        if (id.startsWith('wheat')) return 'wheat';
+        if (id.startsWith('barley')) return 'barley';
+        return id;
+      };
+      offers.forEach(o => {
+        const fam = familyOf(o.crop_id);
+        if (!fam) return;
+        cropCounts[fam] = (cropCounts[fam] || 0) + 1;
+      });
+
+      // Update top crop-chip counters (e.g. "Пшеница 8" buttons above the grid)
+      document.querySelectorAll('[data-chip-crop]').forEach(chip => {
+        const crop = chip.dataset.chipCrop;
+        if (crop === 'all') {
+          // Total chip — replace inner number span
+          const span = chip.querySelector('span');
+          if (span) span.textContent = String(offers.length);
+          return;
+        }
+        const n = cropCounts[crop] || 0;
+        const span = chip.querySelector('span');
+        if (span) span.textContent = String(n);
+      });
+
+      // Update sidebar filter checkboxes' .count spans
+      document.querySelectorAll('.filter-check input[data-filter="crop"]').forEach(cb => {
+        const fam = cb.value;
+        const count = cropCounts[fam] || 0;
+        const lbl = cb.closest('.filter-check');
+        const countEl = lbl?.querySelector('.count');
+        if (countEl) countEl.textContent = String(count);
+      });
 
       // Re-trigger filter handlers if they exist
       window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));
@@ -2655,6 +3228,11 @@
 
       // Replace first grid (active) with DB requests
       grids[0].innerHTML = requests.map(r => renderRequestCard(r)).join('');
+
+      // Update active tab counter
+      const saleCount = document.getElementById('saleCount');
+      if (saleCount) saleCount.textContent = String(requests.length);
+
       window.dispatchEvent(new CustomEvent('rh:sale-loaded'));
     } catch(e) {
       console.warn('[Sale] DB sync failed:', e.message);
@@ -2665,13 +3243,19 @@
     const cropKey = r.crop_id?.split('-')[0] || 'other';
     const priceR = r.target_price_kopecks ? (r.target_price_kopecks/100).toLocaleString('ru-RU') + ' ₽/т' : 'Договорная';
     const vatLabel = ({with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',without_vat:'без НДС'})[r.vat] || 'с НДС';
-    const buyerSid = 'B-' + (r.id || '').slice(-4).toUpperCase();
-    const ageH = Math.floor((Date.now() - new Date(r.created_at)) / 36e5);
-    const ageStr = ageH < 24 ? `${ageH} ч назад` : `${Math.floor(ageH/24)} дн назад`;
-    const isUrgent = ageH < 8;
+    // Use buyer's anonymous handle from profiles_public (not request.id — handle is per-buyer, stable)
+    const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
+    const ageH = Math.max(0, Math.floor((Date.now() - new Date(r.created_at)) / 36e5));
+    const ageStr = ageH < 1 ? 'только что' : ageH < 24 ? `${ageH} ч назад` : `${Math.floor(ageH/24)} дн назад`;
+    const isUrgent = r.needed_by && (new Date(r.needed_by).getTime() - Date.now() < 7 * 86400000);
+    const isNew = ageH < 12;
     const neededBy = r.needed_by ? `до ${new Date(r.needed_by).toLocaleDateString('ru-RU')}` : 'Не указан';
-    const buyerCompany = r.buyer?.company_name || 'Покупатель';
-    const buyerType = guessBuyerType(buyerCompany, r.crop_id);
+    // Industry type guessed from crop_id ONLY — never from company_name (which is now unavailable)
+    const buyerType = guessBuyerType(null, r.crop_id);
+    const ratingStr = r.buyer?.rating > 0 ? parseFloat(r.buyer.rating).toFixed(1) : '—';
+    const verifiedDot = r.buyer?.is_verified
+      ? '<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="color:var(--brand)"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg>'
+      : '';
 
     return `
       <article class="req-card"
@@ -2684,8 +3268,8 @@
           <div>
             <div class="req-badges">
               ${isUrgent ? '<span class="badge orange">🔥 Срочно</span>' : ''}
-              ${ageH < 24 ? '<span class="badge featured">Новый</span>' : ''}
-              <span class="badge gray">№ Q-${(r.id || '').slice(-4).toUpperCase()}</span>
+              ${isNew ? '<span class="badge featured">Новый</span>' : ''}
+              <span class="badge gray">№ ${(r.id || '').slice(0,8).toUpperCase()}</span>
             </div>
             <h3 class="req-card-title">${escapeHtml(r.title || r.crop?.name || 'Заявка')}</h3>
           </div>
@@ -2702,12 +3286,12 @@
         <div class="req-meta">
           <span class="item">👤 ${escapeHtml(buyerType)}</span>
           <span class="dot"></span>
-          <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID ${buyerSid}</span>
+          <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID ${escapeHtml(buyerSid)}</span>
           <span class="dot"></span>
           <span class="item">🕐 ${ageStr}</span>
         </div>
         <div class="req-foot">
-          <span class="req-buyer">Проверено платформой · ✓ ★ ${r.buyer?.rating || '4.9'}</span>
+          <span class="req-buyer">${r.buyer?.is_verified ? 'Проверено платформой · ' : ''}${verifiedDot} ★ ${ratingStr}</span>
           <button class="cta" data-action="respond" data-request-id="${r.id}">Откликнуться →</button>
         </div>
       </article>
@@ -2715,21 +3299,31 @@
   }
 
   function guessBuyerType(company, crop) {
-    if (/птицеф/i.test(company)) return 'Птицефабрика';
-    if (/хлебоз/i.test(company)) return 'Хлебозавод';
-    if (/комбикорм/i.test(company)) return 'Комбикормовый завод';
-    if (/мукомол/i.test(company)) return 'Мукомольный комбинат';
-    if (/пивовар/i.test(company)) return 'Пивоваренный завод';
+    // Privacy-aware: company is intentionally null in current calls — guess from crop only.
+    // Legacy regex on company kept for completeness in case admin callers pass it in the future.
+    if (company) {
+      if (/птицеф/i.test(company)) return 'Птицефабрика';
+      if (/хлебоз/i.test(company)) return 'Хлебозавод';
+      if (/комбикорм/i.test(company)) return 'Комбикормовый завод';
+      if (/мукомол/i.test(company)) return 'Мукомольный комбинат';
+      if (/пивовар/i.test(company)) return 'Пивоваренный завод';
+    }
     if (crop?.includes('barley-malt')) return 'Пивоваренный завод';
     if (crop?.includes('sunflower')) return 'Маслозавод';
+    if (crop?.includes('rapeseed')) return 'Маслозавод';
+    if (crop?.includes('wheat-3') || crop?.includes('wheat-4')) return 'Хлебозавод';
+    if (crop?.includes('corn') || crop?.includes('barley')) return 'Комбикормовый завод';
     return 'Закупочная компания';
   }
 
   // Product page: load quality data from DB offer
+  // Product page: load real offer data into the page (title, price, buttons, quality, supplier)
   async function syncProduct() {
+    // Detect product page either by quality block or by buy-card presence
     const qualityEl = document.getElementById('productQuality');
     const qualityList = document.getElementById('productQualityList');
-    if (!qualityEl || !qualityList) return; // not on product page
+    const buyCard = document.querySelector('.buy-card');
+    if (!buyCard && !qualityEl) return; // not on product page
 
     try {
       // Find the offer for this page
@@ -2753,25 +3347,67 @@
       const offer = await api.getOffer(offerId);
       if (!offer) return;
 
-      // Show quality if the seller filled it in
-      const quality = offer.quality || {};
-      const entries = Object.entries(quality);
+      // Update title (page + h1)
+      const titleEl = document.querySelector('h1');
+      if (titleEl && offer.title) titleEl.textContent = offer.title;
+      if (offer.title) document.title = `${offer.title} — Русский Урожай`;
 
-      if (entries.length > 0) {
-        qualityList.innerHTML = entries.map(([k, v]) =>
-          `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v))}</span></div>`
-        ).join('');
-        qualityEl.style.display = '';
-
-        // Update header if lab analysis
-        if (offer.has_lab_analysis) {
-          qualityEl.querySelector('h3').innerHTML =
-            '✅ Показатели качества (лабораторный анализ)';
+      // Update price card
+      if (buyCard) {
+        const priceEl = buyCard.querySelector('.price');
+        if (priceEl) {
+          const price = (offer.price_kopecks/100).toLocaleString('ru-RU');
+          priceEl.innerHTML = `${price} <span class="unit">₽/т</span>`;
+        }
+        const vatEl = buyCard.querySelector('.vat');
+        if (vatEl) {
+          const vatMap = {
+            with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%',
+            with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%',
+            without_vat: 'без НДС'
+          };
+          vatEl.textContent = vatMap[offer.vat] || 'с НДС';
+        }
+        // Wire real offer id into action buttons (replaces "demo" placeholder)
+        buyCard.querySelectorAll('[data-action="buy"], [data-action="propose"]').forEach(b => {
+          b.dataset.offerId = offer.id;
+        });
+        // Update supplier rating and handle (anonymous)
+        const supplierBlock = buyCard.querySelector('.supplier-block .info');
+        if (supplierBlock && offer.seller) {
+          const handleSpan = supplierBlock.querySelector('span:first-child');
+          if (handleSpan) {
+            const rating = offer.seller.rating > 0 ? parseFloat(offer.seller.rating).toFixed(1) : '—';
+            handleSpan.innerHTML = `<span style="color:var(--brand)">★</span>${rating}`;
+            // Append handle as a separate item if there's room
+            const handleItem = document.createElement('span');
+            handleItem.style.cssText = 'color:var(--slate-500);font-family:"JetBrains Mono",monospace;font-size:11.5px;margin-left:8px';
+            handleItem.textContent = offer.seller.handle || '';
+            if (offer.seller.handle && !supplierBlock.querySelector('.handle-tag')) {
+              handleItem.className = 'handle-tag';
+              handleSpan.after(handleItem);
+            }
+          }
         }
       }
-      // else: quality is empty — section stays hidden
+
+      // Show quality if the seller filled it in
+      if (qualityEl && qualityList) {
+        const quality = offer.quality || {};
+        const entries = Object.entries(quality);
+        if (entries.length > 0) {
+          qualityList.innerHTML = entries.map(([k, v]) =>
+            `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v))}</span></div>`
+          ).join('');
+          qualityEl.style.display = '';
+          if (offer.has_lab_analysis) {
+            const h3 = qualityEl.querySelector('h3');
+            if (h3) h3.innerHTML = '✅ Показатели качества (лабораторный анализ)';
+          }
+        }
+      }
     } catch(e) {
-      console.warn('[Product] quality load:', e);
+      console.warn('[Product] sync failed:', e);
     }
   }
 

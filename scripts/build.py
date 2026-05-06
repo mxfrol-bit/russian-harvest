@@ -2252,9 +2252,16 @@ def build_account():
           <a href="#" class="btn btn-outline">{icon('user')} Пользователи</a>
           <a href="#" class="btn btn-outline">{icon('handshake')} Все сделки</a>
           <a href="#" class="btn btn-outline">{icon('message')} Все заявки</a>
+          <a href="#" class="btn btn-outline">💬 Чаты платформы</a>
           <a href="#" class="btn btn-outline">{icon('alert')} Споры и жалобы</a>
           <a href="#" class="btn btn-outline">{icon('chart')} Аналитика</a>
           <a href="#" class="btn btn-outline">{icon('info')} Настройки платформы</a>
+        </div>
+
+        <!-- Version footer (populated by admin.js from RH_CONFIG.CHANGELOG) -->
+        <div id="adminVersionFooter" style="margin-top:18px;padding:14px 16px;background:rgba(0,0,0,.04);border-radius:10px;font-size:12px;color:var(--slate-600);display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+          <span>📦 <b>Версия платформы:</b> <span id="adminVersionTag">—</span> · <span id="adminVersionDate">—</span></span>
+          <span style="font-size:11px;color:var(--brand-dark)">Журнал релизов →</span>
         </div>
       </div>
 
@@ -2294,6 +2301,20 @@ def build_account():
             <h4 style="font-size:15px;color:var(--ink);margin-bottom:6px">Нет активных сделок</h4>
             <p style="font-size:13px;max-width:340px;margin:0 auto 14px">Найдите поставщика в каталоге или разместите заявку — все ваши сделки появятся здесь.</p>
             <a href="/catalog.html" class="btn btn-primary btn-sm">Открыть каталог</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active negotiation threads (no deal yet) — populated dynamically -->
+      <div class="account-panel">
+        <div class="account-panel-head">
+          <h3>Активные переговоры</h3>
+          <span style="font-size:12px;color:var(--slate-500)">До оформления сделки. Реквизиты компаний скрыты.</span>
+        </div>
+        <div class="deals-list" id="threadsList">
+          <div class="empty-state" style="padding:30px 20px;text-align:center;color:var(--slate-500)">
+            <div style="font-size:36px;opacity:.4;margin-bottom:8px">💬</div>
+            <p style="font-size:13px">Активных чатов нет. Откликнитесь на оффер или заявку — переговоры появятся здесь.</p>
           </div>
         </div>
       </div>

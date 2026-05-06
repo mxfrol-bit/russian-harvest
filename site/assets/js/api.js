@@ -212,7 +212,7 @@
       let q = sb.from('offers').select(`
         *,
         crop:crops(name, emoji, category),
-        seller:profiles!offers_seller_id_fkey(id, company_name, full_name, rating, deals_count, is_verified, city, region)
+        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region)
       `).eq('status', 'active').order('created_at', { ascending: false });
 
       if (filters.crop_id) q = q.eq('crop_id', filters.crop_id);
@@ -234,7 +234,7 @@
       const { data, error } = await sb.from('offers').select(`
         *,
         crop:crops(*),
-        seller:profiles!offers_seller_id_fkey(*)
+        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region, avatar_url, bio)
       `).eq('id', id).single();
       if (error) throw error;
       return data;
@@ -308,7 +308,7 @@
       let q = sb.from('buyer_requests').select(`
         *,
         crop:crops(name, emoji),
-        buyer:profiles!buyer_requests_buyer_id_fkey(id, company_name, full_name, rating, is_verified, region)
+        buyer:profiles_public!buyer_requests_buyer_id_fkey(id, handle, role, rating, is_verified, region, city)
       `).eq('status', 'open').order('created_at', { ascending: false });
 
       if (filters.crop_id) q = q.eq('crop_id', filters.crop_id);
@@ -365,8 +365,8 @@
       let q = sb.from('deals').select(`
         *,
         crop:crops(name, emoji),
-        buyer:profiles!deals_buyer_id_fkey(company_name, full_name, city),
-        seller:profiles!deals_seller_id_fkey(company_name, full_name, city)
+        buyer:profiles_public!deals_buyer_id_fkey(id, handle, role, city, region, rating, is_verified),
+        seller:profiles_public!deals_seller_id_fkey(id, handle, role, city, region, rating, is_verified)
       `).or(`buyer_id.eq.${session.user.id},seller_id.eq.${session.user.id}`)
         .order('created_at', { ascending: false });
       if (status) q = q.eq('status', status);
@@ -410,7 +410,7 @@
       let q = sb.from('auctions').select(`
         *,
         crop:crops(name, emoji),
-        seller:profiles!auctions_seller_id_fkey(company_name, rating)
+        seller:profiles_public!auctions_seller_id_fkey(id, handle, rating, is_verified)
       `).order('ends_at', { ascending: true });
       if (status === 'active') {
         q = q.in('status', ['active', 'ending_soon']);
@@ -427,8 +427,8 @@
       const { data, error } = await sb.from('auctions').select(`
         *,
         crop:crops(*),
-        seller:profiles!auctions_seller_id_fkey(*),
-        bids:auction_bids(amount_kopecks, created_at, bidder:profiles(company_name))
+        seller:profiles_public!auctions_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, region),
+        bids:auction_bids(amount_kopecks, created_at, bidder:profiles_public!auction_bids_bidder_id_fkey(id, handle))
       `).eq('id', id).single();
       if (error) throw error;
       return data;
@@ -915,7 +915,6 @@
       return { ok: true };
     },
 
-    // Admin can create offers/requests/deals on behalf of users
     async adminCreateOffer(payload) {
       const sb = await ensureSupabase();
       // seller_id required
@@ -940,8 +939,260 @@
       const { data, error } = await sb.from('offers').insert(offer).select().single();
       if (error) throw error;
       return data;
+    },
+
+    // ===========================================================
+    // CHAT — message threads and messages
+    // ===========================================================
+
+    /** Buyer (or admin) opens a chat with the seller about an offer.
+     *  Idempotent: re-calling returns the SAME thread.
+     *  Returns: { thread_id, offer_id, seller_id }
+     */
+    async respondToOffer(offer_id, message) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('respond_to_offer', {
+        p_offer_id: offer_id, p_message: message || ''
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Seller (or admin) responds to a buyer request with a price + volume quote.
+     *  First chat message is the seller's quote (formatted automatically).
+     *  Returns: { thread_id, request_id, buyer_id }
+     */
+    async respondToRequest(request_id, { price_per_ton, volume_tons, message, region } = {}) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('respond_to_request', {
+        p_request_id:    request_id,
+        p_price_per_ton: parseFloat(price_per_ton),
+        p_volume_tons:   parseFloat(volume_tons),
+        p_message:       message || '',
+        p_region:        region || null
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Find or create the chat thread tied to a deal. */
+    async startDealThread(deal_id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('start_deal_thread', { p_deal_id: deal_id });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Strict deal state machine. Allowed transitions:
+     *    pending  → paid       (buyer)
+     *    paid     → shipping   (seller)
+     *    shipping → delivered  (seller)
+     *    delivered→ completed  (buyer)
+     *    pending  → cancelled  (either)
+     *    paid|shipping|delivered → disputed (either)
+     *  Posts a system message into the chat as a side effect.
+     */
+    async advanceDeal(deal_id, new_status, comment) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('advance_deal', {
+        p_deal_id:    deal_id,
+        p_new_status: new_status,
+        p_comment:    comment || null
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Convert a negotiation thread into a real deal (buyer-initiated). */
+    async createDealFromThread(thread_id, { volume_tons, price_per_ton, delivery_address } = {}) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('create_deal_from_thread', {
+        p_thread_id:        thread_id,
+        p_volume_tons:      parseFloat(volume_tons),
+        p_price_per_ton:    parseFloat(price_per_ton),
+        p_delivery_address: delivery_address || null
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Mark all incoming messages in a thread as read. */
+    async markThreadRead(thread_id) {
+      const sb = await ensureSupabase();
+      const { error } = await sb.rpc('mark_thread_read', { p_thread_id: thread_id });
+      if (error) console.warn('[markThreadRead]', error);
+    },
+
+    /** All chat threads where the current user is buyer or seller.
+     *  Counterparties are exposed only via profiles_public (handle, no PII).
+     */
+    async listMyThreads() {
+      const sb = await ensureSupabase();
+      const session = await getCurrentSession();
+      if (!session) throw new Error('Не авторизован');
+
+      const { data, error } = await sb.from('message_threads').select(`
+        id, deal_id, offer_id, request_id, buyer_id, seller_id, last_message_at, created_at,
+        buyer:profiles_public!message_threads_buyer_id_fkey(id, handle, role, rating, is_verified, region, city),
+        seller:profiles_public!message_threads_seller_id_fkey(id, handle, role, rating, is_verified, region, city),
+        offer:offers(id, title, price_kopecks, volume_tons, crop:crops(name, emoji)),
+        request:buyer_requests(id, title, target_price_kopecks, volume_tons, crop:crops(name, emoji)),
+        deal:deals(id, deal_number, status, volume_tons, price_per_ton_kopecks, grand_total_kopecks, crop:crops(name, emoji))
+      `).order('last_message_at', { ascending: false });
+      if (error) throw error;
+
+      // Annotate each thread with counterparty + unread count
+      const myId = session.user.id;
+      const threads = data || [];
+
+      // Fetch unread counts in one go
+      const ids = threads.map(t => t.id);
+      let unreadMap = {};
+      if (ids.length) {
+        const { data: unread } = await sb.from('messages')
+          .select('thread_id')
+          .in('thread_id', ids)
+          .is('read_at', null)
+          .neq('sender_id', myId);
+        (unread || []).forEach(m => { unreadMap[m.thread_id] = (unreadMap[m.thread_id] || 0) + 1; });
+      }
+
+      return threads.map(t => ({
+        ...t,
+        my_role: (t.buyer_id === myId) ? 'buyer' : (t.seller_id === myId) ? 'seller' : 'observer',
+        counterparty: (t.buyer_id === myId) ? t.seller : t.buyer,
+        unread_count: unreadMap[t.id] || 0
+      }));
+    },
+
+    /** Single thread with its full context. */
+    async getThread(thread_id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('message_threads').select(`
+        id, deal_id, offer_id, request_id, buyer_id, seller_id, last_message_at, created_at,
+        buyer:profiles_public!message_threads_buyer_id_fkey(id, handle, role, rating, is_verified, region, city),
+        seller:profiles_public!message_threads_seller_id_fkey(id, handle, role, rating, is_verified, region, city),
+        offer:offers(id, title, price_kopecks, volume_tons, vat, has_delivery, delivery_price_per_ton_kopecks, crop:crops(name, emoji)),
+        request:buyer_requests(id, title, target_price_kopecks, volume_tons, delivery_region, delivery_city, crop:crops(name, emoji)),
+        deal:deals(*, crop:crops(name, emoji))
+      `).eq('id', thread_id).single();
+      if (error) throw error;
+
+      const session = await getCurrentSession();
+      const myId = session?.user?.id;
+      data.my_role = (data.buyer_id === myId) ? 'buyer' : (data.seller_id === myId) ? 'seller' : 'observer';
+      data.counterparty = (data.buyer_id === myId) ? data.seller : data.buyer;
+      return data;
+    },
+
+    /** All messages in a thread, oldest first. */
+    async listMessages(thread_id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('messages').select(`
+        id, thread_id, sender_id, body, attachments, read_at, created_at,
+        sender:profiles_public!messages_sender_id_fkey(id, handle, role)
+      `).eq('thread_id', thread_id).order('created_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+
+    /** Send a message into an existing thread. */
+    async sendMessage(thread_id, body) {
+      const sb = await ensureSupabase();
+      const session = await getCurrentSession();
+      if (!session) throw new Error('Не авторизован');
+      const trimmed = (body || '').trim();
+      if (!trimmed) throw new Error('Сообщение пустое');
+
+      const { data, error } = await sb.from('messages').insert({
+        thread_id, sender_id: session.user.id, body: trimmed
+      }).select(`
+        id, thread_id, sender_id, body, created_at, read_at,
+        sender:profiles_public!messages_sender_id_fkey(id, handle, role)
+      `).single();
+      if (error) throw error;
+
+      // Bump last_message_at (best-effort; ignored on RLS reject)
+      sb.from('message_threads')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', thread_id)
+        .then(() => {}, () => {});
+
+      return data;
+    },
+
+    /** Subscribe to new messages and deal updates in a thread.
+     *  callback(event, payload) where event ∈ {'new_message','deal_update','thread_update'}.
+     *  Returns the channel — call channel.unsubscribe() when done.
+     */
+    async subscribeToThread(thread_id, callback) {
+      const sb = await ensureSupabase();
+      const channel = sb.channel(`thread:${thread_id}`)
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `thread_id=eq.${thread_id}` },
+          payload => callback('new_message', payload.new))
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'message_threads', filter: `id=eq.${thread_id}` },
+          payload => callback('thread_update', payload.new));
+      // Deal updates need a separate filter — added on demand by caller via `.subscribeToDeal()`.
+      channel.subscribe();
+      return channel;
+    },
+
+    /** Subscribe to a single deal's status updates. */
+    async subscribeToDeal(deal_id, callback) {
+      const sb = await ensureSupabase();
+      const channel = sb.channel(`deal:${deal_id}`)
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'deals', filter: `id=eq.${deal_id}` },
+          payload => callback('deal_update', payload.new))
+        .subscribe();
+      return channel;
+    },
+
+    // ===========================================================
+    // ADMIN: chat oversight
+    // ===========================================================
+
+    /** Admin: list ALL threads on the platform with summary + counterparty handles. */
+    async adminListThreads(only_with_messages = true) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('admin_list_threads', { p_only_with_messages: only_with_messages });
+      if (error) throw new Error(translateRpcError(error));
+      return data || [];
+    },
+
+    /** Admin: post a message into ANY thread (sender = admin, prefixed with 👮). */
+    async adminPostMessage(thread_id, body) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('admin_post_message', {
+        p_thread_id: thread_id, p_body: body
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
     }
   };
+
+  // Translate Postgres-side RPC error codes into Russian UI messages.
+  function translateRpcError(error) {
+    const msg = (error?.message || '').toUpperCase();
+    if (msg.includes('AUTH_REQUIRED')) return 'Войдите в аккаунт, чтобы продолжить';
+    if (msg.includes('BUYER_REQUIRED')) return 'Откликаться на офферы могут только покупатели';
+    if (msg.includes('SELLER_REQUIRED')) return 'Откликаться на заявки могут только продавцы';
+    if (msg.includes('SELF_RESPOND')) return 'Нельзя откликаться на собственное объявление';
+    if (msg.includes('OFFER_NOT_FOUND')) return 'Оффер не найден';
+    if (msg.includes('REQUEST_NOT_FOUND')) return 'Заявка не найдена';
+    if (msg.includes('REQUEST_CLOSED')) return 'Заявка уже закрыта';
+    if (msg.includes('THREAD_NOT_FOUND')) return 'Чат не найден';
+    if (msg.includes('DEAL_NOT_FOUND')) return 'Сделка не найдена';
+    if (msg.includes('NOT_PARTICIPANT')) return 'Доступ закрыт';
+    if (msg.includes('BUYER_ONLY')) return 'Это действие выполняет покупатель';
+    if (msg.includes('SELLER_ONLY')) return 'Это действие выполняет продавец';
+    if (msg.includes('BAD_TRANSITION')) return 'Переход недопустим в текущем статусе';
+    if (msg.includes('NO_CROP_CONTEXT')) return 'Не определена культура для сделки';
+    if (msg.includes('UNKNOWN_STATUS')) return 'Неизвестный статус';
+    return error?.message || 'Не удалось выполнить действие';
+  }
 
   // Expose globally
   window.RH_API = api;
