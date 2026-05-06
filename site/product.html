@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1778049209">
+<link rel="stylesheet" href="assets/css/main.css?v=1778050432">
 </head>
 <body>
 
@@ -117,28 +117,20 @@
         <div class="cell"><div class="k">Активно до</div><div class="v">24.04.2026</div></div>
       </div>
 
-      <div class="product-quality">
-        <h3><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/><path d="m7 10 2 2 4-4"/></svg> Показатели качества (лабораторный анализ)</h3>
-        <div class="list">
-          <div class="row"><span class="k">Протеин</span><span class="v">12,8 %</span></div>
-          <div class="row"><span class="k">Клейковина</span><span class="v">26 %</span></div>
-          <div class="row"><span class="k">Влажность</span><span class="v">13,2 %</span></div>
-          <div class="row"><span class="k">Натура</span><span class="v">780 г/л</span></div>
-          <div class="row"><span class="k">Сорная примесь</span><span class="v">1,2 %</span></div>
-          <div class="row"><span class="k">Число падения</span><span class="v">280 с</span></div>
-          <div class="row"><span class="k">Зерновая примесь</span><span class="v">3,5 %</span></div>
-          <div class="row"><span class="k">Зараженность</span><span class="v">нет</span></div>
-        </div>
+      <!-- Quality section — loaded dynamically from DB offer -->
+      <div class="product-quality" id="productQuality" style="display:none">
+        <h3><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/><path d="m7 10 2 2 4-4"/></svg> Показатели качества</h3>
+        <div class="list" id="productQualityList"></div>
       </div>
 
       <div class="product-section">
-        <h3>Условия отгрузки и доставки</h3>
-        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>539,4</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>1800 ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через платформу. Самовывоз также возможен.</p>
+        <h3>Условия</h3>
+        <p>Условия отгрузки и доставки обсуждаются при оформлении сделки. Самовывоз возможен.</p>
       </div>
 
       <div class="product-section">
         <h3>Документы</h3>
-        <p>Поставщик предоставляет полный пакет: договор поставки (типовой платформы или согласованный), УПД, ТТН, сертификат качества, паспорт на партию. Счёт-фактура с НДС 10%.</p>
+        <p>Поставщик предоставляет: договор поставки, УПД, ТТН, сертификат качества, паспорт на партию.</p>
       </div>
     </div>
 
@@ -146,45 +138,9 @@
       <div class="buy-card">
         <div class="price">14,200 <span class="unit">₽/т</span></div>
         <span class="vat">с НДС 10%</span>
-        <div class="delta"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg> На 380 ₽ ниже медианы по региону</div>
-
-        <!-- DISTANCE & DELIVERY CALCULATOR -->
-        <div class="delivery-calc">
-          <div class="delivery-calc-head">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
-            <span class="t">Расчёт доставки</span>
-          </div>
-          <div class="delivery-calc-route">
-            <div class="from">
-              <span class="k">ОТ (склад)</span>
-              <span class="v">Балаково</span>
-            </div>
-            <span class="arrow">→</span>
-            <div class="to">
-              <span class="k">ДО ВАС</span>
-              <span class="v">Нижний Новгород</span>
-              <span class="change">изменить адрес</span>
-            </div>
-          </div>
-          <div class="delivery-calc-stats">
-            <div class="stat">
-              <div class="k">Расстояние</div>
-              <div class="v">539,4</div>
-            </div>
-            <div class="stat">
-              <div class="k">Доставка, ₽/т</div>
-              <div class="v">1,800</div>
-            </div>
-          </div>
-          <div class="total-with-delivery">
-            <span>Итого с доставкой</span>
-            <span class="mono">16,000 ₽/т</span>
-          </div>
-        </div>
 
         <div class="actions">
-          <button class="btn btn-primary btn-block" data-action="buy" data-delivery="1" data-offer-id="demo">Купить с доставкой <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
-          <button class="btn btn-outline btn-block" data-action="buy" data-delivery="0" data-offer-id="demo">Купить с самовывозом</button>
+          <button class="btn btn-primary btn-block" data-action="buy" data-delivery="0" data-offer-id="demo">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
           <button class="btn btn-ghost btn-block" data-action="propose" data-offer-id="demo">Сделать ценовое предложение</button>
         </div>
 
@@ -219,8 +175,8 @@
 <!-- Mobile sticky bottom -->
 <div class="mobile-bottom-bar">
   <div style="flex:1">
-    <div style="font-size:12px;color:var(--slate-500);font-weight:600">16,000 ₽/т</div>
-    <div style="font-size:11px;color:var(--slate-400)">с доставкой · 539,4</div>
+    <div style="font-size:12px;color:var(--slate-500);font-weight:600">14,200 ₽/т</div>
+    <div style="font-size:11px;color:var(--slate-400)">с НДС</div>
   </div>
   <a class="btn btn-outline btn-sm" href="#">Чат</a>
   <a class="btn btn-primary btn-sm" href="#">Купить</a>
@@ -470,11 +426,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1778049209"></script>
-<script src="assets/js/cities.js?v=1778049209"></script>
-<script src="assets/js/api.js?v=1778049209"></script>
-<script src="assets/js/main.js?v=1778049209"></script>
-<script src="assets/js/admin.js?v=1778049209"></script>
-<script src="assets/js/tour.js?v=1778049209"></script>
+<script src="assets/js/config.js?v=1778050432"></script>
+<script src="assets/js/cities.js?v=1778050432"></script>
+<script src="assets/js/api.js?v=1778050432"></script>
+<script src="assets/js/main.js?v=1778050432"></script>
+<script src="assets/js/admin.js?v=1778050432"></script>
+<script src="assets/js/tour.js?v=1778050432"></script>
 </body>
 </html>

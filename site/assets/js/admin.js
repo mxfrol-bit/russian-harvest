@@ -358,16 +358,26 @@
         // Keep empty-state already in HTML
       } else {
         list.innerHTML = active.slice(0, 10).map(d => renderDealRow(d, user)).join('');
+        wireViewDealButtons(list);
       }
 
       // History
       const histList = document.getElementById('historyDealsList');
       if (histList && history.length > 0) {
         histList.innerHTML = history.slice(0, 10).map(d => renderDealRow(d, user, true)).join('');
+        wireViewDealButtons(histList);
       }
     } catch(e) {
       console.warn('[Deals]', e);
     }
+  }
+
+  function wireViewDealButtons(container) {
+    container.querySelectorAll('[data-action="view-deal"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        showToast(`Сделка ${btn.dataset.deal} · ${btn.dataset.status}`);
+      });
+    });
   }
 
   function renderDealRow(d, user, isHistory = false) {
@@ -396,7 +406,7 @@
         <div class="deal-price">${api.formatRub(d.grand_total_kopecks)}<small>${isBuyer ? 'покупка' : 'продажа'}</small></div>
         <span class="deal-label ${statusCls}">${statusLabel}</span>
         <div class="deal-actions">
-          <button class="btn btn-outline btn-sm" disabled style="opacity:.5">Открыть</button>
+          <button class="btn btn-outline btn-sm" data-action="view-deal" data-deal="${d.deal_number}" data-status="${statusLabel}">Детали</button>
         </div>
       </div>
     `;
@@ -422,10 +432,17 @@
           <div class="deal-price">${r.responses_count || 0} <small>откликов</small></div>
           <span class="deal-label ${r.status === 'open' ? 'pending' : 'done'}">${r.status === 'open' ? 'Активна' : 'Закрыта'}</span>
           <div class="deal-actions">
-            <button class="btn btn-outline btn-sm" disabled style="opacity:.5">Открыть</button>
+            <button class="btn btn-outline btn-sm" data-action="view-request" data-id="${r.id}">Открыть</button>
           </div>
         </div>
       `).join('');
+
+      // Wire "Открыть" buttons
+      list.querySelectorAll('[data-action="view-request"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openEditRequestModal(btn.dataset.id, () => loadUserRequests(user));
+        });
+      });
     } catch(e) {
       console.warn('[Requests]', e);
     }
@@ -848,7 +865,7 @@
           showToast(`✓ Статус изменён на «${newStatus}»`);
           row.dataset.status = newStatus;
         } catch(err) {
-          alert('Ошибка: ' + err.message);
+          showToast('⚠ ' + err.message);
           sel.value = original;
         } finally {
           sel.disabled = false;
@@ -868,7 +885,7 @@
           setTimeout(() => row.remove(), 250);
           showToast('✓ Оффер удалён');
         } catch(err) {
-          alert('Ошибка: ' + err.message);
+          showToast('⚠ ' + err.message);
           btn.disabled = false;
           btn.textContent = '✕ Удалить';
         }
@@ -977,7 +994,7 @@
             btn.outerHTML = '<span style="color:var(--brand-dark);font-size:12px;font-weight:600">✓ Проверен</span>';
             showToast('✓ Пользователь подтверждён');
           } catch(err) {
-            alert('Ошибка: ' + err.message);
+            showToast('⚠ ' + err.message);
             btn.disabled = false;
           }
         });
@@ -997,7 +1014,7 @@
             await api.adminSetUserRole(row.dataset.userId, newRole);
             showToast(`✓ Роль изменена`);
           } catch(err) {
-            alert('Ошибка: ' + err.message);
+            showToast('⚠ ' + err.message);
             sel.value = originalRole;
           } finally {
             sel.disabled = false;
@@ -1019,7 +1036,7 @@
             setTimeout(() => row.remove(), 250);
             showToast('✓ Пользователь удалён');
           } catch(err) {
-            alert('Ошибка: ' + err.message);
+            showToast('⚠ ' + err.message);
             btn.disabled = false;
             btn.textContent = '🗑';
           }
@@ -1130,7 +1147,7 @@
               await api.adminUpdateDealStatus(row.dataset.dealId, sel.value);
               showToast('✓ Статус сделки изменён');
             } catch(err) {
-              alert('Ошибка: ' + err.message);
+              showToast('⚠ ' + err.message);
               sel.value = orig;
             } finally {
               sel.disabled = false;
@@ -1149,7 +1166,7 @@
               setTimeout(() => row.remove(), 250);
               showToast('✓ Сделка удалена');
             } catch(err) {
-              alert('Ошибка: ' + err.message);
+              showToast('⚠ ' + err.message);
               btn.disabled = false;
               btn.textContent = '🗑';
             }
@@ -1275,7 +1292,7 @@
             await api.adminUpdateRequestStatus(row.dataset.requestId, sel.value);
             showToast('✓ Статус заявки изменён');
           } catch(err) {
-            alert('Ошибка: ' + err.message);
+            showToast('⚠ ' + err.message);
             sel.value = orig;
           } finally {
             sel.disabled = false;
@@ -1295,7 +1312,7 @@
             setTimeout(() => row.remove(), 250);
             showToast('✓ Заявка удалена');
           } catch(err) {
-            alert('Ошибка: ' + err.message);
+            showToast('⚠ ' + err.message);
             btn.disabled = false;
             btn.textContent = '🗑';
           }
@@ -2064,25 +2081,33 @@
   // PURCHASE / PROPOSE / RESPOND HANDLERS
   // ============================================================
 
-  // Find offer ID — supports real IDs, URL params, and fallback search for static product page
+  // Find offer ID — supports real UUIDs, URL params, and fallback search
   async function findOfferIdAsync(btn) {
-    // 1. Real ID on button
-    if (btn.dataset.offerId && btn.dataset.offerId !== 'demo') return btn.dataset.offerId;
-    // 2. Parent card
+    // 1. Real UUID on button
+    if (btn.dataset.offerId && btn.dataset.offerId !== 'demo' && btn.dataset.offerId.includes('-')) {
+      return btn.dataset.offerId;
+    }
+    // 2. Parent card with UUID
     const card = btn.closest('[data-offer]');
-    if (card) return card.dataset.offer;
-    // 3. URL param ?id=
+    if (card && card.dataset.offer && card.dataset.offer.includes('-')) {
+      return card.dataset.offer;
+    }
+    // 3. URL param ?id= (only if it looks like UUID)
     const params = new URLSearchParams(location.search);
     const urlId = params.get('id');
-    if (urlId) return urlId;
-    // 4. Static product page — search by title on the page
-    const titleEl = document.querySelector('.product-title, .card-title, h1');
+    if (urlId && urlId.includes('-')) return urlId;
+
+    // 4. Fallback: search by page title
+    const titleEl = document.querySelector('h1');
     if (titleEl) {
       const title = titleEl.textContent.trim();
-      try {
-        const offers = await api.listOffers({ search: title.slice(0, 20), limit: 1 });
-        if (offers && offers.length) return offers[0].id;
-      } catch(e) {}
+      // Skip generic page titles
+      if (title.length > 3 && !title.includes('Купить') && !title.includes('Продавайте') && !title.includes('Покупайте')) {
+        try {
+          const offers = await api.listOffers({ search: title, limit: 1 });
+          if (offers && offers.length) return offers[0].id;
+        } catch(e) { console.warn('[findOffer] search failed:', e); }
+      }
     }
     return null;
   }
@@ -2090,15 +2115,29 @@
   async function requireLogin(action) {
     const user = await api.currentUser();
     if (!user) {
-      const proceed = confirm(`Чтобы ${action}, нужно войти в аккаунт.\n\nПерейти на страницу входа?`);
-      if (proceed) {
-        // Open login modal
+      // Show custom modal instead of browser confirm()
+      const html = `
+        <div class="modal-backdrop on"></div>
+        <div class="modal on" style="max-width:420px;text-align:center;padding:40px 30px">
+          <button class="modal-close">✕</button>
+          <div style="font-size:48px;margin-bottom:14px">🔐</div>
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">Требуется авторизация</h2>
+          <p style="color:var(--slate-500);margin-bottom:24px;line-height:1.6">Чтобы ${escapeHtml(action)}, войдите в аккаунт или зарегистрируйтесь на платформе.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary" id="authGoLogin">Войти / Регистрация</button>
+            <button class="btn btn-outline modal-close">Отмена</button>
+          </div>
+        </div>
+      `;
+      const wrap = openModal(html);
+      wrap.querySelector('#authGoLogin').addEventListener('click', () => {
+        wrap.remove();
         const bd = document.getElementById('loginBackdrop');
         const modal = document.getElementById('loginModal');
         if (bd) bd.classList.add('on');
         if (modal) modal.classList.add('on');
         document.body.style.overflow = 'hidden';
-      }
+      });
       return null;
     }
     return user;
@@ -2110,14 +2149,14 @@
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) {
-      alert('Не удалось определить оффер. Откройте страницу товара.');
+      showToast('Не удалось определить оффер. Откройте страницу товара.');
       return;
     }
 
     const withDelivery = btn.dataset.delivery === '1';
     const offer = await api.getOffer(offerId).catch(() => null);
     if (!offer) {
-      alert('Оффер не найден или удалён.');
+      showToast('Оффер не найден или удалён');
       return;
     }
 
@@ -2228,10 +2267,10 @@
     if (!user) return;
 
     const offerId = await findOfferIdAsync(btn);
-    if (!offerId) return alert('Не удалось определить оффер.');
+    if (!offerId) showToast('Не удалось определить оффер'); return;
 
     const offer = await api.getOffer(offerId).catch(() => null);
-    if (!offer) return alert('Оффер не найден.');
+    if (!offer) showToast('Оффер не найден'); return;
 
     const currentPrice = api.formatRub(offer.price_kopecks);
 
@@ -2326,7 +2365,7 @@
     }
 
     const requestId = btn.dataset.requestId;
-    if (!requestId) return alert('Не удалось определить заявку.');
+    if (!requestId) showToast('Не удалось определить заявку'); return;
 
     // Get request card info from DOM
     const card = btn.closest('.req-card, [data-request]');
@@ -2686,14 +2725,66 @@
     return 'Закупочная компания';
   }
 
+  // Product page: load quality data from DB offer
+  async function syncProduct() {
+    const qualityEl = document.getElementById('productQuality');
+    const qualityList = document.getElementById('productQualityList');
+    if (!qualityEl || !qualityList) return; // not on product page
+
+    try {
+      // Find the offer for this page
+      const params = new URLSearchParams(location.search);
+      let offerId = params.get('id');
+
+      // If numeric ID or no ID — search by title
+      if (!offerId || !offerId.includes('-')) {
+        const h1 = document.querySelector('h1');
+        if (h1) {
+          const title = h1.textContent.trim();
+          if (title.length > 3 && !title.includes('Купить') && !title.includes('Покупайте')) {
+            const offers = await api.listOffers({ search: title, limit: 1 });
+            if (offers && offers.length) offerId = offers[0].id;
+          }
+        }
+      }
+
+      if (!offerId) return;
+
+      const offer = await api.getOffer(offerId);
+      if (!offer) return;
+
+      // Show quality if the seller filled it in
+      const quality = offer.quality || {};
+      const entries = Object.entries(quality);
+
+      if (entries.length > 0) {
+        qualityList.innerHTML = entries.map(([k, v]) =>
+          `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v))}</span></div>`
+        ).join('');
+        qualityEl.style.display = '';
+
+        // Update header if lab analysis
+        if (offer.has_lab_analysis) {
+          qualityEl.querySelector('h3').innerHTML =
+            '✅ Показатели качества (лабораторный анализ)';
+        }
+      }
+      // else: quality is empty — section stays hidden
+    } catch(e) {
+      console.warn('[Product] quality load:', e);
+    }
+  }
+
   // Run after page loads
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       syncCatalog();
       syncSale();
+      syncProduct();
     });
   } else {
     syncCatalog();
     syncSale();
+    syncProduct();
   }
 })();

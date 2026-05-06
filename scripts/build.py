@@ -1228,28 +1228,20 @@ def build_product():
         <div class="cell"><div class="k">Активно до</div><div class="v">24.04.2026</div></div>
       </div>
 
-      <div class="product-quality">
-        <h3>{icon('check-big')} Показатели качества (лабораторный анализ)</h3>
-        <div class="list">
-          <div class="row"><span class="k">Протеин</span><span class="v">12,8 %</span></div>
-          <div class="row"><span class="k">Клейковина</span><span class="v">26 %</span></div>
-          <div class="row"><span class="k">Влажность</span><span class="v">13,2 %</span></div>
-          <div class="row"><span class="k">Натура</span><span class="v">780 г/л</span></div>
-          <div class="row"><span class="k">Сорная примесь</span><span class="v">1,2 %</span></div>
-          <div class="row"><span class="k">Число падения</span><span class="v">280 с</span></div>
-          <div class="row"><span class="k">Зерновая примесь</span><span class="v">3,5 %</span></div>
-          <div class="row"><span class="k">Зараженность</span><span class="v">нет</span></div>
-        </div>
+      <!-- Quality section — loaded dynamically from DB offer -->
+      <div class="product-quality" id="productQuality" style="display:none">
+        <h3>{icon('check-big')} Показатели качества</h3>
+        <div class="list" id="productQualityList"></div>
       </div>
 
       <div class="product-section">
-        <h3>Условия отгрузки и доставки</h3>
-        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>{format_km(distance_km)}</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>{delivery_per_ton} ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через платформу. Самовывоз также возможен.</p>
+        <h3>Условия</h3>
+        <p>Условия отгрузки и доставки обсуждаются при оформлении сделки. Самовывоз возможен.</p>
       </div>
 
       <div class="product-section">
         <h3>Документы</h3>
-        <p>Поставщик предоставляет полный пакет: договор поставки (типовой платформы или согласованный), УПД, ТТН, сертификат качества, паспорт на партию. Счёт-фактура с НДС 10%.</p>
+        <p>Поставщик предоставляет: договор поставки, УПД, ТТН, сертификат качества, паспорт на партию.</p>
       </div>
     </div>
 
@@ -1257,45 +1249,9 @@ def build_product():
       <div class="buy-card">
         <div class="price">{base_price:,} <span class="unit">₽/т</span></div>
         <span class="vat">с НДС 10%</span>
-        <div class="delta">{icon('check')} На 380 ₽ ниже медианы по региону</div>
-
-        <!-- DISTANCE & DELIVERY CALCULATOR -->
-        <div class="delivery-calc">
-          <div class="delivery-calc-head">
-            {icon('truck')}
-            <span class="t">Расчёт доставки</span>
-          </div>
-          <div class="delivery-calc-route">
-            <div class="from">
-              <span class="k">ОТ (склад)</span>
-              <span class="v">Балаково</span>
-            </div>
-            <span class="arrow">→</span>
-            <div class="to">
-              <span class="k">ДО ВАС</span>
-              <span class="v">Нижний Новгород</span>
-              <span class="change">изменить адрес</span>
-            </div>
-          </div>
-          <div class="delivery-calc-stats">
-            <div class="stat">
-              <div class="k">Расстояние</div>
-              <div class="v">{format_km(distance_km)}</div>
-            </div>
-            <div class="stat">
-              <div class="k">Доставка, ₽/т</div>
-              <div class="v">{delivery_per_ton:,}</div>
-            </div>
-          </div>
-          <div class="total-with-delivery">
-            <span>Итого с доставкой</span>
-            <span class="mono">{total_per_ton:,} ₽/т</span>
-          </div>
-        </div>
 
         <div class="actions">
-          <button class="btn btn-primary btn-block" data-action="buy" data-delivery="1" data-offer-id="demo">Купить с доставкой {icon('arrow-sm')}</button>
-          <button class="btn btn-outline btn-block" data-action="buy" data-delivery="0" data-offer-id="demo">Купить с самовывозом</button>
+          <button class="btn btn-primary btn-block" data-action="buy" data-delivery="0" data-offer-id="demo">Купить {icon('arrow-sm')}</button>
           <button class="btn btn-ghost btn-block" data-action="propose" data-offer-id="demo">Сделать ценовое предложение</button>
         </div>
 
@@ -1330,8 +1286,8 @@ def build_product():
 <!-- Mobile sticky bottom -->
 <div class="mobile-bottom-bar">
   <div style="flex:1">
-    <div style="font-size:12px;color:var(--slate-500);font-weight:600">{total_per_ton:,} ₽/т</div>
-    <div style="font-size:11px;color:var(--slate-400)">с доставкой · {format_km(distance_km)}</div>
+    <div style="font-size:12px;color:var(--slate-500);font-weight:600">{base_price:,} ₽/т</div>
+    <div style="font-size:11px;color:var(--slate-400)">с НДС</div>
   </div>
   <a class="btn btn-outline btn-sm" href="#">Чат</a>
   <a class="btn btn-primary btn-sm" href="#">Купить</a>
