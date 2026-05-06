@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1777990993">
+<link rel="stylesheet" href="assets/css/main.css?v=1778049209">
 </head>
 <body>
 
@@ -165,18 +165,18 @@
     </div>
     <div class="sd-sec">
       <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Регионы</div>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=нижегородская"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=рязань"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Разделы сайта</div>
-      <a class="sd-item" href="how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Как работает эскроу</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Безопасность сделок</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
     </div>
@@ -228,7 +228,8 @@
   <div class="login-tabs">
     <button class="login-tab active" data-tab="signin">Вход</button>
     <button class="login-tab" data-tab="signup">Регистрация</button>
-    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
+    <!-- Demo tab hidden for production -->
+    <!--<button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>-->
   </div>
 
   <!-- SIGN IN -->
@@ -339,11 +340,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1777990993"></script>
-<script src="assets/js/cities.js?v=1777990993"></script>
-<script src="assets/js/api.js?v=1777990993"></script>
-<script src="assets/js/main.js?v=1777990993"></script>
-<script src="assets/js/admin.js?v=1777990993"></script>
-<script src="assets/js/tour.js?v=1777990993"></script>
+<script src="assets/js/config.js?v=1778049209"></script>
+<script src="assets/js/cities.js?v=1778049209"></script>
+<script src="assets/js/api.js?v=1778049209"></script>
+<script src="assets/js/main.js?v=1778049209"></script>
+<script src="assets/js/admin.js?v=1778049209"></script>
+<script src="assets/js/tour.js?v=1778049209"></script>
 </body>
 </html>

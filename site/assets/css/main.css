@@ -1800,3 +1800,83 @@ input,select,textarea{font-family:inherit}
 .card-foot {
   justify-content: flex-end;
 }
+
+/* ===============================================
+   ВРЕМЕННО: скрыть расчёт доставки на product page
+   =============================================== */
+.delivery-calc {
+  display: none !important;
+}
+.mobile-bottom-bar {
+  display: none !important;
+}
+
+/* ===============================================
+   FIX: Form checkbox alignment in modals
+   =============================================== */
+.modal label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--slate-600);
+  margin-bottom: 6px;
+}
+.modal label input[type="checkbox"] {
+  vertical-align: middle;
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}
+.modal .form-group {
+  margin-bottom: 16px;
+}
+.modal .form-group input:not([type="checkbox"]),
+.modal .form-group textarea,
+.modal .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color .15s;
+}
+.modal .form-group input:focus,
+.modal .form-group textarea:focus,
+.modal .form-group select:focus {
+  border-color: var(--brand);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-ring);
+}
+.req { color: var(--red); }
+
+/* Fix close button position in modals - only the ✕ icon button */
+.modal > .modal-close:first-child {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: var(--slate-100);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--slate-500);
+  transition: all .15s;
+}
+.modal > .modal-close:first-child:hover {
+  background: var(--slate-200);
+  color: var(--ink);
+}
+
+/* Quality row fields */
+.qrow input {
+  padding: 8px 10px !important;
+  font-size: 13px !important;
+}

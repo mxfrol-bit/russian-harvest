@@ -201,18 +201,18 @@ def search_overlay():
     </div>
     <div class="sd-sec">
       <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
-      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Регионы</div>
-      <a class="sd-item" href="/catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=нижегородская"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=рязань"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Разделы сайта</div>
-      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Как работает эскроу</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Безопасность сделок</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
     </div>
@@ -271,7 +271,8 @@ def login_modal():
   <div class="login-tabs">
     <button class="login-tab active" data-tab="signin">Вход</button>
     <button class="login-tab" data-tab="signup">Регистрация</button>
-    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
+    <!-- Demo tab hidden for production -->
+    <!--<button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>-->
   </div>
 
   <!-- SIGN IN -->
@@ -532,7 +533,7 @@ def offer_card(data, featured=False):
     <div class="supplier-stat">
       <span class="rating"><span class="star">★</span>{data.get('rating', '4.9')}</span>
       <span class="dot"></span>
-      <span>Эскроу-защита</span>
+      <span>Безопасная сделка</span>
       <span class="dot"></span>
       <span class="id">Лот {data.get('sid', '0000')}</span>
     </div>
@@ -851,7 +852,7 @@ def build_index():
             <div class="h">{icon('check-big')} Ключевые преимущества</div>
             <div class="row">{icon('check')}Прозрачные показатели качества</div>
             <div class="row">{icon('check')}Доступна логистика через платформу</div>
-            <div class="row">{icon('check')}Эскроу-защита сделки</div>
+            <div class="row">{icon('check')}Гарантия безопасной сделки</div>
           </div>
           <a class="cta" href="/product.html">Открыть предложение {icon('arrow-sm')}</a>
         </div>
@@ -938,7 +939,7 @@ def build_index():
       <div class="step">
         <div class="ic-wrap">{icon('coins')}</div>
         <h4>Закрывайте сделки</h4>
-        <p>Платформа ведёт коммуникацию, эскроу защищает оплату, а логистика решается в едином окне.</p>
+        <p>Платформа ведёт коммуникацию, платформа защищает оплату, а логистика решается в едином окне.</p>
       </div>
     </div>
   </div>
@@ -952,8 +953,8 @@ def build_index():
       <p class="section-lead">Вы видите партию, её показатели качества, расстояние до склада и итоговую цену с доставкой — ещё до того, как свяжетесь с поставщиком. Решение принимаете на данных, а не на обещаниях.</p>
       <div class="adv-list">
         <div class="adv-item">{icon('shield')}<span class="txt"><b>Прозрачная цена.</b> Показываем цену за тонну, НДС, стоимость доставки и расстояние до склада. Итоговая цифра видна сразу — без запросов и пересчётов.</span></div>
-        <div class="adv-item">{icon('shield')}<span class="txt"><b>Только проверенные поставщики.</b> Каждого проверяем по ИНН, ОГРН, истории сделок и банковской дисциплине. Анонимный ID раскрывается только после оплаты через эскроу.</span></div>
-        <div class="adv-item">{icon('shield')}<span class="txt"><b>Эскроу-защита платежа.</b> Деньги резервируются платформой и переводятся поставщику только после подтверждения приёмки партии. Не пришёл товар — возврат автоматический.</span></div>
+        <div class="adv-item">{icon('shield')}<span class="txt"><b>Только проверенные поставщики.</b> Каждого проверяем по ИНН, ОГРН, истории сделок и банковской дисциплине. Анонимный ID раскрывается только после оплаты через платформу.</span></div>
+        <div class="adv-item">{icon('shield')}<span class="txt"><b>Защита платежа.</b> Деньги резервируются и переводятся продавцу только после подтверждения приёмки товара покупателем. Не пришёл товар — возврат автоматический.</span></div>
         <div class="adv-item">{icon('shield')}<span class="txt"><b>Качество из лаборатории.</b> Протеин, клейковина, влажность, натура — все показатели с приложением акта лабораторного анализа в карточке партии.</span></div>
       </div>
     </div>
@@ -1019,7 +1020,7 @@ def build_catalog():
       <span>Купить</span>
     </div>
     <h1>Купить урожай напрямую у фермеров</h1>
-    <p>{len(OFFERS)} активных предложений от проверенных поставщиков. Сортировка по близости к вам, эскроу-защита на каждой сделке.</p>
+    <p>{len(OFFERS)} активных предложений от проверенных поставщиков. Сортировка по близости к вам, безопасная сделка на каждой сделке.</p>
   </div>
 </section>
 
@@ -1184,7 +1185,7 @@ def build_catalog():
   </div>
 </section>'''
     return page('Купить · Каталог', body, active='catalog',
-                description='Каталог предложений от фермеров: пшеница, ячмень, кукуруза, подсолнечник, рапс. Прямые сделки без посредников с эскроу-защитой.')
+                description='Каталог предложений от фермеров: пшеница, ячмень, кукуруза, подсолнечник, рапс. Прямые сделки без посредников с гарантией безопасности.')
 
 
 def build_product():
@@ -1243,7 +1244,7 @@ def build_product():
 
       <div class="product-section">
         <h3>Условия отгрузки и доставки</h3>
-        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>{format_km(distance_km)}</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>{delivery_per_ton} ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через эскроу. Самовывоз также возможен.</p>
+        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>{format_km(distance_km)}</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>{delivery_per_ton} ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через платформу. Самовывоз также возможен.</p>
       </div>
 
       <div class="product-section">
@@ -1309,16 +1310,16 @@ def build_product():
           <div class="info">
             <span style="color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:4px"><span style="color:var(--brand)">★</span>4.9</span>
             <span style="color:var(--slate-300)">·</span>
-            <span>Эскроу-защита</span>
+            <span>Безопасная сделка</span>
             <span style="color:var(--slate-300)">·</span>
             <span>Модерация товара</span>
           </div>
-          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через эскроу.</div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через платформу.</div>
         </div>
 
-        <div class="escrow">
+        <div class="escrow" style="display:none">
           {icon('lock')}
-          <p><b style="color:var(--ink)">Сделка защищена эскроу.</b> Деньги резервируются платформой и переводятся поставщику только после подтверждения приёмки партии.</p>
+          <p><b style="color:var(--ink)">Сделка защищена платформой.</b> Деньги резервируются и переводятся продавцу только после подтверждения приёмки товара покупателем.</p>
         </div>
       </div>
     </aside>
@@ -1400,7 +1401,7 @@ def build_sale():
     <div>
       <span class="eyebrow">{icon('sparkles')} Актуальные запросы</span>
       <h2 class="h2">Покупатели ищут прямо сейчас</h2>
-      <p class="section-lead">Откликайтесь на заявки — средний отклик на платформе 3 часа. Все покупатели проверены, оплата через эскроу.</p>
+      <p class="section-lead">Откликайтесь на заявки — средний отклик на платформе 3 часа. Все покупатели проверены, оплата через платформу.</p>
     </div>
     <div class="top-row">
       <div class="catalog-chips">
@@ -1452,7 +1453,7 @@ def build_sale():
     <div>
       <span class="reverse-chip">{icon('clock')} Отклик в течение 3 часов</span>
       <h3>Хотите продать свой урожай выгодно?</h3>
-      <p class="lead">Разместите товар — покупатели сами предложат вам лучшие условия. Без посредников, с защитой оплаты через эскроу.</p>
+      <p class="lead">Разместите товар — покупатели сами предложат вам лучшие условия. Без посредников, с защитой оплаты через платформу.</p>
     </div>
     <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
       <input type="text" placeholder="Наименование продукта" />
@@ -1490,13 +1491,13 @@ def build_sale():
       <div class="step">
         <div class="ic-wrap">{icon('handshake')}</div>
         <h4>Закрывайте сделки</h4>
-        <p>Подтверждайте условия, подписывайте типовой договор и получайте оплату через эскроу после отгрузки.</p>
+        <p>Подтверждайте условия, подписывайте типовой договор и получайте оплату через платформу после отгрузки.</p>
       </div>
     </div>
   </div>
 </section>'''
     return page('Продать', body, active='sale',
-                description='Продавайте урожай напрямую покупателям на площадке Русский Урожай. Без посредников, с эскроу-защитой. 30 актуальных запросов.')
+                description='Продавайте урожай напрямую покупателям на площадке Русский Урожай. Без посредников, с гарантией безопасности. 30 актуальных запросов.')
 
 
 def build_about():
@@ -1527,7 +1528,7 @@ def build_about():
     <div class="target-card">
       <div class="ic-big">{icon('buyer')}</div>
       <h4>Покупателям</h4>
-      <p>Которые ищут надёжных поставщиков без длинных цепочек поставок. Сравнение офферов, проверенные поставщики, эскроу-защита и быстрый отклик.</p>
+      <p>Которые ищут надёжных поставщиков без длинных цепочек поставок. Сравнение офферов, проверенные поставщики, безопасная сделка и быстрый отклик.</p>
       <a class="btn btn-primary" href="/catalog.html" style="align-self:flex-start">Найти поставщика {icon('arrow-sm')}</a>
     </div>
   </div>
@@ -1677,7 +1678,7 @@ def build_how():
         <ul>
           <li>Оставьте заявку или свяжитесь с продавцом через чат платформы</li>
           <li>Согласуйте условия сделки: объём, цену, сроки</li>
-          <li>Используйте безопасную сделку через эскроу</li>
+          <li>Используйте безопасную сделку через платформу</li>
           <li>Получите товар и подтвердите выполнение</li>
         </ul>
       </div>
@@ -1686,7 +1687,7 @@ def build_how():
         <h4>Гарантии и безопасность</h4>
         <ul>
           <li>Все продавцы проходят проверку платформы</li>
-          <li>Оплата только через эскроу-счёт</li>
+          <li>Оплата только через платформу-счёт</li>
           <li>Поддержка на всех этапах сделки</li>
           <li>Система рейтингов и арбитраж при спорах</li>
         </ul>
@@ -1864,12 +1865,12 @@ def build_offer():
         ('p', '<strong>Поставщик</strong> — Пользователь, размещающий предложение о продаже сельхозпродукции.'),
         ('p', '<strong>Покупатель</strong> — Пользователь, выражающий намерение приобрести сельхозпродукцию.'),
         ('h2', '2. Предмет оферты'),
-        ('p', 'Платформа предоставляет Пользователям техническую возможность размещать предложения, откликаться на заявки, обмениваться сообщениями и осуществлять расчёты с использованием эскроу-счёта.'),
+        ('p', 'Платформа предоставляет Пользователям техническую возможность размещать предложения, откликаться на заявки, обмениваться сообщениями и осуществлять расчёты с использованием безопасного счёта.'),
         ('h2', '3. Обязанности платформы'),
         ('ul', [
             'Обеспечивать работу сервиса в режиме 24/7 с плановыми техническими перерывами.',
             'Проверять Пользователей при прохождении процедуры верификации.',
-            'Сопровождать сделки с использованием эскроу-счёта.',
+            'Сопровождать сделки с использованием безопасного счёта.',
             'Обеспечивать конфиденциальность персональных данных в соответствии с 152-ФЗ.',
         ]),
         ('h2', '4. Обязанности пользователя'),
@@ -1901,15 +1902,15 @@ def build_regulations():
         ('h2', '3. Взаимодействие сторон'),
         ('ul', [
             'Все переговоры ведутся через встроенный чат Платформы.',
-            'Данные контрагента (реквизиты, контакты) раскрываются только после подтверждения сделки и резервирования средств на эскроу-счёте.',
+            'Данные контрагента (реквизиты, контакты) раскрываются только после подтверждения сделки и резервирования средств на безопасном счёте.',
             'Запрещены попытки обхода Платформы с целью заключения сделки напрямую без оплаты комиссии.',
         ]),
-        ('h2', '4. Эскроу-расчёты'),
-        ('p', 'Все финансовые расчёты между сторонами осуществляются через эскроу-счёт, открытый в партнёрском банке Платформы. Деньги резервируются на счёте в момент согласования сделки и переводятся Поставщику после подтверждения приёмки партии Покупателем. При возникновении спора средства остаются на эскроу-счёте до вынесения решения арбитражной комиссией Платформы.'),
+        ('h2', '4. Безопасные расчёты'),
+        ('p', 'Все финансовые расчёты между сторонами осуществляются через платформу-счёт, открытый в партнёрском банке Платформы. Деньги резервируются на счёте в момент согласования сделки и переводятся Поставщику после подтверждения приёмки партии Покупателем. При возникновении спора средства остаются на безопасном счёте до вынесения решения арбитражной комиссией Платформы.'),
         ('h2', '5. Рейтинг и репутация'),
         ('p', 'По итогам каждой сделки стороны оценивают друг друга по 5-балльной шкале. Рейтинг поставщика влияет на позицию его предложений в выдаче и уровень комиссии.'),
         ('h2', '6. Комиссия платформы'),
-        ('p', 'Комиссия Платформы составляет от 0,5% до 2% от суммы сделки в зависимости от объёма и рейтинга Поставщика. Комиссия удерживается автоматически при переводе средств с эскроу-счёта.'),
+        ('p', 'Комиссия Платформы составляет от 0,5% до 2% от суммы сделки в зависимости от объёма и рейтинга Поставщика. Комиссия удерживается автоматически при переводе средств с безопасного счёта.'),
         ('h2', '7. Блокировка аккаунтов'),
         ('p', 'Платформа вправе заблокировать аккаунт Пользователя при выявлении нарушений настоящих Правил, мошеннических действий или систематических жалоб других участников.'),
     ])
@@ -1967,7 +1968,7 @@ def build_dispute():
         ]),
         ('h2', '4. Возможные решения'),
         ('ul', [
-            'Средства с эскроу-счёта переводятся Поставщику в полном объёме.',
+            'Средства с безопасного счёта переводятся Поставщику в полном объёме.',
             'Средства возвращаются Покупателю (полностью или частично).',
             'Согласуется перерасчёт стоимости с учётом фактических характеристик партии.',
             'Рекомендуется дополнительная лабораторная экспертиза (за счёт стороны, чья позиция не подтвердилась).',
@@ -2061,7 +2062,7 @@ def build_auction():
     <div>
       <span class="eyebrow">{icon('sparkles')} Активные торги</span>
       <h2 class="h2">{len(auctions)} активных аукциона</h2>
-      <p class="section-lead">Цены определяются рынком. Все поставщики проверены, эскроу-защита оплаты.</p>
+      <p class="section-lead">Цены определяются рынком. Все поставщики проверены, безопасная сделка оплаты.</p>
     </div>
     <div class="top-row">
       <div class="catalog-chips">
@@ -2096,7 +2097,7 @@ def build_auction():
   </div>
 </section>'''
     return page('Аукцион', body, active='auction',
-                description='Онлайн-аукционы сельхозпродукции. Живые торги, прозрачные ставки, эскроу-защита сделки.')
+                description='Онлайн-аукционы сельхозпродукции. Живые торги, прозрачные ставки, безопасная сделка сделки.')
 
 
 def build_prices():
@@ -2223,7 +2224,7 @@ def build_account():
         <div class="company" id="accCompany">ИП Фролов В.А.</div>
         <span class="role-chip" id="accRole">{icon('buyer')} Покупатель</span>
         <div class="balance">
-          <div class="k">Баланс на эскроу</div>
+          <div class="k">Баланс</div>
           <div class="v" id="accBalance">0<small>₽</small></div>
         </div>
       </div>
@@ -2236,7 +2237,7 @@ def build_account():
         <a href="#">{icon('seller')}<span>Избранное</span><span class="badge-num" id="sideFavorites">0</span></a>
         <a href="#">{icon('calendar')}<span>История</span></a>
         <a href="#">{icon('user')}<span>Профиль компании</span></a>
-        <a href="#">{icon('coins')}<span>Платежи и эскроу</span></a>
+        <a href="#">{icon('coins')}<span>Платежи</span></a>
         <a href="#">{icon('info')}<span>Настройки</span></a>
       </nav>
 
@@ -2279,7 +2280,7 @@ def build_account():
             <div class="d" style="color:var(--orange-dark)">⚠ требуют проверки</div>
           </div>
           <div class="account-stat">
-            <div class="k">Сделок в эскроу</div>
+            <div class="k">Сделок в работе</div>
             <div class="v">89</div>
             <div class="d up">↑ 14.3 млн ₽ в работе</div>
           </div>
@@ -2386,7 +2387,7 @@ def build_account():
   </div>
 </section>'''
     return page('Личный кабинет', body, active='',
-                description='Личный кабинет Русский Урожай: активные сделки, заявки, история, платежи через эскроу.')
+                description='Личный кабинет Русский Урожай: активные сделки, заявки, история, платежи через платформу.')
 
 
 def main():

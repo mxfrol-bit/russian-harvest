@@ -133,7 +133,7 @@
         <div class="account-panel" style="text-align:center;padding:60px 20px;max-width:520px;margin:0 auto">
           <div style="font-size:48px;margin-bottom:14px">🔒</div>
           <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px">Войдите в аккаунт</h2>
-          <p style="color:var(--slate-500);margin:0 auto 24px;max-width:400px">Чтобы пользоваться кабинетом — войдите или создайте аккаунт. У вас будет доступ к сделкам, заявкам, истории платежей и эскроу.</p>
+          <p style="color:var(--slate-500);margin:0 auto 24px;max-width:400px">Чтобы пользоваться кабинетом — войдите или создайте аккаунт. У вас будет доступ к сделкам, заявкам, истории платежей и сделок.</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-primary btn-lg" data-open="login">Войти</button>
             <a class="btn btn-outline btn-lg" href="/index.html">На главную</a>
@@ -166,6 +166,121 @@
     if (offerBtn) {
       offerBtn.onclick = openCreateOfferModal;
     }
+
+    // Sidebar navigation
+    document.querySelectorAll('.account-nav a').forEach(link => {
+      const label = link.querySelector('span')?.textContent?.trim().toLowerCase() || '';
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        // Highlight active link
+        document.querySelectorAll('.account-nav a').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        if (label.includes('история')) {
+          const el = document.getElementById('historyDealsList');
+          if (el) el.closest('.account-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (label.includes('профиль')) {
+          openProfileModal(user);
+        } else if (label.includes('сделки')) {
+          const el = document.getElementById('activeDealsList');
+          if (el) el.closest('.account-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (label.includes('заявки')) {
+          const el = document.getElementById('openRequestsList');
+          if (el) el.closest('.account-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (label.includes('платежи')) {
+          showToast('Раздел платежей скоро будет доступен');
+        } else if (label.includes('настройки')) {
+          showToast('Настройки скоро будут доступны');
+        } else if (label.includes('чаты')) {
+          showToast('Чаты скоро будут доступны');
+        } else if (label.includes('избранное')) {
+          showToast('Избранное скоро будет доступно');
+        } else if (label.includes('обзор')) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+  }
+
+  // Profile edit modal
+  async function openProfileModal(user) {
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:20px;font-weight:700">Профиль компании</h2>
+        </div>
+        <form id="profileForm" style="padding:20px 28px;flex:1;overflow-y:auto">
+          <div class="form-group">
+            <label>ФИО</label>
+            <input name="full_name" value="${escapeHtml(user.full_name || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Название компании</label>
+            <input name="company_name" value="${escapeHtml(user.company_name || '')}" />
+          </div>
+          <div class="form-group">
+            <label>ИНН</label>
+            <input name="inn" value="${escapeHtml(user.inn || '')}" />
+          </div>
+          <div class="form-group">
+            <label>ОГРН</label>
+            <input name="ogrn" value="${escapeHtml(user.ogrn || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Телефон</label>
+            <input name="phone" value="${escapeHtml(user.phone || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Регион</label>
+            <input name="region" value="${escapeHtml(user.region || '')}" />
+          </div>
+          <div class="form-group">
+            <label>Город</label>
+            <input name="city" list="rhCityList" value="${escapeHtml(user.city || '')}" />
+          </div>
+          <div class="form-group">
+            <label>О компании</label>
+            <textarea name="bio" rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical">${escapeHtml(user.bio || '')}</textarea>
+          </div>
+          <div id="profileError" style="color:var(--red);font-size:13px;display:none"></div>
+        </form>
+        <div style="padding:16px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-outline modal-close">Отмена</button>
+          <button class="btn btn-primary" id="profileSubmit">Сохранить</button>
+        </div>
+      </div>
+    `;
+    const wrap = openModal(html);
+
+    wrap.querySelector('#profileSubmit').addEventListener('click', async () => {
+      const fd = new FormData(wrap.querySelector('#profileForm'));
+      const submit = wrap.querySelector('#profileSubmit');
+      const errEl = wrap.querySelector('#profileError');
+      submit.disabled = true;
+      submit.textContent = 'Сохраняем...';
+      try {
+        await api.updateProfile({
+          full_name: fd.get('full_name')?.trim() || null,
+          company_name: fd.get('company_name')?.trim() || null,
+          inn: fd.get('inn')?.trim() || null,
+          ogrn: fd.get('ogrn')?.trim() || null,
+          phone: fd.get('phone')?.trim() || null,
+          region: fd.get('region')?.trim() || null,
+          city: fd.get('city')?.trim() || null,
+          bio: fd.get('bio')?.trim() || null
+        });
+        wrap.remove();
+        showToast('✓ Профиль обновлён');
+        setTimeout(() => location.reload(), 800);
+      } catch(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = '';
+        submit.disabled = false;
+        submit.textContent = 'Сохранить';
+      }
+    });
   }
 
   async function loadUserKpis(user) {
@@ -346,11 +461,22 @@
             <div class="deal-price">${o.views_count || 0} <small>просмотров</small></div>
             <span class="deal-label ${statusCls}">${statusLabel}</span>
             <div class="deal-actions">
-              <button class="btn btn-outline btn-sm" disabled style="opacity:.5">Изменить</button>
+              <button class="btn btn-outline btn-sm" data-action="edit-my-offer" data-offer-id="${o.id}">Изменить</button>
             </div>
           </div>
         `;
       }).join('');
+
+      // Wire edit buttons
+      list.querySelectorAll('[data-action="edit-my-offer"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openEditOfferModal(btn.dataset.offerId, async () => {
+            // Refresh the offers list after editing
+            await loadMyOffers(user);
+            showToast('✓ Оффер обновлён');
+          });
+        });
+      });
     } catch(e) {
       console.warn('[MyOffers]', e);
     }
@@ -393,6 +519,9 @@
               <select name="vat" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
                 <option value="with_vat_10">с НДС 10%</option>
                 <option value="with_vat_20">с НДС 20%</option>
+                <option value="with_vat_5">с НДС 5%</option>
+                <option value="with_vat_7">с НДС 7%</option>
+                <option value="with_vat_22">с НДС 22%</option>
                 <option value="without_vat">без НДС</option>
               </select>
             </div>
@@ -407,7 +536,7 @@
           </div>
           <div class="form-group">
             <label>Город</label>
-            <input name="delivery_city" placeholder="Нижний Новгород" />
+            <input name="delivery_city" list="rhCityList" placeholder="Нижний Новгород" />
           </div>
           <div class="form-group">
             <label>Описание</label>
@@ -421,9 +550,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     wrap.querySelector('#creqSubmit').addEventListener('click', async () => {
@@ -556,9 +683,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     wrap.querySelectorAll('[data-feature-key]').forEach(cb => {
@@ -617,9 +742,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     let currentStatus = '';
@@ -774,9 +897,7 @@
         <div id="usrList" style="overflow-y:auto;padding:20px 28px;flex:1">Загружаем...</div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
     let currentRole = '';
     const me = await api.currentUser().catch(() => null);
@@ -943,9 +1064,7 @@
         <div id="dlsList" style="overflow-y:auto;padding:20px 28px;flex:1">Загружаем...</div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     let currentStatus = initialStatus || '';
@@ -1068,9 +1187,7 @@
         <div id="rqsList" style="overflow-y:auto;padding:20px 28px;flex:1">Загружаем...</div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     try {
@@ -1208,9 +1325,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
     try {
       const [offer, crops] = await Promise.all([
@@ -1266,6 +1381,9 @@
               <select name="vat" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
                 <option value="with_vat_10" ${offer.vat === 'with_vat_10' ? 'selected' : ''}>с НДС 10%</option>
                 <option value="with_vat_20" ${offer.vat === 'with_vat_20' ? 'selected' : ''}>с НДС 20%</option>
+                <option value="with_vat_5" ${offer.vat === 'with_vat_5' ? 'selected' : ''}>с НДС 5%</option>
+                <option value="with_vat_7" ${offer.vat === 'with_vat_7' ? 'selected' : ''}>с НДС 7%</option>
+                <option value="with_vat_22" ${offer.vat === 'with_vat_22' ? 'selected' : ''}>с НДС 22%</option>
                 <option value="without_vat" ${offer.vat === 'without_vat' ? 'selected' : ''}>без НДС</option>
               </select>
             </div>
@@ -1281,7 +1399,7 @@
             </div>
             <div class="form-group">
               <label>Город склада</label>
-              <input name="city" value="${escapeHtml(offer.city || '')}" />
+              <input name="city" list="rhCityList" value="${escapeHtml(offer.city || '')}" />
             </div>
           </div>
           <div class="form-group">
@@ -1450,9 +1568,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
     try {
       const [request, crops] = await Promise.all([
@@ -1499,6 +1615,9 @@
               <select name="vat" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
                 <option value="with_vat_10" ${request.vat === 'with_vat_10' ? 'selected' : ''}>с НДС 10%</option>
                 <option value="with_vat_20" ${request.vat === 'with_vat_20' ? 'selected' : ''}>с НДС 20%</option>
+                <option value="with_vat_5" ${request.vat === 'with_vat_5' ? 'selected' : ''}>с НДС 5%</option>
+                <option value="with_vat_7" ${request.vat === 'with_vat_7' ? 'selected' : ''}>с НДС 7%</option>
+                <option value="with_vat_22" ${request.vat === 'with_vat_22' ? 'selected' : ''}>с НДС 22%</option>
                 <option value="without_vat" ${request.vat === 'without_vat' ? 'selected' : ''}>без НДС</option>
               </select>
             </div>
@@ -1514,7 +1633,7 @@
             </div>
             <div class="form-group">
               <label>Город доставки</label>
-              <input name="delivery_city" value="${escapeHtml(request.delivery_city || '')}" />
+              <input name="delivery_city" list="rhCityList" value="${escapeHtml(request.delivery_city || '')}" />
             </div>
           </div>
           <div class="form-group">
@@ -1603,9 +1722,7 @@
         <div id="anlBody" style="overflow-y:auto;padding:24px 28px;flex:1">Загружаем...</div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
     try {
       const stats = await api.adminStats();
@@ -1641,7 +1758,7 @@
             <div class="v" style="color:#3D5C19">${api.formatRub(stats.total_revenue_kopecks)}</div>
           </div>
           <div class="anl-stat" style="background:#FEF3C7">
-            <div class="k">В эскроу сейчас</div>
+            <div class="k">В работе сейчас</div>
             <div class="v" style="color:#92400E">${api.formatRub(stats.in_escrow_kopecks)}</div>
           </div>
         </div>
@@ -1716,6 +1833,9 @@
               <select name="vat" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
                 <option value="with_vat_10">с НДС 10%</option>
                 <option value="with_vat_20">с НДС 20%</option>
+                <option value="with_vat_5">с НДС 5%</option>
+                <option value="with_vat_7">с НДС 7%</option>
+                <option value="with_vat_22">с НДС 22%</option>
                 <option value="without_vat">без НДС</option>
               </select>
             </div>
@@ -1731,7 +1851,7 @@
             </div>
             <div class="form-group">
               <label>Город склада</label>
-              <input name="city" placeholder="Арзамас" />
+              <input name="city" list="rhCityList" placeholder="Арзамас" />
             </div>
           </div>
           <div class="form-group">
@@ -1760,9 +1880,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
 
     // Toggle delivery group
@@ -1851,6 +1969,18 @@
       api.applyFeatureFlags().catch(err => console.warn('[features]', err));
     }
 
+    // Inject city datalist for autocomplete in all forms
+    if (window.RH_CITIES && !document.getElementById('rhCityList')) {
+      const dl = document.createElement('datalist');
+      dl.id = 'rhCityList';
+      window.RH_CITIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name || c;
+        dl.appendChild(opt);
+      });
+      document.body.appendChild(dl);
+    }
+
     if (document.getElementById('accName')) {
       loadAccountPage();
     }
@@ -1934,15 +2064,27 @@
   // PURCHASE / PROPOSE / RESPOND HANDLERS
   // ============================================================
 
-  // Find offer ID from button — supports buttons inside cards or product pages
-  function findOfferId(btn) {
+  // Find offer ID — supports real IDs, URL params, and fallback search for static product page
+  async function findOfferIdAsync(btn) {
+    // 1. Real ID on button
     if (btn.dataset.offerId && btn.dataset.offerId !== 'demo') return btn.dataset.offerId;
-    // Try to find parent card with data-offer
+    // 2. Parent card
     const card = btn.closest('[data-offer]');
     if (card) return card.dataset.offer;
-    // Try URL param ?id=
+    // 3. URL param ?id=
     const params = new URLSearchParams(location.search);
-    return params.get('id') || null;
+    const urlId = params.get('id');
+    if (urlId) return urlId;
+    // 4. Static product page — search by title on the page
+    const titleEl = document.querySelector('.product-title, .card-title, h1');
+    if (titleEl) {
+      const title = titleEl.textContent.trim();
+      try {
+        const offers = await api.listOffers({ search: title.slice(0, 20), limit: 1 });
+        if (offers && offers.length) return offers[0].id;
+      } catch(e) {}
+    }
+    return null;
   }
 
   async function requireLogin(action) {
@@ -1966,7 +2108,7 @@
     const user = await requireLogin('купить');
     if (!user) return;
 
-    const offerId = findOfferId(btn);
+    const offerId = await findOfferIdAsync(btn);
     if (!offerId) {
       alert('Не удалось определить оффер. Откройте страницу товара.');
       return;
@@ -2029,9 +2171,7 @@
         </div>
       </div>
     `;
-    const wrap = document.createElement('div');
-    wrap.innerHTML = html;
-    document.body.appendChild(wrap);
+    const wrap = openModal(html);
 
     // Live total recalculation
     const volInput = wrap.querySelector('input[name="volume"]');
@@ -2087,63 +2227,187 @@
     const user = await requireLogin('сделать ценовое предложение');
     if (!user) return;
 
-    const offerId = findOfferId(btn);
+    const offerId = await findOfferIdAsync(btn);
     if (!offerId) return alert('Не удалось определить оффер.');
 
     const offer = await api.getOffer(offerId).catch(() => null);
     if (!offer) return alert('Оффер не найден.');
 
-    const proposalPrice = prompt(
-      `Текущая цена: ${api.formatRub(offer.price_kopecks)}/т\n\nВаше предложение, ₽/т:`,
-      Math.round(offer.price_kopecks / 100 * 0.95)
-    );
-    if (!proposalPrice) return;
+    const currentPrice = api.formatRub(offer.price_kopecks);
 
-    const numPrice = parseFloat(proposalPrice);
-    if (!numPrice || numPrice <= 0) return alert('Некорректная цена');
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:480px;max-height:90vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:20px;font-weight:700">Ценовое предложение</h2>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">${escapeHtml(offer.title)} · ${offer.volume_tons} т</p>
+        </div>
+        <form id="proposeForm" style="padding:20px 28px;flex:1;overflow-y:auto">
+          <div style="background:var(--slate-50);padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px">
+            Текущая цена: <b>${currentPrice}/т</b>
+          </div>
+          <div class="form-group">
+            <label>Ваша цена, ₽/т *</label>
+            <input name="price" type="number" min="0" step="100" required placeholder="${Math.round(offer.price_kopecks/100*0.95)}" />
+          </div>
+          <div class="form-group">
+            <label>Объём, т *</label>
+            <input name="volume" type="number" min="1" step="1" required value="${offer.volume_tons}" />
+          </div>
+          <div class="form-group">
+            <label>Комментарий</label>
+            <textarea name="comment" rows="3" placeholder="Условия, сроки, требования к качеству..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
+          </div>
+          <div id="proposeError" style="color:var(--red);font-size:13px;display:none"></div>
+        </form>
+        <div style="padding:16px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-outline modal-close">Отмена</button>
+          <button class="btn btn-primary" id="proposeSubmit">Отправить предложение</button>
+        </div>
+      </div>
+    `;
+    const wrap = openModal(html);
 
-    // Save proposal as a buyer_request linked to this seller
-    try {
-      await api.createRequest({
-        crop_id: offer.crop_id,
-        title: `Ценовое предложение: ${offer.title}`,
-        target_price: numPrice,
-        vat: offer.vat,
-        volume_tons: offer.volume_tons,
-        delivery_region: user.region || 'Нижегородская область',
-        description: `Предложение на оффер ID ${offer.id} от ${offer.seller?.company_name || ''}. Текущая цена ${offer.price_kopecks/100} ₽/т, предложено ${numPrice} ₽/т.`
-      });
-      showToast('✓ Предложение отправлено продавцу');
-    } catch(err) {
-      alert('Ошибка: ' + err.message);
-    }
+    wrap.querySelector('#proposeSubmit').addEventListener('click', async () => {
+      const fd = new FormData(wrap.querySelector('#proposeForm'));
+      const price = parseFloat(fd.get('price'));
+      const volume = parseFloat(fd.get('volume'));
+      const comment = fd.get('comment')?.trim() || '';
+      const errEl = wrap.querySelector('#proposeError');
+
+      if (!price || price <= 0) { errEl.textContent = 'Укажите цену'; errEl.style.display = ''; return; }
+      if (!volume || volume <= 0) { errEl.textContent = 'Укажите объём'; errEl.style.display = ''; return; }
+
+      const submit = wrap.querySelector('#proposeSubmit');
+      submit.disabled = true;
+      submit.textContent = 'Отправляем...';
+
+      try {
+        await api.createRequest({
+          crop_id: offer.crop_id,
+          title: 'Ценовое предложение: ' + offer.title,
+          target_price: price,
+          vat: offer.vat,
+          volume_tons: volume,
+          delivery_region: user.region || 'Нижегородская область',
+          delivery_city: user.city || '',
+          description: 'Предложение к лоту ' + (offer.id || '').slice(-8) + '. ' + comment
+        });
+        wrap.remove();
+        showToast('✓ Предложение отправлено! Отслеживайте в кабинете → Заявки');
+      } catch(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = '';
+        submit.disabled = false;
+        submit.textContent = 'Отправить предложение';
+      }
+    });
   }
 
   async function handleRespond(btn) {
     const user = await requireLogin('откликнуться на заявку');
     if (!user) return;
 
+    // Only sellers and admins can respond to buyer requests
+    if (user.role === 'buyer') {
+      const html = `
+        <div class="modal-backdrop on"></div>
+        <div class="modal on" style="max-width:440px;text-align:center;padding:40px 30px">
+          <button class="modal-close">✕</button>
+          <div style="font-size:42px;margin-bottom:14px">🌾</div>
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">Только для продавцов</h2>
+          <p style="color:var(--slate-500);margin-bottom:20px;line-height:1.6">Чтобы откликаться на заявки покупателей, вам нужен аккаунт продавца. Зарегистрируйтесь как продавец или обратитесь к администратору для смены роли.</p>
+          <button class="btn btn-outline modal-close">Понятно</button>
+        </div>
+      `;
+      const wrap = openModal(html);
+      return;
+    }
+
     const requestId = btn.dataset.requestId;
     if (!requestId) return alert('Не удалось определить заявку.');
 
-    const message = prompt('Сообщение покупателю:\n\n(укажите свой объём, цену, регион — ваша заявка отправится покупателю)', '');
-    if (message === null) return;
-    if (!message.trim()) return alert('Введите сообщение');
+    // Get request card info from DOM
+    const card = btn.closest('.req-card, [data-request]');
+    const title = card?.querySelector('.req-card-title')?.textContent || 'Заявка';
 
-    // Increment responses_count and log via audit
-    try {
-      // Get current request to see responses_count
-      const sb = await api.ready();
-      const supabase = window.supabase.createClient(window.RH_CONFIG.SUPABASE_URL, window.RH_CONFIG.SUPABASE_ANON_KEY);
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:480px;max-height:90vh;display:flex;flex-direction:column">
+        <button class="modal-close">✕</button>
+        <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
+          <h2 style="font-size:20px;font-weight:700">Откликнуться на заявку</h2>
+          <p style="color:var(--slate-500);margin-top:6px;font-size:14px">${escapeHtml(title)}</p>
+        </div>
+        <form id="respondForm" style="padding:20px 28px;flex:1;overflow-y:auto">
+          <div class="form-group">
+            <label>Ваша цена, ₽/т *</label>
+            <input name="price" type="number" min="0" step="100" required placeholder="14200" />
+          </div>
+          <div class="form-group">
+            <label>Ваш объём, т *</label>
+            <input name="volume" type="number" min="1" step="1" required placeholder="100" />
+          </div>
+          <div class="form-group">
+            <label>Регион / город склада *</label>
+            <input name="region" required value="${escapeHtml(user.region || user.city || 'Нижегородская область')}" />
+          </div>
+          <div class="form-group">
+            <label>Комментарий к отклику</label>
+            <textarea name="comment" rows="3" placeholder="Качество, условия отгрузки, готовность..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
+          </div>
+          <div id="respondError" style="color:var(--red);font-size:13px;display:none"></div>
+        </form>
+        <div style="padding:16px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-outline modal-close">Отмена</button>
+          <button class="btn btn-primary" id="respondSubmit">Отправить отклик</button>
+        </div>
+      </div>
+    `;
+    const wrap = openModal(html);
 
-      // For now: just record it in audit log
-      showToast('✓ Отклик отправлен покупателю');
-      btn.disabled = true;
-      btn.textContent = '✓ Отклик отправлен';
-      btn.style.opacity = '.6';
-    } catch(err) {
-      alert('Ошибка: ' + err.message);
-    }
+    wrap.querySelector('#respondSubmit').addEventListener('click', async () => {
+      const fd = new FormData(wrap.querySelector('#respondForm'));
+      const price = parseFloat(fd.get('price'));
+      const volume = parseFloat(fd.get('volume'));
+      const region = fd.get('region')?.trim();
+      const comment = fd.get('comment')?.trim() || '';
+      const errEl = wrap.querySelector('#respondError');
+
+      if (!price) { errEl.textContent = 'Укажите цену'; errEl.style.display = ''; return; }
+      if (!volume) { errEl.textContent = 'Укажите объём'; errEl.style.display = ''; return; }
+      if (!region) { errEl.textContent = 'Укажите регион'; errEl.style.display = ''; return; }
+
+      const submit = wrap.querySelector('#respondSubmit');
+      submit.disabled = true;
+      submit.textContent = 'Отправляем...';
+
+      try {
+        // Create offer as response to buyer request
+        await api.createOffer({
+          crop_id: card?.dataset?.crop || 'wheat-3',
+          title: 'Отклик: ' + title,
+          price_per_ton: price,
+          vat: 'with_vat_10',
+          volume_tons: volume,
+          region: region,
+          city: '',
+          description: 'Отклик на заявку ' + requestId.slice(-8) + '. ' + comment,
+          has_delivery: false
+        });
+        wrap.remove();
+        btn.disabled = true;
+        btn.textContent = '✓ Отклик отправлен';
+        btn.style.opacity = '.6';
+        showToast('✓ Отклик отправлен! Отслеживайте в кабинете → Мои офферы');
+      } catch(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = '';
+        submit.disabled = false;
+        submit.textContent = 'Отправить отклик';
+      }
+    });
   }
 
   // Find the wrapper div that contains a dynamic modal element.
@@ -2171,7 +2435,26 @@
     if (modal) modal.classList.remove('on');
     setTimeout(() => {
       try { wrap.remove(); } catch(e) {}
-    }, 250);
+    }, 200);
+  }
+
+  // Close ALL dynamic modals at once (prevents stacking)
+  function closeAllDynamicModals() {
+    Array.from(document.body.children).forEach(c => {
+      if (c.tagName === 'DIV' && !c.id && !c.className
+          && c.querySelector('.modal-backdrop') && c.querySelector('.modal')) {
+        try { c.remove(); } catch(e) {}
+      }
+    });
+  }
+
+  // Wrapper: close existing modals before opening new one
+  function openModal(htmlString) {
+    closeAllDynamicModals();
+    const wrap = document.createElement('div');
+    wrap.innerHTML = htmlString;
+    document.body.appendChild(wrap);
+    return wrap;
   }
 
   if (document.readyState === 'loading') {
@@ -2228,7 +2511,7 @@
 
     const cropKey = o.crop_id?.split('-')[0] || 'other';
     const priceR = (o.price_kopecks / 100).toLocaleString('ru-RU');
-    const vatLabel = ({with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', without_vat: 'без НДС'})[o.vat] || 'с НДС';
+    const vatLabel = ({with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%', with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%', without_vat: 'без НДС'})[o.vat] || 'с НДС';
     const distance = estimateDistance(o.region);
     const deliveryPrice = o.delivery_price_per_ton_kopecks > 0
       ? `Доставка ${(o.delivery_price_per_ton_kopecks/100).toLocaleString('ru-RU')} ₽/т`

@@ -560,9 +560,6 @@
   // No floating button, no autorun.
   // ============================================================
   function installLauncher() {
-    const tourKey = detectTourKey();
-    if (!tourKey || !TOURS[tourKey]) return;
-
     injectCSS();
 
     const btn = document.getElementById('tourHelpBtn');
@@ -571,8 +568,18 @@
       btn.addEventListener('click', () => {
         if (currentTour) {
           endTour();
-        } else {
+          return;
+        }
+        const tourKey = detectTourKey();
+        if (tourKey && TOURS[tourKey]) {
           startTour(tourKey);
+        } else {
+          // No tour for this page — show short notification
+          const t = document.createElement('div');
+          t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1A2410;color:#fff;padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 16px 40px rgba(15,23,42,.3)';
+          t.textContent = 'Подсказки доступны на страницах: Главная, Каталог, Продать, Кабинет';
+          document.body.appendChild(t);
+          setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3000);
         }
       });
     }

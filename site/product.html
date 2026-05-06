@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/main.css?v=1777990993">
+<link rel="stylesheet" href="assets/css/main.css?v=1778049209">
 </head>
 <body>
 
@@ -133,7 +133,7 @@
 
       <div class="product-section">
         <h3>Условия отгрузки и доставки</h3>
-        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>539,4</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>1800 ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через эскроу. Самовывоз также возможен.</p>
+        <p>Партия хранится на элеваторе в Балаково (Саратовская обл.). Расстояние до Нижнего Новгорода — <b>539,4</b>. Доставка возможна через партнёров платформы: ориентировочная стоимость <b>1800 ₽/т</b> (зерновоз 25 т, автотранспорт). Срок — до 3 рабочих дней после подтверждения оплаты через платформу. Самовывоз также возможен.</p>
       </div>
 
       <div class="product-section">
@@ -199,16 +199,16 @@
           <div class="info">
             <span style="color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:4px"><span style="color:var(--brand)">★</span>4.9</span>
             <span style="color:var(--slate-300)">·</span>
-            <span>Эскроу-защита</span>
+            <span>Безопасная сделка</span>
             <span style="color:var(--slate-300)">·</span>
             <span>Модерация товара</span>
           </div>
-          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через эскроу.</div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через платформу.</div>
         </div>
 
-        <div class="escrow">
+        <div class="escrow" style="display:none">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M7 9V6a3 3 0 0 1 6 0v3"/></svg>
-          <p><b style="color:var(--ink)">Сделка защищена эскроу.</b> Деньги резервируются платформой и переводятся поставщику только после подтверждения приёмки партии.</p>
+          <p><b style="color:var(--ink)">Сделка защищена платформой.</b> Деньги резервируются и переводятся продавцу только после подтверждения приёмки товара покупателем.</p>
         </div>
       </div>
     </aside>
@@ -295,18 +295,18 @@
     </div>
     <div class="sd-sec">
       <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Регионы</div>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="catalog.html"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=нижегородская"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="catalog.html?q=рязань"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Разделы сайта</div>
-      <a class="sd-item" href="how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Как работает эскроу</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Безопасность сделок</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
       <a class="sd-item" href="contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
     </div>
@@ -358,7 +358,8 @@
   <div class="login-tabs">
     <button class="login-tab active" data-tab="signin">Вход</button>
     <button class="login-tab" data-tab="signup">Регистрация</button>
-    <button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>
+    <!-- Demo tab hidden for production -->
+    <!--<button class="login-tab demo-tab" data-tab="demo">🔑 Демо</button>-->
   </div>
 
   <!-- SIGN IN -->
@@ -469,11 +470,11 @@
   </div>
 </div>
 
-<script src="assets/js/config.js?v=1777990993"></script>
-<script src="assets/js/cities.js?v=1777990993"></script>
-<script src="assets/js/api.js?v=1777990993"></script>
-<script src="assets/js/main.js?v=1777990993"></script>
-<script src="assets/js/admin.js?v=1777990993"></script>
-<script src="assets/js/tour.js?v=1777990993"></script>
+<script src="assets/js/config.js?v=1778049209"></script>
+<script src="assets/js/cities.js?v=1778049209"></script>
+<script src="assets/js/api.js?v=1778049209"></script>
+<script src="assets/js/main.js?v=1778049209"></script>
+<script src="assets/js/admin.js?v=1778049209"></script>
+<script src="assets/js/tour.js?v=1778049209"></script>
 </body>
 </html>

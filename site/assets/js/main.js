@@ -133,12 +133,27 @@
   document.querySelectorAll('.sd-chip').forEach(c => {
     c.addEventListener('click', e => {
       e.stopPropagation();
-      if (soInput) {
-        soInput.value = c.textContent;
-        soInput.focus();
-      }
+      // Navigate to catalog with search query
+      window.location = '/catalog.html?q=' + encodeURIComponent(c.textContent);
     });
   });
+
+  // "Все результаты" link — include current search query
+  const soAllLink = document.getElementById('soAllLink');
+  if (soInput && soAllLink) {
+    soInput.addEventListener('input', () => {
+      const q = soInput.value.trim();
+      soAllLink.href = q ? '/catalog.html?q=' + encodeURIComponent(q) : '/catalog.html';
+    });
+    // Enter in search → go to catalog
+    soInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && kbdIdx < 0) {
+        e.preventDefault();
+        const q = soInput.value.trim();
+        if (q) window.location = '/catalog.html?q=' + encodeURIComponent(q);
+      }
+    });
+  }
 
   // Keyboard navigation in search results
   const soItems = () => so ? Array.from(so.querySelectorAll('.sd-item')) : [];
