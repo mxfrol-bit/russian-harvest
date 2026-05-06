@@ -237,8 +237,6 @@
         seller:profiles!offers_seller_id_fkey(*)
       `).eq('id', id).single();
       if (error) throw error;
-      // increment views
-      await sb.rpc('increment', { table_name: 'offers', row_id: id, col_name: 'views_count' }).catch(() => {});
       return data;
     },
 

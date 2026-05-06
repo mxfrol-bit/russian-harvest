@@ -528,18 +528,18 @@ def offer_card(data, featured=False):
   <div class="q-body" data-q="{data['id']}"><div class="q-body-inner">{quality_rows}</div></div>
   {distance_strip(data)}
   <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc">{icon('verify')}</span>Поставщик проверен</span>
+    <span class="supplier-verify"><span class="bc">{icon('verify')}</span>Проверено платформой</span>
     <div class="supplier-stat">
       <span class="rating"><span class="star">★</span>{data.get('rating', '4.9')}</span>
       <span class="dot"></span>
-      <span>{n_deals} {deals_word}</span>
+      <span>Эскроу-защита</span>
       <span class="dot"></span>
-      <span class="id">ID {data.get('sid', 'A-0000')}</span>
+      <span class="id">Лот {data.get('sid', '0000')}</span>
     </div>
   </div>
   <div class="card-foot">
     <span class="delivery-tag">{icon('truck')}{data.get('delivery', 'Самовывоз')}</span>
-    <a class="cta" href="{'#' if data.get('archive') else '/product.html'}">{cta_label} {icon('arrow-sm') if not data.get('archive') else ''}</a>
+    <a class="cta" href="{'#' if data.get('archive') else '/product.html?id=' + str(data.get('id', ''))}">{cta_label} {icon('arrow-sm') if not data.get('archive') else ''}</a>
   </div>
 </article>'''
 
@@ -718,8 +718,8 @@ def request_card(data):
   </div>
 
   <div class="req-foot">
-    <span class="req-buyer">Покупатель проверен · {icon('verify')} ★ 4.9</span>
-    <a class="cta" href="#">{cta} {icon('arrow-sm') if not data.get('archive') else ''}</a>
+    <span class="req-buyer">Проверено платформой · {icon('verify')} ★ 4.9</span>
+    <button class="cta" data-action="respond" data-request-id="{data['id']}" {'' if not data.get('archive') else 'disabled'}>{cta} {icon('arrow-sm') if not data.get('archive') else ''}</button>
   </div>
 </article>'''
 
@@ -1293,32 +1293,32 @@ def build_product():
         </div>
 
         <div class="actions">
-          <a class="btn btn-primary btn-block" href="#">Купить с доставкой {icon('arrow-sm')}</a>
-          <a class="btn btn-outline btn-block" href="#">Купить с самовывозом</a>
-          <a class="btn btn-ghost btn-block" href="#">Сделать ценовое предложение</a>
+          <button class="btn btn-primary btn-block" data-action="buy" data-delivery="1" data-offer-id="demo">Купить с доставкой {icon('arrow-sm')}</button>
+          <button class="btn btn-outline btn-block" data-action="buy" data-delivery="0" data-offer-id="demo">Купить с самовывозом</button>
+          <button class="btn btn-ghost btn-block" data-action="propose" data-offer-id="demo">Сделать ценовое предложение</button>
         </div>
 
         <div class="divider"></div>
 
         <div class="supplier-block">
-          <div style="font-size:11.5px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.1em">Поставщик</div>
-          <span class="supplier-verify verify" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--orange);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;align-self:flex-start">
-            <span class="bc" style="width:20px;height:20px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--orange)">{icon('verify')}</span>
-            Поставщик проверен
+          <div style="font-size:11.5px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.1em">Гарантия платформы</div>
+          <span class="supplier-verify verify" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;align-self:flex-start">
+            <span class="bc" style="width:20px;height:20px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--brand)">{icon('verify')}</span>
+            Проверено платформой
           </span>
           <div class="info">
-            <span style="color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:4px"><span style="color:var(--orange)">★</span>4.9</span>
+            <span style="color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:4px"><span style="color:var(--brand)">★</span>4.9</span>
             <span style="color:var(--slate-300)">·</span>
-            <span>34 сделки</span>
+            <span>Эскроу-защита</span>
             <span style="color:var(--slate-300)">·</span>
-            <span>8 лет</span>
+            <span>Модерация товара</span>
           </div>
-          <div class="mono" style="font-size:11.5px;color:var(--slate-500);letter-spacing:.04em">ID поставщика · A-4721</div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через эскроу.</div>
         </div>
 
         <div class="escrow">
           {icon('lock')}
-          <p><b style="color:var(--ink)">Сделка защищена эскроу.</b> Деньги резервируются платформой и переводятся поставщику только после подтверждения приёмки партии. Данные поставщика раскрываются после оплаты.</p>
+          <p><b style="color:var(--ink)">Сделка защищена эскроу.</b> Деньги резервируются платформой и переводятся поставщику только после подтверждения приёмки партии.</p>
         </div>
       </div>
     </aside>
@@ -2230,10 +2230,10 @@ def build_account():
 
       <nav class="account-nav">
         <a href="#" class="active">{icon('chart')}<span>Обзор</span></a>
-        <a href="#">{icon('handshake')}<span>Мои сделки</span><span class="badge-num">3</span></a>
-        <a href="#">{icon('message')}<span>Заявки</span><span class="badge-num">2</span></a>
-        <a href="#">{icon('mail')}<span>Чаты</span><span class="badge-num">5</span></a>
-        <a href="#">{icon('seller')}<span>Избранное</span><span class="badge-num">12</span></a>
+        <a href="#">{icon('handshake')}<span>Мои сделки</span><span class="badge-num" id="sideDeals">0</span></a>
+        <a href="#">{icon('message')}<span>Заявки</span><span class="badge-num" id="sideRequests">0</span></a>
+        <a href="#">{icon('mail')}<span>Чаты</span><span class="badge-num" id="sideChats">0</span></a>
+        <a href="#">{icon('seller')}<span>Избранное</span><span class="badge-num" id="sideFavorites">0</span></a>
         <a href="#">{icon('calendar')}<span>История</span></a>
         <a href="#">{icon('user')}<span>Профиль компании</span></a>
         <a href="#">{icon('coins')}<span>Платежи и эскроу</span></a>
