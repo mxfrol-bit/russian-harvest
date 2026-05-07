@@ -30,11 +30,22 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.5.4',
+  VERSION: '2.5.5',
   BUILD_DATE: '2026-05-07',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.5.5',
+      date: '2026-05-07',
+      summary: 'Defense-in-depth: каталог не зависит от api.js, дёргает RPC напрямую через fetch',
+      changes: [
+        '🛡 admin.js теперь содержит автономную fetchOffersDirect() — прямой POST на /rest/v1/rpc/offers_with_distance с anon-ключом, минуя api.js полностью.',
+        '🛡 Если на проде закэширован старый api.js (до v2.5.4) — каталог всё равно работает, потому что admin.js берёт данные напрямую.',
+        '🚀 Общий кеш window.__rh_offers_cache — syncCatalog/syncFocus/syncHomeOffers делают один RPC-вызов на всю страницу.',
+        '⚡ Если syncCatalog всё-таки получит пустой ответ — последовательно пробует api.listOffers, затем raw GET /offers, и показывает результат на странице.',
+      ]
+    },
     {
       version: '2.5.4',
       date: '2026-05-07',

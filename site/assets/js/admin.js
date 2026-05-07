@@ -3260,6 +3260,49 @@
     grid.insertAdjacentHTML('afterbegin', html);
   }
 
+  /**
+   * Прямой вызов RPC offers_with_distance, минуя api.js.
+   * Сделан defense-in-depth: если на проде закэширован старый api.js
+   * (без последних правок), эта функция всё равно работает.
+   * Возвращает массив офферов в формате, готовом для renderCatalogCard.
+   */
+  async function fetchOffersDirect() {
+    const cfg = window.RH_CONFIG || {};
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL/KEY не сконфигурированы');
+
+    // Координаты — из профиля если есть, иначе НН
+    let lat = 56.3269, lng = 44.0075;
+    try {
+      const u = await api.getCurrentUser();
+      if (u?.city_lat && u?.city_lng) { lat = parseFloat(u.city_lat); lng = parseFloat(u.city_lng); }
+    } catch(_) {}
+
+    const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/rpc/offers_with_distance`, {
+      method: 'POST',
+      headers: {
+        'apikey': cfg.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ p_lat: lat, p_lng: lng })
+    });
+    if (!r.ok) {
+      const txt = await r.text();
+      throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
+    }
+    const rows = await r.json();
+    return (rows || []).map(o => ({
+      ...o,
+      crop: o.crop_name ? { name: o.crop_name, emoji: o.crop_emoji, category: o.crop_category } : null,
+      seller: o.seller_handle ? {
+        id: o.seller_id, handle: o.seller_handle, role: o.seller_role,
+        rating: o.seller_rating, deals_count: o.seller_deals_count,
+        is_verified: o.seller_is_verified, city: o.seller_city, region: o.seller_region
+      } : null,
+    }));
+  }
+
   // Catalog: replace #offersGrid contents with offers from DB
   async function syncCatalog() {
     const grid = document.getElementById('offersGrid');
@@ -3275,26 +3318,25 @@
         } catch(_) { window.__rh_user_city = 'Нижний Новгород'; }
       }
 
-      // Стратегия с тремя ступенями:
-      // 1) RPC offers_with_distance — основной путь, считает расстояние
-      // 2) listOffers — без расстояния, но через JS API
-      // 3) Прямой raw-запрос на /rest/v1/offers без джойнов — крайний случай,
-      //    показывает падает ли вообще базовый SELECT (RLS/auth issue)
-      let offers = null;
+      // Кеш на всю страницу — чтобы syncFocus/syncHomeOffers не дёргали RPC ещё раз
+      let offers = window.__rh_offers_cache || null;
       let lastError = null;
 
-      // Шаг 1: RPC
-      try {
-        const t0 = performance.now();
-        offers = await api.listOffersWithDistance({ limit: 100 });
-        diagLog('listOffersWithDistance OK', { count: offers?.length || 0, ms: Math.round(performance.now()-t0) });
-      } catch(e) {
-        lastError = e;
-        diagLog('listOffersWithDistance FAILED', { message: e?.message, code: e?.code, hint: e?.hint, details: e?.details });
-        console.warn('[catalog] distance RPC unavailable, falling back to listOffers', e);
+      // Шаг 1: RPC напрямую через fetch (минует api.js — работает даже если api.js закэширован старый)
+      if (!offers) {
+        try {
+          const t0 = performance.now();
+          offers = await fetchOffersDirect();
+          window.__rh_offers_cache = offers;
+          diagLog('fetchOffersDirect OK', { count: offers.length, ms: Math.round(performance.now()-t0) });
+        } catch(e) {
+          lastError = e;
+          diagLog('fetchOffersDirect FAILED', { message: e?.message });
+          console.warn('[catalog] direct RPC failed', e);
+        }
       }
 
-      // Шаг 2: listOffers
+      // Шаг 2: api.listOffers как fallback (если api.js свежий и есть листинг без RPC)
       if (!offers || !offers.length) {
         try {
           const t0 = performance.now();
@@ -3306,14 +3348,18 @@
         }
       }
 
-      // Шаг 3: raw REST fetch (диагностика)
+      // Шаг 3: raw REST fetch без джойнов (последний крик о помощи)
       if (!offers || !offers.length) {
         try {
           const cfg = window.RH_CONFIG;
-          const url = `${cfg.SUPABASE_URL}/rest/v1/offers?select=id,title,status,price_kopecks&limit=5`;
+          const url = `${cfg.SUPABASE_URL}/rest/v1/offers?select=id,title,status,price_kopecks,region,city,crop_id,seller_id,volume_tons,vat,quality,expires_at,created_at,is_premium,premium_tier,premium_until,harvest_year,has_delivery,has_lab_analysis&status=eq.active&limit=100`;
           const r = await fetch(url, { headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY }});
           const body = await r.text();
-          diagLog('raw GET /offers', { status: r.status, statusText: r.statusText, body: body.slice(0, 500) });
+          diagLog('raw GET /offers', { status: r.status, statusText: r.statusText, body_preview: body.slice(0, 300) });
+          if (r.ok) {
+            const rows = JSON.parse(body);
+            offers = (rows || []).map(o => ({ ...o, crop: null, seller: null, distance_km: null }));
+          }
         } catch(e) {
           diagLog('raw GET /offers FAILED', { message: e?.message });
         }
@@ -3691,7 +3737,12 @@
     const wrap = document.getElementById('focusWrap');
     if (!wrap) return;
     try {
-      const offers = await api.listOffers({ limit: 1 });
+      // Используем общий кеш или дёргаем RPC напрямую
+      let offers = window.__rh_offers_cache;
+      if (!offers) {
+        try { offers = await fetchOffersDirect(); window.__rh_offers_cache = offers; }
+        catch(_) { offers = await api.listOffers({ limit: 1 }); }
+      }
       if (!offers || !offers.length) {
         wrap.style.display = 'none';
         return;
@@ -3720,8 +3771,13 @@
     const grid = document.getElementById('homeGrid');
     if (!grid) return;
     try {
-      const offers = await api.listOffers({ limit: 8 });
-      if (!offers || !offers.length) {
+      let offers = window.__rh_offers_cache;
+      if (!offers) {
+        try { offers = await fetchOffersDirect(); window.__rh_offers_cache = offers; }
+        catch(_) { offers = await api.listOffers({ limit: 8 }); }
+      }
+      offers = (offers || []).slice(0, 8);
+      if (!offers.length) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--slate-500)">Пока нет активных предложений.</div>';
         return;
       }
