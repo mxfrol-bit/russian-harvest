@@ -329,33 +329,37 @@
     },
 
     /** List offers with computed distance_km from user's city.
-     *  Falls back to НН coordinates if user has no city set. */
+     *  Falls back to НН coordinates if user has no city set.
+     *  RPC offers_with_distance v2 возвращает уже обогащённые строки
+     *  (offer + crop_name + seller_handle), так что джойны на клиенте не нужны. */
     async listOffersWithDistance(filters = {}) {
       const sb = await ensureSupabase();
       const coords = await this.getUserCoords();
 
-      // Use the RPC offers_with_distance that joins geo_units and computes Haversine.
-      // We can't use rpc().select('*, crop:crops(...)') directly, so we fetch IDs first then enrich.
       const { data: rows, error } = await sb.rpc('offers_with_distance', {
         p_lat: coords.lat, p_lng: coords.lng
       });
       if (error) throw error;
       if (!rows || !rows.length) return [];
 
-      // Enrich with crop via a second query (sellers — отдельным шагом через attachSellers)
-      const ids = rows.map(r => r.id);
-      const { data: enriched, error: e2 } = await sb.from('offers').select(`
-        id, seller_id, harvest_year, has_delivery, has_lab_analysis, quality, expires_at,
-        crop:crops(name, emoji, category)
-      `).in('id', ids);
-      if (e2) throw e2;
+      // Преобразуем плоский payload RPC в формат, который ждёт renderCatalogCard:
+      // crop как объект и seller как объект.
+      let result = rows.map(r => ({
+        ...r,
+        crop: r.crop_name ? { name: r.crop_name, emoji: r.crop_emoji, category: r.crop_category } : null,
+        seller: r.seller_handle ? {
+          id: r.seller_id,
+          handle: r.seller_handle,
+          role: r.seller_role,
+          rating: r.seller_rating,
+          deals_count: r.seller_deals_count,
+          is_verified: r.seller_is_verified,
+          city: r.seller_city,
+          region: r.seller_region
+        } : null,
+      }));
 
-      const map = new Map((enriched || []).map(e => [e.id, e]));
-      const merged = rows.map(r => Object.assign({}, r, map.get(r.id) || {}));
-      await attachSellers(merged, 'seller_id', 'seller');
-
-      // Apply client-side filters
-      let result = merged;
+      // Client-side filters
       if (filters.crop_id) result = result.filter(o => o.crop_id === filters.crop_id);
       if (filters.region)  result = result.filter(o => o.region === filters.region);
       if (filters.price_min) result = result.filter(o => o.price_kopecks >= filters.price_min * 100);

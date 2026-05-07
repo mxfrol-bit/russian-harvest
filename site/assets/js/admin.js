@@ -3240,10 +3240,32 @@
 (function(){
   if (!api.isSupabase) return;
 
+  // ============================================================
+  // DIAGNOSTIC HELPERS
+  // ============================================================
+  // Активируется через ?debug=1 в URL. Выводит на страницу
+  // развёрнутый отчёт о том, что отвечает Supabase.
+  const DEBUG = new URLSearchParams(location.search).has('debug');
+  const __diag = [];
+  function diagLog(label, data) {
+    __diag.push({ label, data, ts: new Date().toISOString().slice(11,23) });
+    if (DEBUG) console.log('[diag]', label, data);
+  }
+  function renderDiag(grid) {
+    if (!DEBUG || !grid) return;
+    const html = '<div style="grid-column:1/-1;background:#1a1a1a;color:#9efa9e;font-family:monospace;font-size:12px;padding:20px;border-radius:8px;white-space:pre-wrap;line-height:1.5;overflow:auto;max-height:600px">'
+      + '<div style="color:#fff;font-weight:700;margin-bottom:10px;font-size:14px">🔍 ДИАГНОСТИКА КАТАЛОГА</div>'
+      + __diag.map(e => `<div><span style="color:#888">[${e.ts}]</span> <span style="color:#fc6">${escapeHtml(e.label)}</span>\n${escapeHtml(typeof e.data === 'string' ? e.data : JSON.stringify(e.data, null, 2))}</div>`).join('\n\n')
+      + '</div>';
+    grid.insertAdjacentHTML('afterbegin', html);
+  }
+
   // Catalog: replace #offersGrid contents with offers from DB
   async function syncCatalog() {
     const grid = document.getElementById('offersGrid');
     if (!grid) return;
+
+    diagLog('start', { url: location.href, debug: DEBUG });
     try {
       // Cache user's city for "from → to" distance label in cards
       if (!window.__rh_user_city) {
@@ -3253,18 +3275,64 @@
         } catch(_) { window.__rh_user_city = 'Нижний Новгород'; }
       }
 
-      // Use distance-aware listing if available; falls back to plain listOffers on error.
-      let offers;
+      // Стратегия с тремя ступенями:
+      // 1) RPC offers_with_distance — основной путь, считает расстояние
+      // 2) listOffers — без расстояния, но через JS API
+      // 3) Прямой raw-запрос на /rest/v1/offers без джойнов — крайний случай,
+      //    показывает падает ли вообще базовый SELECT (RLS/auth issue)
+      let offers = null;
+      let lastError = null;
+
+      // Шаг 1: RPC
       try {
+        const t0 = performance.now();
         offers = await api.listOffersWithDistance({ limit: 100 });
+        diagLog('listOffersWithDistance OK', { count: offers?.length || 0, ms: Math.round(performance.now()-t0) });
       } catch(e) {
+        lastError = e;
+        diagLog('listOffersWithDistance FAILED', { message: e?.message, code: e?.code, hint: e?.hint, details: e?.details });
         console.warn('[catalog] distance RPC unavailable, falling back to listOffers', e);
-        offers = await api.listOffers({ limit: 100 });
       }
+
+      // Шаг 2: listOffers
       if (!offers || !offers.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px">Пока нет активных предложений</div><div style="font-size:13px">Попробуйте позже или создайте заявку — фермеры предложат нужное вам.</div></div>';
+        try {
+          const t0 = performance.now();
+          offers = await api.listOffers({ limit: 100 });
+          diagLog('listOffers OK', { count: offers?.length || 0, ms: Math.round(performance.now()-t0) });
+        } catch(e) {
+          lastError = e;
+          diagLog('listOffers FAILED', { message: e?.message, code: e?.code, hint: e?.hint, details: e?.details });
+        }
+      }
+
+      // Шаг 3: raw REST fetch (диагностика)
+      if (!offers || !offers.length) {
+        try {
+          const cfg = window.RH_CONFIG;
+          const url = `${cfg.SUPABASE_URL}/rest/v1/offers?select=id,title,status,price_kopecks&limit=5`;
+          const r = await fetch(url, { headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY }});
+          const body = await r.text();
+          diagLog('raw GET /offers', { status: r.status, statusText: r.statusText, body: body.slice(0, 500) });
+        } catch(e) {
+          diagLog('raw GET /offers FAILED', { message: e?.message });
+        }
+      }
+
+      // Если всё ещё пусто и была ошибка — показываем подробное сообщение
+      if (!offers || !offers.length) {
+        const msg = lastError ? `Ошибка БД: ${lastError.message || lastError}` : 'Пока нет активных предложений';
+        const hint = lastError
+          ? 'Откройте каталог с <code>?debug=1</code> для деталей или проверьте Supabase Dashboard → Table Editor → offers (есть ли строки со status=\'active\') и RLS-политики для anon.'
+          : 'В таблице <code>offers</code> нет ни одной строки со status=\'active\'. Залейте данные через Supabase Dashboard или 1С-pipeline.';
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate-500)">
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:${lastError ? '#b00020' : 'inherit'}">${escapeHtml(msg)}</div>
+          <div style="font-size:13px;max-width:560px;margin:0 auto">${hint}</div>
+        </div>`;
+        renderDiag(grid);
         const counter = document.getElementById('filterCount');
         if (counter) counter.textContent = '0';
+        window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));
         return;
       }
 
@@ -3313,9 +3381,13 @@
 
       // Re-trigger filter handlers if they exist
       window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));
+      diagLog('rendered', { cards: offers.length });
+      renderDiag(grid);
     } catch(e) {
       console.error('[Catalog] DB sync failed:', e);
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px;color:#b00020">Не удалось загрузить предложения</div><div style="font-size:13px">' + (e?.message ? escapeHtml(String(e.message)) : 'Проверьте подключение и обновите страницу.') + '</div></div>';
+      diagLog('outer catch', { message: e?.message, stack: e?.stack?.slice(0, 500) });
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:8px;color:#b00020">Не удалось загрузить предложения</div><div style="font-size:13px;max-width:560px;margin:0 auto">' + (e?.message ? escapeHtml(String(e.message)) : 'Проверьте подключение и обновите страницу.') + '<br><br>Откройте каталог с <code>?debug=1</code> для подробной диагностики.</div></div>';
+      renderDiag(grid);
       const counter = document.getElementById('filterCount');
       if (counter) counter.textContent = '0';
       window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));

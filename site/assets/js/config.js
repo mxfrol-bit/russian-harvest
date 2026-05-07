@@ -30,11 +30,33 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.5.2',
+  VERSION: '2.5.4',
   BUILD_DATE: '2026-05-07',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.5.4',
+      date: '2026-05-07',
+      summary: 'Каталог наконец работает: RPC offers_with_distance v2 возвращает offer + crop + seller одним запросом',
+      changes: [
+        '✅ Корень бага найден: PostgREST не резолвил FK profiles_public!offers_seller_id_fkey через VIEW. Anon видел offers (32 строки), но enrich-запрос с джойном на view падал.',
+        '🛠 БД: миграция offers_with_distance_v2_full_payload применена через MCP. RPC теперь возвращает плоский payload (offer + crop_name/emoji + seller_handle/rating/city + distance_km), сразу отсортирован VIP→ближайшие→новые.',
+        '🛠 api.js: listOffersWithDistance теперь читает RPC и преобразует плоские поля в объекты {crop, seller} которые ждёт renderCatalogCard. Один сетевой round-trip вместо трёх.',
+        '✓ Smoke-test от роли anon: 32/32 оффера с полным набором данных, distance считается (0–606 км от НН).',
+      ]
+    },
+    {
+      version: '2.5.3',
+      date: '2026-05-07',
+      summary: 'Диагностика каталога + SQL-фикс RLS/seed для пустой БД',
+      changes: [
+        '🔍 Открой каталог с ?debug=1 — на странице появится терминальный блок с шагами: что вернул RPC, что вернул listOffers, что вернул raw GET /offers, какие коды и ошибки.',
+        '🛡 Многоуровневый fallback в syncCatalog: RPC → listOffers → raw fetch — если все три упали, видно который и с каким HTTP-кодом.',
+        '💬 При ошибке БД на странице теперь видно конкретное сообщение Supabase (а не «Загружаем...» вечно).',
+        '📜 scripts/diagnose-and-fix.sql — запусти в Supabase SQL Editor: показывает что в БД, гарантирует RLS-политики для anon, создаёт RPC offers_with_distance если её нет, засевает 6 демо-офферов если в offers нет active-строк.',
+      ]
+    },
     {
       version: '2.5.2',
       date: '2026-05-07',
