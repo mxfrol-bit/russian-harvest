@@ -195,13 +195,76 @@
     },
 
     // ===========================================================
-    // CROPS (справочник культур)
+    // CROPS (справочник культур — иерархический)
     // ===========================================================
     async listCrops() {
       const sb = await ensureSupabase();
       const { data, error } = await sb.from('crops').select('*').order('sort_order');
       if (error) throw error;
       return data;
+    },
+
+    /** Иерархическое дерево культур: вид → подгруппы.
+     *  Кешируется на сессию — справочник не меняется во время работы.
+     *  Вернёт: [{id, name, emoji, category, children:[{id,name,sort_order},...]}, ...]
+     */
+    async listCropsTree() {
+      if (window.__rh_crops_tree_cache) return window.__rh_crops_tree_cache;
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('list_crops_tree');
+      if (error) throw error;
+      window.__rh_crops_tree_cache = data || [];
+      return window.__rh_crops_tree_cache;
+    },
+
+    // ===========================================================
+    // GEO (регионы → районы → города)
+    // ===========================================================
+
+    /** Все регионы (level=1). Кешируется. */
+    async listGeoRegions() {
+      if (window.__rh_geo_regions_cache) return window.__rh_geo_regions_cache;
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('list_geo_regions');
+      if (error) throw error;
+      window.__rh_geo_regions_cache = data || [];
+      return window.__rh_geo_regions_cache;
+    },
+
+    /** Районы и городские округа внутри региона. Кешируется по region_id. */
+    async listGeoDistricts(region_id) {
+      if (!region_id) return [];
+      const cacheKey = '__rh_geo_districts_' + region_id;
+      if (window[cacheKey]) return window[cacheKey];
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('list_geo_districts', { p_region_id: region_id });
+      if (error) throw error;
+      window[cacheKey] = data || [];
+      return window[cacheKey];
+    },
+
+    /** Города и сёла внутри района. Кешируется по district_id. */
+    async listGeoCities(district_id) {
+      if (!district_id) return [];
+      const cacheKey = '__rh_geo_cities_' + district_id;
+      if (window[cacheKey]) return window[cacheKey];
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('list_geo_cities', { p_district_id: district_id });
+      if (error) throw error;
+      window[cacheKey] = data || [];
+      return window[cacheKey];
+    },
+
+    /** Поиск н.п. по подстроке (для autocomplete). Кешируется по query. */
+    async searchGeo(query, limit = 15) {
+      if (!query || query.length < 2) return [];
+      const cacheKey = '__rh_geo_search_' + query.toLowerCase();
+      if (window[cacheKey]) return window[cacheKey];
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('search_geo', { p_query: query, p_limit: limit });
+      if (error) throw error;
+      window[cacheKey] = data || [];
+      return window[cacheKey];
     },
 
     // ===========================================================
@@ -213,7 +276,9 @@
         *,
         crop:crops(name, emoji, category),
         seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region)
-      `).eq('status', 'active').order('created_at', { ascending: false });
+      `).eq('status', 'active')
+        .order('is_premium', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (filters.crop_id) q = q.eq('crop_id', filters.crop_id);
       if (filters.region) q = q.eq('region', filters.region);
@@ -226,6 +291,74 @@
 
       const { data, error } = await q;
       if (error) throw error;
+      return data;
+    },
+
+    /** Get user's reference coordinates: profile.city_lat/city_lng or default to НН.
+     *  Used for distance calculation in listings. */
+    async getUserCoords() {
+      try {
+        const user = await this.getCurrentUser();
+        if (user?.city_lat && user?.city_lng) {
+          return { lat: parseFloat(user.city_lat), lng: parseFloat(user.city_lng), source: 'profile' };
+        }
+      } catch(_) {}
+      // Default: Нижний Новгород (region center, used as anchor for guests)
+      return { lat: 56.3269, lng: 44.0075, source: 'default' };
+    },
+
+    /** List offers with computed distance_km from user's city.
+     *  Falls back to НН coordinates if user has no city set. */
+    async listOffersWithDistance(filters = {}) {
+      const sb = await ensureSupabase();
+      const coords = await this.getUserCoords();
+
+      // Use the RPC offers_with_distance that joins geo_units and computes Haversine.
+      // We can't use rpc().select('*, crop:crops(...)') directly, so we fetch IDs first then enrich.
+      const { data: rows, error } = await sb.rpc('offers_with_distance', {
+        p_lat: coords.lat, p_lng: coords.lng
+      });
+      if (error) throw error;
+      if (!rows || !rows.length) return [];
+
+      // Enrich with crop + seller via a second query
+      const ids = rows.map(r => r.id);
+      const { data: enriched, error: e2 } = await sb.from('offers').select(`
+        id, harvest_year, has_delivery, has_lab_analysis, quality, expires_at,
+        crop:crops(name, emoji, category),
+        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region)
+      `).in('id', ids);
+      if (e2) throw e2;
+
+      const map = new Map((enriched || []).map(e => [e.id, e]));
+      const merged = rows.map(r => Object.assign({}, r, map.get(r.id) || {}));
+
+      // Apply client-side filters
+      let result = merged;
+      if (filters.crop_id) result = result.filter(o => o.crop_id === filters.crop_id);
+      if (filters.region)  result = result.filter(o => o.region === filters.region);
+      if (filters.price_min) result = result.filter(o => o.price_kopecks >= filters.price_min * 100);
+      if (filters.price_max) result = result.filter(o => o.price_kopecks <= filters.price_max * 100);
+      if (filters.search)  result = result.filter(o => (o.title||'').toLowerCase().includes(filters.search.toLowerCase()));
+      if (filters.limit)   result = result.slice(0, filters.limit);
+      return result;
+    },
+
+    /** Activate VIP / premium tier for an offer (paid promotion) */
+    async activateVip(offer_id, { tier = 'vip', days = 30, amount_rub = 0 } = {}) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('activate_vip', {
+        p_offer_id: offer_id, p_tier: tier, p_days: days, p_amount_rub: amount_rub
+      });
+      if (error) throw new Error(translateRpcError(error));
+      return data;
+    },
+
+    /** Deactivate VIP for an offer */
+    async deactivateVip(offer_id) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.rpc('deactivate_vip', { p_offer_id: offer_id });
+      if (error) throw new Error(translateRpcError(error));
       return data;
     },
 

@@ -60,6 +60,7 @@ def icon(name):
         'tg':           '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg>',
         'vk':           '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8 17.2c-5.6 0-8.8-3.8-8.9-10.1h2.8c.1 4.6 2.1 6.5 3.7 6.9V7.1h2.6v4c1.6-.2 3.3-2 3.9-4h2.6c-.4 2.5-2.2 4.3-3.5 5 1.3.6 3.4 2.2 4.2 5.1h-2.9c-.6-2-2.1-3.5-3.9-3.8v3.8h-.6z"/></svg>',
         'wa':           '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg>',
+        'max':          '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="11"/><text x="12" y="16" font-family="Arial Black, sans-serif" font-size="11" font-weight="900" fill="#fff" text-anchor="middle">M</text></svg>',
         'verify':       '<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg>',
         'buyer':        '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg>',
         'seller':       '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h18v12H3zM7 8V5a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v3"/><path d="M9 12h6"/></svg>',
@@ -143,39 +144,40 @@ def footer():
   <div class="foot-wrap">
     <div class="foot-brand">
       <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
-      <p>Онлайн-площадка для прямых сделок между фермерами и покупателями сельхозпродукции. Прозрачно, быстро, надёжно.</p>
-      <span class="mono" style="font-size:11px;color:var(--slate-400)">ИП Фролов В.А.</span>
+      <p>Растим будущее агробизнеса</p>
     </div>
     <div class="foot-col">
-      <h5>Разделы</h5>
-      <a href="/catalog.html">Купить</a>
-      <a href="/sale.html">Продать</a>
+      <h5>О нас</h5>
       <a href="/about.html">О компании</a>
-      <a href="/how.html">Помощь</a>
       <a href="/contacts.html">Контакты</a>
     </div>
     <div class="foot-col">
       <h5>Документы</h5>
       <a href="/offer.html">Публичная оферта</a>
-      <a href="/regulations.html">Правила площадки</a>
+      <a href="/regulations.html">Правила торговой площадки</a>
       <a href="/policy.html">Политика конфиденциальности</a>
-      <a href="/dispute.html">Регламент споров</a>
+      <a href="/dispute.html">Регламент разрешения споров</a>
+    </div>
+    <div class="foot-col">
+      <h5>Партнёрам</h5>
+      <a href="/sale.html">Продавцам</a>
+      <a href="/catalog.html">Покупателям</a>
+      <a href="/contacts.html">Реклама и сотрудничество</a>
     </div>
     <div class="foot-col">
       <h5>Контакты</h5>
       <a href="tel:+79300129797">+7 930 012-97-97</a>
       <a href="mailto:support@russian-harvest.ru">support@russian-harvest.ru</a>
-      <span class="txt">Нижний Новгород</span>
       <div class="foot-soc" style="margin-top:8px">
-        <a href="https://t.me/tdrusagro" title="Telegram">{icon('tg')}</a>
-        <a href="#" title="VK">{icon('vk')}</a>
-        <a href="#" title="WhatsApp">{icon('wa')}</a>
+        <a href="https://t.me/tdrusagro" title="Telegram" target="_blank" rel="noopener">{icon('tg')}</a>
+        <a href="#" title="VK" target="_blank" rel="noopener">{icon('vk')}</a>
+        <a href="https://max.ru" title="MAX" target="_blank" rel="noopener">{icon('max')}</a>
       </div>
     </div>
   </div>
   <div class="foot-bot">
-    <span class="c">© 2026 Русский Урожай</span>
-    <span style="font-size:12px;color:var(--slate-400)">Сайт использует файлы cookies для улучшения работы.</span>
+    <span class="c">© 2026 Русский Урожай. Все права защищены</span>
+    <span style="font-size:12px;color:var(--slate-400)">Использование сайта означает согласие с Пользовательским соглашением и Политикой конфиденциальности сервиса Русский Урожай</span>
   </div>
 </footer>'''
 
@@ -200,21 +202,17 @@ def search_overlay():
       </div>
     </div>
     <div class="sd-sec">
-      <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
-      <a class="sd-item" href="/catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-    </div>
-    <div class="sd-sec">
-      <div class="sd-title">Регионы</div>
-      <a class="sd-item" href="/catalog.html?q=нижегородская"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=рязань"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+      <div class="sd-title">Культуры</div>
+      <a class="sd-item" href="/catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=ячмень"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Ячмень</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Разделы сайта</div>
-      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Безопасность сделок</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Помощь</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Контакты</div></div><span class="sd-arrow">→</span></a>
     </div>
   </div>
   <div class="so-ft">
@@ -451,16 +449,13 @@ def page(title, body, active='', description=None):
 
 def offer_card(data, featured=False):
     """Build one offer card HTML."""
+    is_vip = data.get('vip') or data.get('is_premium')
     classes = ['card']
-    if featured:
-        classes.append('card-featured')
+    if is_vip:
+        classes.append('card-vip')
     if data.get('archive'):
         classes.append('card-archive')
     cls = ' '.join(classes)
-    badge_cls = f"badge {data.get('badge_class', '')}".strip()
-    if data.get('archive'):
-        badge_cls = 'badge archive'
-        data = {**data, 'badge': 'В архиве'}
 
     quality_rows = ''.join(
         f'<div class="q-row">{icon("check")}<span class="k">{k}</span><span class="v">{v}</span></div>'
@@ -469,17 +464,22 @@ def offer_card(data, featured=False):
     n_q = len(data.get('quality', {}))
     q_word = plural_ru(n_q, ('параметр', 'параметра', 'параметров'))
 
-    # Deals pluralization
-    n_deals = data.get('deals_count', 34)
-    deals_word = plural_ru(n_deals, ('сделка', 'сделки', 'сделок'))
-
     cta_label = 'В архиве' if data.get('archive') else 'Купить'
 
-    # Normalize crop category for filtering
+    # Normalize crop category for filtering — supports subclasses
     title = data['title']
+    title_lower = title.lower()
     crop_key = 'other'
-    if 'Пшеница' in title: crop_key = 'wheat'
-    elif 'Ячмень' in title: crop_key = 'barley'
+    if 'Пшеница' in title:
+        crop_key = 'wheat'
+        if '3 класс' in title: crop_key += ' wheat-3'
+        elif '4 класс' in title: crop_key += ' wheat-4'
+        elif '5 класс' in title: crop_key += ' wheat-5'
+        elif 'кормов' in title_lower: crop_key += ' wheat-feed'
+    elif 'Ячмень' in title:
+        crop_key = 'barley'
+        if 'пивовар' in title_lower: crop_key += ' barley-malt'
+        elif 'кормов' in title_lower: crop_key += ' barley-feed'
     elif 'Кукуруза' in title: crop_key = 'corn'
     elif 'Подсолнечник' in title: crop_key = 'sunflower'
     elif 'Овёс' in title or 'Овес' in title: crop_key = 'oat'
@@ -492,20 +492,30 @@ def offer_card(data, featured=False):
     price_num = data['price'].replace(' ', '').replace(' ', '')
     has_delivery = '1' if data.get('delivery_cost') is not None else '0'
     has_vat = '1' if 'с НДС' in data.get('vat', '') else '0'
-    has_lab = '1' if n_q >= 4 else '0'
 
     data_attrs = (
         f'data-offer="{data["id"]}" data-crop="{crop_key}" data-region="{data["region"]}" '
         f'data-price="{price_num}" data-distance="{data["distance_km"]}" '
-        f'data-delivery="{has_delivery}" data-vat="{has_vat}" data-lab="{has_lab}" '
+        f'data-delivery="{has_delivery}" data-vat="{has_vat}" '
         f'data-title="{title}"'
     )
+
+    # Active until — derived (default 30 days from now or use data)
+    active_until = data.get('active_until', 'до 31.12.2026')
+
+    # Anonymized seller handle (used as primary identifier)
+    seller_handle = data.get('sid', 'A-0000')
+    if not seller_handle.startswith(('A-', 'S-')):
+        seller_handle = 'S-' + seller_handle.lstrip('AB-')
+
+    archive_label = '<span class="badge archive">В архиве</span>' if data.get('archive') else ''
+    vip_label = '<span class="badge vip" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#3d2900;font-weight:700;letter-spacing:.04em">⭐ VIP</span>' if is_vip else ''
 
     return f'''<article class="{cls}" {data_attrs}>
   <div class="card-head">
     <div class="card-top">
       <div>
-        <span class="{badge_cls}">{data.get('badge', 'Проверено')}</span>
+        {vip_label}{archive_label}
         <h3 class="card-title">{data['title']}</h3>
       </div>
       <div class="card-price-pill">
@@ -517,6 +527,9 @@ def offer_card(data, featured=False):
       <div class="cell"><div class="k">Объём</div><div class="v">{data['volume']}</div></div>
       <div class="cell"><div class="k">Урожай</div><div class="v">{data['harvest']}</div></div>
       <div class="cell"><div class="k">Регион</div><div class="v">{data['region']}</div></div>
+    </div>
+    <div class="card-meta" style="margin-top:8px">
+      <div class="cell"><div class="k">Активно до</div><div class="v">{active_until}</div></div>
     </div>
   </div>
   <button class="q-toggle" data-q="{data['id']}">
@@ -531,15 +544,12 @@ def offer_card(data, featured=False):
   <div class="supplier-strip">
     <span class="supplier-verify"><span class="bc">{icon('verify')}</span>Проверено платформой</span>
     <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>{data.get('rating', '4.9')}</span>
-      <span class="dot"></span>
       <span>Безопасная сделка</span>
       <span class="dot"></span>
-      <span class="id">Лот {data.get('sid', '0000')}</span>
+      <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот {seller_handle}</span>
     </div>
   </div>
   <div class="card-foot">
-    <span class="delivery-tag">{icon('truck')}{data.get('delivery', 'Самовывоз')}</span>
     <a class="cta" href="{'#' if data.get('archive') else '/product.html?id=' + str(data.get('id', ''))}">{cta_label} {icon('arrow-sm') if not data.get('archive') else ''}</a>
   </div>
 </article>'''
@@ -547,116 +557,40 @@ def offer_card(data, featured=False):
 
 # ================= OFFERS DATA =================
 
-OFFERS = [
-    # Near NN (<100 km) — sorted by distance
-    {'id':0,'title':'Ячмень кормовой','price':'13 000','vat':'с НДС 10%','volume':'10 т','harvest':'2025','region':'Балахна','distance_km':39,'delivery_cost':450,'badge':'Горячее','badge_class':'featured','quality':{'Влажность':'5 %','Сорная примесь':'1 %','Протеин':'11 %','Натура':'570 г/л','Зараженность':'нет'},'rating':'4.9','deals_count':34,'sid':'A-8832','delivery':'Есть доставка'},
-    {'id':1,'title':'Кукуруза','price':'15 000','vat':'с НДС 10%','volume':'80 т','harvest':'2025','region':'Дзержинск','distance_km':38,'delivery_cost':450,'badge':'Хит недели','badge_class':'orange','quality':{'Влажность':'14 %','Сорная примесь':'5 %','Зерно битое':'1,1 %'},'rating':'5.0','deals_count':91,'sid':'A-1934','delivery':'Доставка 450 ₽/т'},
-    {'id':2,'title':'Пшеница кормовая','price':'12 000','vat':'с НДС 10%','volume':'20 т','harvest':'2025','region':'Семёнов','distance_km':71,'delivery_cost':None,'badge':'Быстрый отклик','quality':{'Влажность':'5 %','Сорная примесь':'1 %'},'rating':'4.7','deals_count':12,'sid':'A-6718','delivery':'Самовывоз'},
-    {'id':3,'title':'Подсолнечник','price':'28 400','vat':'без НДС','volume':'60 т','harvest':'2025','region':'Лысково','distance_km':92,'delivery_cost':0,'badge':'Премиум','badge_class':'orange','quality':{'Масличность':'46,2 %','Влажность':'7,1 %','Сорная примесь':'1,4 %','Кислотное число':'1,2'},'rating':'4.9','deals_count':47,'sid':'A-3312','delivery':'Доставка включена'},
+OFFERS = []  # Real data loaded from Supabase via JS
 
-    # Mid-range (100-300 km)
-    {'id':4,'title':'Овёс фуражный','price':'10 800','vat':'с НДС 10%','volume':'45 т','harvest':'2025','region':'Арзамас','distance_km':112,'delivery_cost':None,'badge':'Проверено','quality':{'Влажность':'14,0 %','Сорная примесь':'2,8 %'},'rating':'4.6','deals_count':23,'sid':'A-6712','delivery':'Самовывоз'},
-    {'id':5,'title':'Пшеница 3 класс','price':'14 800','vat':'с НДС 10%','volume':'150 т','harvest':'2025','region':'Муром','distance_km':137,'delivery_cost':600,'badge':'Лаб. анализ','quality':{'Протеин':'13,1 %','Клейковина':'28 %','Влажность':'12,8 %','Натура':'785 г/л','Сорная примесь':'1,0 %','Число падения':'290 с'},'rating':'4.9','deals_count':62,'sid':'A-4005','delivery':'Доставка 600 ₽/т'},
-    {'id':6,'title':'Пшеница 4 класс','price':'12 000','vat':'с НДС 10%','volume':'100 т','harvest':'2026','region':'Сергач','distance_km':158,'delivery_cost':None,'badge':'Проверено','quality':{'Протеин':'11 %','Клейковина':'18 %','Влажность':'13 %','Натура':'780 г/л','Сорная примесь':'5 %'},'rating':'4.8','deals_count':56,'sid':'A-2045','delivery':'Самовывоз'},
-    {'id':7,'title':'Рапс','price':'32 100','vat':'без НДС','volume':'40 т','harvest':'2025','region':'Выкса','distance_km':186,'delivery_cost':None,'badge':'Новый','quality':{'Масличность':'42 %','Влажность':'8 %','Сорная примесь':'2 %'},'rating':'4.8','deals_count':19,'sid':'A-5502','delivery':'Самовывоз'},
-    {'id':8,'title':'Горох','price':'18 500','vat':'с НДС 10%','volume':'30 т','harvest':'2025','region':'Иваново','distance_km':207,'delivery_cost':800,'badge':'Проверено','quality':{'Влажность':'14 %','Сорная примесь':'2 %','Битые зёрна':'3 %'},'rating':'4.7','deals_count':28,'sid':'A-2201','delivery':'Доставка 800 ₽/т'},
-    {'id':9,'title':'Гречиха','price':'22 400','vat':'без НДС','volume':'25 т','harvest':'2025','region':'Касимов','distance_km':223,'delivery_cost':None,'badge':'Премиум','badge_class':'orange','quality':{'Натура':'620 г/л','Влажность':'13 %','Сорная примесь':'2,5 %'},'rating':'4.9','deals_count':41,'sid':'A-7788','delivery':'Самовывоз'},
-    {'id':10,'title':'Ячмень пивоваренный','price':'16 200','vat':'с НДС 10%','volume':'200 т','harvest':'2025','region':'Чебоксары','distance_km':235,'delivery_cost':900,'badge':'Лаб. анализ','quality':{'Белок':'10,5 %','Влажность':'12,5 %','Способность прорастания':'96 %','Крупность':'85 %','Натура':'680 г/л'},'rating':'4.9','deals_count':74,'sid':'A-5512','delivery':'Доставка 900 ₽/т'},
-    {'id':11,'title':'Соя','price':'39 500','vat':'без НДС','volume':'50 т','harvest':'2025','region':'Владимир','distance_km':248,'delivery_cost':1000,'badge':'Премиум','badge_class':'orange','quality':{'Протеин':'38 %','Масличность':'20 %','Влажность':'12 %','Сорная примесь':'2 %'},'rating':'5.0','deals_count':53,'sid':'A-3399','delivery':'Доставка 1 000 ₽/т'},
-    {'id':12,'title':'Пшеница 3 класс','price':'14 300','vat':'с НДС 10%','volume':'180 т','harvest':'2025','region':'Йошкар-Ола','distance_km':273,'delivery_cost':1100,'badge':'Проверено','quality':{'Протеин':'12,6 %','Клейковина':'25 %','Влажность':'13,5 %','Натура':'775 г/л','Сорная примесь':'1,5 %'},'rating':'4.8','deals_count':38,'sid':'A-9045','delivery':'Доставка 1 100 ₽/т'},
-    {'id':13,'title':'Кукуруза','price':'14 500','vat':'с НДС 10%','volume':'250 т','harvest':'2025','region':'Рязань','distance_km':287,'delivery_cost':1200,'badge':'Хит недели','badge_class':'orange','quality':{'Влажность':'13 %','Сорная примесь':'3 %','Зерно битое':'0,8 %'},'rating':'4.9','deals_count':102,'sid':'A-1122','delivery':'Доставка 1 200 ₽/т'},
-
-    # Far (300-500 km)
-    {'id':14,'title':'Подсолнечник','price':'27 900','vat':'без НДС','volume':'120 т','harvest':'2025','region':'Пенза','distance_km':340,'delivery_cost':1400,'badge':'Лаб. анализ','quality':{'Масличность':'45 %','Влажность':'7,5 %','Сорная примесь':'1,8 %','Кислотное число':'1,5'},'rating':'4.8','deals_count':66,'sid':'A-6630','delivery':'Доставка 1 400 ₽/т'},
-    {'id':15,'title':'Пшеница 4 класс','price':'11 500','vat':'с НДС 10%','volume':'300 т','harvest':'2025','region':'Тамбов','distance_km':378,'delivery_cost':1500,'badge':'Проверено','quality':{'Протеин':'10,8 %','Клейковина':'18 %','Влажность':'13,8 %','Натура':'760 г/л','Сорная примесь':'4 %'},'rating':'4.7','deals_count':49,'sid':'A-8890','delivery':'Доставка 1 500 ₽/т'},
-    {'id':16,'title':'Ячмень кормовой','price':'12 100','vat':'с НДС 10%','volume':'160 т','harvest':'2025','region':'Ульяновск','distance_km':402,'delivery_cost':1500,'badge':'Проверено','quality':{'Влажность':'13 %','Сорная примесь':'2 %','Натура':'580 г/л'},'rating':'4.8','deals_count':31,'sid':'A-4455','delivery':'Доставка 1 500 ₽/т'},
-    {'id':17,'title':'Рапс','price':'31 800','vat':'без НДС','volume':'80 т','harvest':'2025','region':'Саранск','distance_km':413,'delivery_cost':1600,'badge':'Премиум','badge_class':'orange','quality':{'Масличность':'43 %','Влажность':'7,8 %','Сорная примесь':'1,5 %','Кислотное число':'1,1'},'rating':'4.9','deals_count':44,'sid':'A-7722','delivery':'Доставка 1 600 ₽/т'},
-    {'id':18,'title':'Гречиха','price':'21 800','vat':'без НДС','volume':'45 т','harvest':'2025','region':'Тула','distance_km':428,'delivery_cost':1700,'badge':'Проверено','quality':{'Натура':'615 г/л','Влажность':'13,5 %','Сорная примесь':'3 %'},'rating':'4.7','deals_count':18,'sid':'A-5599','delivery':'Доставка 1 700 ₽/т'},
-    {'id':19,'title':'Пшеница 3 класс','price':'14 200','vat':'с НДС 10%','volume':'120 т','harvest':'2025','region':'Балаково','distance_km':539.4,'delivery_cost':1800,'badge':'Лаб. анализ','quality':{'Протеин':'12,8 %','Клейковина':'26 %','Влажность':'13,2 %','Натура':'780 г/л','Сорная примесь':'1,2 %','Число падения':'280 с','Зерновая примесь':'3,5 %'},'rating':'4.9','deals_count':34,'sid':'A-4721','delivery':'Есть доставка'},
-    {'id':20,'title':'Кукуруза','price':'13 900','vat':'с НДС 10%','volume':'400 т','harvest':'2025','region':'Воронеж','distance_km':580,'delivery_cost':1900,'badge':'Хит недели','badge_class':'orange','quality':{'Влажность':'13,2 %','Сорная примесь':'2 %','Зерно битое':'0,6 %'},'rating':'5.0','deals_count':128,'sid':'A-3301','delivery':'Доставка 1 900 ₽/т'},
-    {'id':21,'title':'Овёс голозёрный','price':'14 500','vat':'с НДС 10%','volume':'60 т','harvest':'2025','region':'Самара','distance_km':612,'delivery_cost':2000,'badge':'Премиум','badge_class':'orange','quality':{'Влажность':'12,5 %','Сорная примесь':'1,5 %','Натура':'570 г/л'},'rating':'4.8','deals_count':27,'sid':'A-1177','delivery':'Доставка 2 000 ₽/т'},
-    {'id':22,'title':'Подсолнечник','price':'28 100','vat':'без НДС','volume':'200 т','harvest':'2025','region':'Липецк','distance_km':634,'delivery_cost':2100,'badge':'Лаб. анализ','quality':{'Масличность':'45,8 %','Влажность':'7,2 %','Сорная примесь':'1,2 %','Кислотное число':'1,3'},'rating':'4.9','deals_count':81,'sid':'A-6655','delivery':'Доставка 2 100 ₽/т'},
-    {'id':23,'title':'Пшеница 5 класс','price':'10 800','vat':'с НДС 10%','volume':'500 т','harvest':'2025','region':'Саратов','distance_km':689,'delivery_cost':2200,'badge':'Проверено','quality':{'Протеин':'9,5 %','Влажность':'13,5 %','Натура':'750 г/л','Сорная примесь':'5 %'},'rating':'4.6','deals_count':35,'sid':'A-2233','delivery':'Доставка 2 200 ₽/т'},
-    {'id':24,'title':'Соя','price':'38 900','vat':'без НДС','volume':'100 т','harvest':'2025','region':'Казань','distance_km':407,'delivery_cost':1600,'badge':'Премиум','badge_class':'orange','quality':{'Протеин':'39 %','Масличность':'21 %','Влажность':'11,8 %','Сорная примесь':'1,5 %'},'rating':'4.9','deals_count':58,'sid':'A-7799','delivery':'Доставка 1 600 ₽/т'},
-    {'id':25,'title':'Ячмень кормовой','price':'12 800','vat':'с НДС 10%','volume':'70 т','harvest':'2025','region':'Ковров','distance_km':195,'delivery_cost':800,'badge':'Проверено','quality':{'Влажность':'13,5 %','Сорная примесь':'2,2 %','Натура':'565 г/л'},'rating':'4.7','deals_count':22,'sid':'A-8844','delivery':'Доставка 800 ₽/т'},
-    {'id':26,'title':'Пшеница 3 класс','price':'14 600','vat':'с НДС 10%','volume':'220 т','harvest':'2025','region':'Нижний Новгород','distance_km':18,'delivery_cost':200,'badge':'Горячее','badge_class':'featured','quality':{'Протеин':'12,9 %','Клейковина':'27 %','Влажность':'13,0 %','Натура':'782 г/л','Сорная примесь':'1,1 %'},'rating':'5.0','deals_count':115,'sid':'A-0001','delivery':'Доставка 200 ₽/т'},
-    {'id':27,'title':'Горох','price':'19 200','vat':'с НДС 10%','volume':'40 т','harvest':'2025','region':'Кстово','distance_km':24,'delivery_cost':200,'badge':'Рядом','badge_class':'featured','quality':{'Влажность':'13,5 %','Сорная примесь':'1,8 %','Битые зёрна':'2 %'},'rating':'4.9','deals_count':39,'sid':'A-0044','delivery':'Доставка 200 ₽/т'},
-    {'id':28,'title':'Кукуруза','price':'15 400','vat':'с НДС 10%','volume':'60 т','harvest':'2025','region':'Богородск','distance_km':45,'delivery_cost':500,'badge':'Новый','quality':{'Влажность':'13,8 %','Сорная примесь':'2,5 %','Зерно битое':'1,0 %'},'rating':'4.8','deals_count':33,'sid':'A-0088','delivery':'Доставка 500 ₽/т'},
-    {'id':29,'title':'Подсолнечник','price':'28 700','vat':'без НДС','volume':'35 т','harvest':'2025','region':'Павлово','distance_km':79,'delivery_cost':700,'badge':'Лаб. анализ','quality':{'Масличность':'46 %','Влажность':'7,4 %','Сорная примесь':'1,3 %'},'rating':'4.9','deals_count':52,'sid':'A-0099','delivery':'Доставка 700 ₽/т'},
-]
-
-ARCHIVE_OFFERS = [
-    {'id':90,'title':'Пшеница 3 класс','price':'13 800','vat':'с НДС 10%','volume':'200 т','harvest':'2024','region':'Арзамас','distance_km':112,'delivery_cost':450,'quality':{'Протеин':'12,5 %','Клейковина':'25 %','Влажность':'13 %'},'rating':'4.9','deals_count':67,'sid':'A-3401','delivery':'Продано','archive':True},
-    {'id':91,'title':'Ячмень кормовой','price':'12 200','vat':'с НДС 10%','volume':'150 т','harvest':'2024','region':'Выкса','distance_km':186,'delivery_cost':None,'quality':{'Влажность':'13 %','Сорная примесь':'2 %'},'rating':'4.7','deals_count':41,'sid':'A-2205','delivery':'Продано','archive':True},
-    {'id':92,'title':'Кукуруза','price':'14 100','vat':'с НДС 10%','volume':'300 т','harvest':'2024','region':'Дзержинск','distance_km':38,'delivery_cost':400,'quality':{'Влажность':'14 %','Сорная примесь':'3 %'},'rating':'5.0','deals_count':89,'sid':'A-1901','delivery':'Продано','archive':True},
-    {'id':93,'title':'Подсолнечник','price':'26 500','vat':'без НДС','volume':'80 т','harvest':'2024','region':'Балахна','distance_km':39,'delivery_cost':450,'quality':{'Масличность':'45 %','Влажность':'7 %'},'rating':'4.8','deals_count':28,'sid':'A-7701','delivery':'Продано','archive':True},
-    {'id':94,'title':'Рапс','price':'30 800','vat':'без НДС','volume':'60 т','harvest':'2024','region':'Семёнов','distance_km':71,'delivery_cost':600,'quality':{'Масличность':'42 %','Влажность':'8 %'},'rating':'4.9','deals_count':35,'sid':'A-4403','delivery':'Продано','archive':True},
-    {'id':95,'title':'Овёс','price':'10 200','vat':'с НДС 10%','volume':'90 т','harvest':'2024','region':'Муром','distance_km':137,'delivery_cost':None,'quality':{'Влажность':'14 %','Натура':'530 г/л'},'rating':'4.6','deals_count':19,'sid':'A-6601','delivery':'Продано','archive':True},
-]
+ARCHIVE_OFFERS = []  # Real data loaded from Supabase via JS
 
 # ================= BUYER REQUESTS (Продать) =================
 # From the buyer side — what companies are looking for
-REQUESTS = [
-    {'id':'Q-001','title':'Пшеница 3 класс','target_price':'14 500','vat':'с НДС','volume':'200 т','delivery_where':'Нижний Новгород','needed_by':'до 10.05.2026','buyer_type':'Хлебозавод','buyer_sid':'B-0121','posted':'2 часа назад','urgent':True},
-    {'id':'Q-002','title':'Ячмень кормовой','target_price':'12 500','vat':'с НДС','volume':'500 т','delivery_where':'Дзержинск','needed_by':'до 20.05.2026','buyer_type':'Птицефабрика','buyer_sid':'B-0074','posted':'5 часов назад'},
-    {'id':'Q-003','title':'Кукуруза','target_price':'14 800','vat':'с НДС','volume':'150 т','delivery_where':'Арзамас','needed_by':'до 15.05.2026','buyer_type':'Комбикормовый завод','buyer_sid':'B-0203','posted':'6 часов назад'},
-    {'id':'Q-004','title':'Подсолнечник','target_price':'28 000','vat':'без НДС','volume':'80 т','delivery_where':'Нижний Новгород','needed_by':'до 25.04.2026','buyer_type':'МЭЗ','buyer_sid':'B-0099','posted':'1 день назад','urgent':True},
-    {'id':'Q-005','title':'Рапс','target_price':'31 500','vat':'без НДС','volume':'100 т','delivery_where':'Балахна','needed_by':'до 30.05.2026','buyer_type':'МЭЗ','buyer_sid':'B-0114','posted':'1 день назад'},
-    {'id':'Q-006','title':'Пшеница 4 класс','target_price':'11 800','vat':'с НДС','volume':'350 т','delivery_where':'Нижний Новгород','needed_by':'до 05.06.2026','buyer_type':'Мукомольное предприятие','buyer_sid':'B-0302','posted':'2 дня назад'},
-    {'id':'Q-007','title':'Овёс фуражный','target_price':'10 500','vat':'с НДС','volume':'60 т','delivery_where':'Семёнов','needed_by':'до 01.05.2026','buyer_type':'Животноводческий комплекс','buyer_sid':'B-0188','posted':'2 дня назад'},
-    {'id':'Q-008','title':'Соя','target_price':'39 000','vat':'без НДС','volume':'70 т','delivery_where':'Нижний Новгород','needed_by':'до 10.06.2026','buyer_type':'Кормопроизводство','buyer_sid':'B-0155','posted':'3 дня назад'},
-    {'id':'Q-009','title':'Горох','target_price':'18 500','vat':'с НДС','volume':'40 т','delivery_where':'Кстово','needed_by':'до 20.05.2026','buyer_type':'Пищевое производство','buyer_sid':'B-0077','posted':'3 дня назад'},
-    {'id':'Q-010','title':'Гречиха','target_price':'22 000','vat':'без НДС','volume':'35 т','delivery_where':'Нижний Новгород','needed_by':'до 15.06.2026','buyer_type':'Пищевое производство','buyer_sid':'B-0221','posted':'4 дня назад'},
-    {'id':'Q-011','title':'Ячмень пивоваренный','target_price':'16 500','vat':'с НДС','volume':'250 т','delivery_where':'Чебоксары','needed_by':'до 01.07.2026','buyer_type':'Солодовня','buyer_sid':'B-0408','posted':'4 дня назад'},
-    {'id':'Q-012','title':'Пшеница 3 класс','target_price':'14 300','vat':'с НДС','volume':'180 т','delivery_where':'Муром','needed_by':'до 20.05.2026','buyer_type':'Хлебозавод','buyer_sid':'B-0099','posted':'5 дней назад'},
-    {'id':'Q-013','title':'Кукуруза','target_price':'15 200','vat':'с НДС','volume':'120 т','delivery_where':'Арзамас','needed_by':'до 25.05.2026','buyer_type':'Комбикормовый завод','buyer_sid':'B-0312','posted':'5 дней назад'},
-    {'id':'Q-014','title':'Подсолнечник','target_price':'27 800','vat':'без НДС','volume':'150 т','delivery_where':'Нижний Новгород','needed_by':'до 10.06.2026','buyer_type':'МЭЗ','buyer_sid':'B-0155','posted':'6 дней назад'},
-    {'id':'Q-015','title':'Рапс','target_price':'32 000','vat':'без НДС','volume':'200 т','delivery_where':'Дзержинск','needed_by':'до 15.06.2026','buyer_type':'МЭЗ','buyer_sid':'B-0411','posted':'6 дней назад'},
-    {'id':'Q-016','title':'Пшеница 5 класс','target_price':'10 800','vat':'с НДС','volume':'400 т','delivery_where':'Нижний Новгород','needed_by':'до 20.06.2026','buyer_type':'Комбикормовый завод','buyer_sid':'B-0188','posted':'1 неделю назад'},
-    {'id':'Q-017','title':'Ячмень кормовой','target_price':'12 300','vat':'с НДС','volume':'220 т','delivery_where':'Балахна','needed_by':'до 01.06.2026','buyer_type':'Животноводческий комплекс','buyer_sid':'B-0074','posted':'1 неделю назад'},
-    {'id':'Q-018','title':'Пшеница 4 класс','target_price':'12 100','vat':'с НДС','volume':'500 т','delivery_where':'Выкса','needed_by':'до 10.06.2026','buyer_type':'Птицефабрика','buyer_sid':'B-0133','posted':'1 неделю назад'},
-    {'id':'Q-019','title':'Соя','target_price':'38 500','vat':'без НДС','volume':'120 т','delivery_where':'Нижний Новгород','needed_by':'до 25.06.2026','buyer_type':'МЭЗ','buyer_sid':'B-0099','posted':'8 дней назад'},
-    {'id':'Q-020','title':'Горох','target_price':'18 800','vat':'с НДС','volume':'80 т','delivery_where':'Арзамас','needed_by':'до 30.05.2026','buyer_type':'Пищевое производство','buyer_sid':'B-0203','posted':'9 дней назад'},
-    {'id':'Q-021','title':'Кукуруза','target_price':'14 500','vat':'с НДС','volume':'300 т','delivery_where':'Нижний Новгород','needed_by':'до 20.06.2026','buyer_type':'Кормопроизводство','buyer_sid':'B-0302','posted':'10 дней назад'},
-    {'id':'Q-022','title':'Подсолнечник','target_price':'28 500','vat':'без НДС','volume':'90 т','delivery_where':'Семёнов','needed_by':'до 01.07.2026','buyer_type':'МЭЗ','buyer_sid':'B-0411','posted':'10 дней назад'},
-    {'id':'Q-023','title':'Пшеница 3 класс','target_price':'14 700','vat':'с НДС','volume':'250 т','delivery_where':'Муром','needed_by':'до 10.06.2026','buyer_type':'Хлебозавод','buyer_sid':'B-0121','posted':'12 дней назад'},
-    {'id':'Q-024','title':'Овёс голозёрный','target_price':'14 200','vat':'с НДС','volume':'50 т','delivery_where':'Нижний Новгород','needed_by':'до 15.06.2026','buyer_type':'Пищевое производство','buyer_sid':'B-0155','posted':'12 дней назад'},
-    {'id':'Q-025','title':'Ячмень пивоваренный','target_price':'16 800','vat':'с НДС','volume':'180 т','delivery_where':'Чебоксары','needed_by':'до 01.08.2026','buyer_type':'Солодовня','buyer_sid':'B-0408','posted':'14 дней назад'},
-    {'id':'Q-026','title':'Рапс','target_price':'31 200','vat':'без НДС','volume':'150 т','delivery_where':'Балахна','needed_by':'до 10.07.2026','buyer_type':'МЭЗ','buyer_sid':'B-0114','posted':'14 дней назад'},
-    {'id':'Q-027','title':'Гречиха','target_price':'21 500','vat':'без НДС','volume':'45 т','delivery_where':'Нижний Новгород','needed_by':'до 20.07.2026','buyer_type':'Пищевое производство','buyer_sid':'B-0221','posted':'16 дней назад'},
-    {'id':'Q-028','title':'Пшеница 4 класс','target_price':'12 000','vat':'с НДС','volume':'600 т','delivery_where':'Дзержинск','needed_by':'до 15.07.2026','buyer_type':'Мукомольное предприятие','buyer_sid':'B-0302','posted':'18 дней назад'},
-    {'id':'Q-029','title':'Кукуруза','target_price':'14 200','vat':'с НДС','volume':'200 т','delivery_where':'Богородск','needed_by':'до 25.07.2026','buyer_type':'Комбикормовый завод','buyer_sid':'B-0312','posted':'20 дней назад'},
-    {'id':'Q-030','title':'Подсолнечник','target_price':'27 500','vat':'без НДС','volume':'110 т','delivery_where':'Выкса','needed_by':'до 30.07.2026','buyer_type':'МЭЗ','buyer_sid':'B-0099','posted':'22 дня назад'},
-]
+REQUESTS = []  # Real data loaded from Supabase via JS
 
-ARCHIVE_REQUESTS = [
-    {'id':'Q-901','title':'Пшеница 3 класс','target_price':'14 000','vat':'с НДС','volume':'300 т','delivery_where':'Нижний Новгород','needed_by':'Закрыта 15.03.2026','buyer_type':'Хлебозавод','buyer_sid':'B-0121','posted':'Закрыта','archive':True},
-    {'id':'Q-902','title':'Ячмень кормовой','target_price':'12 100','vat':'с НДС','volume':'400 т','delivery_where':'Дзержинск','needed_by':'Закрыта 10.03.2026','buyer_type':'Птицефабрика','buyer_sid':'B-0074','posted':'Закрыта','archive':True},
-    {'id':'Q-903','title':'Кукуруза','target_price':'14 500','vat':'с НДС','volume':'200 т','delivery_where':'Арзамас','needed_by':'Закрыта 05.03.2026','buyer_type':'Комбикорм. завод','buyer_sid':'B-0203','posted':'Закрыта','archive':True},
-    {'id':'Q-904','title':'Подсолнечник','target_price':'27 200','vat':'без НДС','volume':'120 т','delivery_where':'Нижний Новгород','needed_by':'Закрыта 28.02.2026','buyer_type':'МЭЗ','buyer_sid':'B-0099','posted':'Закрыта','archive':True},
-    {'id':'Q-905','title':'Рапс','target_price':'30 500','vat':'без НДС','volume':'90 т','delivery_where':'Балахна','needed_by':'Закрыта 20.02.2026','buyer_type':'МЭЗ','buyer_sid':'B-0114','posted':'Закрыта','archive':True},
-    {'id':'Q-906','title':'Соя','target_price':'37 800','vat':'без НДС','volume':'80 т','delivery_where':'Нижний Новгород','needed_by':'Закрыта 10.02.2026','buyer_type':'Кормопроизводство','buyer_sid':'B-0155','posted':'Закрыта','archive':True},
-]
+ARCHIVE_REQUESTS = []  # Real data loaded from Supabase via JS
 
 
 def request_card(data):
-    """Render a buyer request card."""
+    """Render a buyer request card (anonymized for sellers)."""
     cls = 'req-card'
     if data.get('archive'):
         cls += ' req-archive'
 
-    urgent = '<span class="badge orange">🔥 Срочно</span>' if data.get('urgent') else ''
     archived = '<span class="badge archive">Закрыта</span>' if data.get('archive') else ''
-    new = '<span class="badge featured">Новый</span>' if not data.get('archive') and 'час' in data.get('posted', '') else ''
-
     cta = 'Закрыта' if data.get('archive') else 'Откликнуться'
 
-    # Normalize crop key for filtering
+    # Normalize crop key for filtering — supports subclasses
     title = data['title']
     crop_key = 'other'
     title_lower = title.lower()
-    if 'пшениц' in title_lower: crop_key = 'wheat'
-    elif 'ячмен' in title_lower: crop_key = 'barley'
+    if 'пшениц' in title_lower:
+        crop_key = 'wheat'
+        if '3 класс' in title_lower: crop_key += ' wheat-3'
+        elif '4 класс' in title_lower: crop_key += ' wheat-4'
+        elif '5 класс' in title_lower: crop_key += ' wheat-5'
+        elif 'кормов' in title_lower: crop_key += ' wheat-feed'
+    elif 'ячмен' in title_lower:
+        crop_key = 'barley'
+        if 'пивовар' in title_lower: crop_key += ' barley-malt'
+        elif 'кормов' in title_lower: crop_key += ' barley-feed'
     elif 'кукуруз' in title_lower: crop_key = 'corn'
     elif 'подсолнечник' in title_lower: crop_key = 'sunflower'
     elif 'овёс' in title_lower or 'овес' in title_lower: crop_key = 'oat'
@@ -680,6 +614,11 @@ def request_card(data):
     delivery = data['delivery_where']
     region_match = delivery.split(',')[0].strip()
 
+    # Anonymized buyer handle (no PII)
+    buyer_handle = data.get('buyer_sid', 'B-0000')
+    if not buyer_handle.startswith(('B-', 'A-')):
+        buyer_handle = 'B-' + buyer_handle
+
     data_attrs = (
         f'data-request="{data["id"]}" '
         f'data-crop="{crop_key}" '
@@ -693,8 +632,8 @@ def request_card(data):
   <div class="req-card-head">
     <div>
       <div class="req-badges">
-        {urgent}{new}{archived}
-        <span class="badge gray">№ {data['id']}</span>
+        {archived}
+        <span class="badge gray mono" style="font-family:'JetBrains Mono',monospace">№ {data['id']}</span>
       </div>
       <h3 class="req-card-title">{data['title']}</h3>
     </div>
@@ -707,19 +646,15 @@ def request_card(data):
   <div class="req-attrs">
     <div class="cell"><div class="k">Объём</div><div class="v">{data['volume']}</div></div>
     <div class="cell"><div class="k">Куда</div><div class="v">{data['delivery_where']}</div></div>
-    <div class="cell"><div class="k">Срок</div><div class="v">{data['needed_by']}</div></div>
+    <div class="cell"><div class="k">Активно до</div><div class="v">{data['needed_by']}</div></div>
   </div>
 
   <div class="req-meta">
-    <span class="item">{icon('buyer')}{data['buyer_type']}</span>
-    <span class="dot"></span>
-    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID {data['buyer_sid']}</span>
-    <span class="dot"></span>
-    <span class="item">{icon('clock')}{data['posted']}</span>
+    <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID {buyer_handle}</span>
   </div>
 
   <div class="req-foot">
-    <span class="req-buyer">Проверено платформой · {icon('verify')} ★ 4.9</span>
+    <span class="req-buyer">{icon('verify')} Проверено платформой</span>
     <button class="cta" data-action="respond" data-request-id="{data['id']}" {'' if not data.get('archive') else 'disabled'}>{cta} {icon('arrow-sm') if not data.get('archive') else ''}</button>
   </div>
 </article>'''
@@ -833,20 +768,20 @@ def build_index():
     </div>
 
     <div>
-      <div class="focus-wrap">
+      <div class="focus-wrap" id="focusWrap">
         <div class="focus-head">
           <div>
             <div class="label"><span class="dot"></span>СЕГОДНЯ В ФОКУСЕ</div>
-            <div class="title">Пшеница 3 класс</div>
+            <div class="title" id="focusTitle">—</div>
           </div>
-          <div class="focus-price">14 200 ₽/т</div>
+          <div class="focus-price" id="focusPrice">—</div>
         </div>
         <div class="focus-card">
           <div class="focus-grid">
-            <div class="focus-cell"><div class="k">Объём</div><div class="v">120 тонн</div></div>
-            <div class="focus-cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-            <div class="focus-cell"><div class="k">Регион</div><div class="v">Арзамас</div></div>
-            <div class="focus-cell"><div class="k">Статус</div><div class="v">Проверено</div></div>
+            <div class="focus-cell"><div class="k">Объём</div><div class="v" id="focusVolume">—</div></div>
+            <div class="focus-cell"><div class="k">Урожай</div><div class="v" id="focusYear">—</div></div>
+            <div class="focus-cell"><div class="k">Регион</div><div class="v" id="focusRegion">—</div></div>
+            <div class="focus-cell"><div class="k">Активно до</div><div class="v" id="focusUntil">—</div></div>
           </div>
           <div class="focus-benefits">
             <div class="h">{icon('check-big')} Ключевые преимущества</div>
@@ -854,7 +789,7 @@ def build_index():
             <div class="row">{icon('check')}Доступна логистика через платформу</div>
             <div class="row">{icon('check')}Гарантия безопасной сделки</div>
           </div>
-          <a class="cta" href="/product.html">Открыть предложение {icon('arrow-sm')}</a>
+          <a class="cta" href="/catalog.html" id="focusCta">Открыть предложение {icon('arrow-sm')}</a>
         </div>
       </div>
     </div>
@@ -875,7 +810,6 @@ def build_index():
         <a class="c-chip" href="/catalog.html?crop=barley">Ячмень</a>
         <a class="c-chip" href="/catalog.html?crop=corn">Кукуруза</a>
         <a class="c-chip" href="/catalog.html?crop=sunflower">Подсолнечник</a>
-        <a class="c-chip" href="/catalog.html?delivery=1">С доставкой</a>
       </div>
       <div class="view-tools">
         <div class="view-toggle" data-target="homeGrid">
@@ -888,11 +822,13 @@ def build_index():
   </div>
 
   <div class="cards-grid" id="homeGrid">
-    {offer_card(OFFERS[0], featured=True)}
-    {''.join(offer_card(o) for o in OFFERS[1:8])}
+    <!-- Грузится из Supabase: api.listOffers limit=8. См. assets/js/admin.js → syncCatalog -->
+    <div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate-500)">
+      <div style="font-size:14px">Загружаем актуальные предложения…</div>
+    </div>
   </div>
   <div style="text-align:center;margin-top:28px">
-    <a class="btn btn-dark btn-lg" href="/catalog.html">Открыть весь каталог · {len(OFFERS)} предложений {icon('arrow-sm')}</a>
+    <a class="btn btn-dark btn-lg" href="/catalog.html">Открыть весь каталог {icon('arrow-sm')}</a>
   </div>
 </section>
 
@@ -977,37 +913,20 @@ def build_index():
 
 
 def build_catalog():
-    # Sort by distance ascending — nearest suppliers first
-    sorted_offers = sorted(OFFERS, key=lambda o: o['distance_km'])
-    cards_html = ''.join(offer_card(o, featured=(i==0)) for i, o in enumerate(sorted_offers))
-    archive_html = ''.join(offer_card(o) for o in ARCHIVE_OFFERS)
+    # Static fallback: no demo cards. Real offers loaded via syncCatalog() (admin.js).
+    cards_html = '''<div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)">
+      <div style="font-size:14px">Загружаем актуальные предложения…</div>
+    </div>'''
+    archive_html = ''  # archive section is hidden when empty
 
-    # Count crops for sidebar
-    crop_counts = {}
-    for o in OFFERS:
-        t = o['title']
-        k = 'Другое'
-        if 'Пшеница' in t: k = 'wheat'
-        elif 'Ячмень' in t: k = 'barley'
-        elif 'Кукуруза' in t: k = 'corn'
-        elif 'Подсолнечник' in t: k = 'sunflower'
-        elif 'Овёс' in t or 'Овес' in t: k = 'oat'
-        elif 'Рапс' in t: k = 'rapeseed'
-        elif 'Соя' in t: k = 'soy'
-        elif 'Горох' in t: k = 'pea'
-        elif 'Гречиха' in t: k = 'buckwheat'
-        crop_counts[k] = crop_counts.get(k, 0) + 1
-
-    # Region counts
+    # Crop counts and region counts will be filled by JS from real data.
+    # We still need crop_row / region_row helpers for filter sidebar HTML.
+    crop_counts = {}  # JS will populate via /rest/v1/rpc and update .count spans
     region_counts = {}
-    for o in OFFERS:
-        r = o['region']
-        region_counts[r] = region_counts.get(r, 0) + 1
-    top_regions = sorted(region_counts.items(), key=lambda x: -x[1])[:10]
+    top_regions = []  # populated by JS calling list_geo_districts
 
     def crop_row(key, label):
-        n = crop_counts.get(key, 0)
-        return f'<label class="filter-check"><input type="checkbox" data-filter="crop" value="{key}"><span>{label}</span><span class="count">{n}</span></label>'
+        return f'<label class="filter-check"><input type="checkbox" data-filter="crop" value="{key}"><span>{label}</span><span class="count">0</span></label>'
 
     def region_row(name, n):
         return f'<label class="filter-check"><input type="checkbox" data-filter="region" value="{name}"><span>{name}</span><span class="count">{n}</span></label>'
@@ -1019,8 +938,8 @@ def build_catalog():
       <span class="sep">/</span>
       <span>Купить</span>
     </div>
-    <h1>Купить урожай напрямую у фермеров</h1>
-    <p>{len(OFFERS)} активных предложений от проверенных поставщиков. Сортировка по близости к вам, безопасная сделка на каждой сделке.</p>
+    <h1>Купить урожай напрямую у фермеров — без посредников и переплат</h1>
+    <p>Прямые сделки между фермерами и покупателями. Безопасная оплата через платформу.</p>
   </div>
 </section>
 
@@ -1039,7 +958,7 @@ def build_catalog():
 
   <!-- Mobile filter trigger -->
   <button class="mobile-filter-trigger" id="mobileFilterTrigger">
-    {icon('search')} Фильтры <span class="count" id="mobileFilterCount">{len(OFFERS)}</span>
+    {icon('search')} Фильтры <span class="count" id="mobileFilterCount">0</span>
   </button>
 
   <div class="catalog-layout">
@@ -1057,7 +976,17 @@ def build_catalog():
           <h4>Культура</h4>
           <div class="filter-checks">
             {crop_row('wheat', 'Пшеница')}
+            <div style="padding-left:18px">
+              {crop_row('wheat-3', '— 3 класс')}
+              {crop_row('wheat-4', '— 4 класс')}
+              {crop_row('wheat-5', '— 5 класс')}
+              {crop_row('wheat-feed', '— кормовая')}
+            </div>
             {crop_row('barley', 'Ячмень')}
+            <div style="padding-left:18px">
+              {crop_row('barley-feed', '— кормовой')}
+              {crop_row('barley-malt', '— пивоваренный')}
+            </div>
             {crop_row('corn', 'Кукуруза')}
             {crop_row('sunflower', 'Подсолнечник')}
             {crop_row('rapeseed', 'Рапс')}
@@ -1090,29 +1019,10 @@ def build_catalog():
           </div>
         </div>
 
-        <div class="filter-group">
-          <h4>Дополнительно</h4>
-          <label class="filter-switch">
-            <span class="label">С доставкой</span>
-            <input type="checkbox" id="swDelivery">
-            <span class="toggle"></span>
-          </label>
-          <label class="filter-switch">
-            <span class="label">Лабораторный анализ</span>
-            <input type="checkbox" id="swLab">
-            <span class="toggle"></span>
-          </label>
-          <label class="filter-switch">
-            <span class="label">Только с НДС</span>
-            <input type="checkbox" id="swVat">
-            <span class="toggle"></span>
-          </label>
-        </div>
-
       </div>
 
       <div class="filter-apply-bar">
-        <div class="count">Найдено: <strong id="filterCount">{len(OFFERS)}</strong> предложений</div>
+        <div class="count">Найдено: <strong id="filterCount">0</strong> предложений</div>
       </div>
     </aside>
 
@@ -1127,11 +1037,10 @@ def build_catalog():
             </div>
             <div class="sort-select">
               <select id="sortSelect">
-                <option value="distance">По близости (ближайшие сверху)</option>
+                <option value="distance">По удалённости (ближайшие сверху)</option>
                 <option value="price-asc">Цена: по возрастанию</option>
                 <option value="price-desc">Цена: по убыванию</option>
-                <option value="rating">По рейтингу поставщика</option>
-                <option value="new">Новые</option>
+                <option value="new">Новые сверху</option>
               </select>
             </div>
           </div>
@@ -1159,7 +1068,7 @@ def build_catalog():
         <h2>Архив предложений</h2>
         <p>Завершённые и проданные партии — для понимания исторических цен и рыночных трендов.</p>
       </div>
-      <span class="mono" style="color:var(--slate-400);font-size:12px">{len(ARCHIVE_OFFERS)} записей</span>
+      <span class="mono" style="color:var(--slate-400);font-size:12px" id="archiveCount">0 записей</span>
     </div>
     <div class="cards-grid">
       {archive_html}
@@ -1211,11 +1120,6 @@ def build_product():
   <div class="product-layout">
 
     <div class="product-main">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-        <span class="badge featured" style="background:var(--emerald-soft);color:#065F46">Лаб. анализ</span>
-        <span class="badge">Новый оффер</span>
-        <span class="badge orange">С доставкой</span>
-      </div>
       <h1>Пшеница 3 класс</h1>
       <p class="subtitle">Продовольственная · урожай 2025 · ID оффера <span class="mono">ОФ-4721/25</span></p>
 
@@ -1264,8 +1168,6 @@ def build_product():
             Проверено платформой
           </span>
           <div class="info">
-            <span style="color:var(--ink);font-weight:700;display:inline-flex;align-items:center;gap:4px"><span style="color:var(--brand)">★</span>4.9</span>
-            <span style="color:var(--slate-300)">·</span>
             <span>Безопасная сделка</span>
             <span style="color:var(--slate-300)">·</span>
             <span>Модерация товара</span>
@@ -1297,8 +1199,23 @@ def build_product():
 
 
 def build_sale():
-    requests_html = ''.join(request_card(r) for r in REQUESTS)
-    arch_requests_html = ''.join(request_card(r) for r in ARCHIVE_REQUESTS)
+    # Static fallback: no demo cards. Real requests loaded via syncSale() (admin.js).
+    requests_html = '''<div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)">
+      <div style="font-size:14px">Загружаем актуальные заявки покупателей…</div>
+    </div>'''
+    arch_requests_html = ''
+
+    # Crop/region counts will be populated by JS from real data.
+    crop_counts = {}
+    region_counts = {}
+    top_regions = []
+
+    def crop_row(key, label):
+        n = crop_counts.get(key, 0)
+        return f'<label class="filter-check"><input type="checkbox" data-filter="crop" value="{key}"><span>{label}</span><span class="count">{n}</span></label>'
+
+    def region_row(name, n):
+        return f'<label class="filter-check"><input type="checkbox" data-filter="region" value="{name}"><span>{name}</span><span class="count">{n}</span></label>'
 
     body = f'''<section class="page-hero">
   <div class="page-hero-inner">
@@ -1308,152 +1225,188 @@ def build_sale():
       <span>Продать</span>
     </div>
     <h1>Продавайте урожай напрямую покупателям — быстро, выгодно и надёжно</h1>
-    <p>Получайте заявки от проверенных компаний и заключайте выгодные сделки без цепочки посредников.</p>
-
-    <form class="filter-bar" id="saleHeroForm" action="#" onsubmit="event.preventDefault();filterRequests();">
-      <label class="field">
-        <span class="k">Культура</span>
-        <input type="text" id="saleQ" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
-      </label>
-      <label class="field select-field">
-        <span class="k">Регион покупателя</span>
-        <select id="saleRegion">
-          <option value="">Все</option>
-          <option>Нижний Новгород</option>
-          <option>Арзамас</option>
-          <option>Дзержинск</option>
-          <option>Балахна</option>
-          <option>Муром</option>
-          <option>Выкса</option>
-          <option>Семёнов</option>
-          <option>Чебоксары</option>
-        </select>
-      </label>
-      <label class="field select-field">
-        <span class="k">Минимальный объём</span>
-        <select id="saleVolume">
-          <option value="0">любой</option>
-          <option value="50">от 50 т</option>
-          <option value="100">от 100 т</option>
-          <option value="200">от 200 т</option>
-          <option value="500">от 500 т</option>
-        </select>
-      </label>
-      <label class="field select-field">
-        <span class="k">НДС</span>
-        <select id="saleVat">
-          <option value="">любой</option>
-          <option value="yes">с НДС</option>
-          <option value="no">без НДС</option>
-        </select>
-      </label>
-      <button class="submit" type="submit">{icon('search')} Найти</button>
-    </form>
+    <p>Получайте заявки от проверенных компаний и заключайте выгодные сделки.</p>
   </div>
 </section>
 
 <section class="section">
-  <div class="catalog-head">
-    <div>
-      <span class="eyebrow">{icon('sparkles')} Актуальные запросы</span>
-      <h2 class="h2">Покупатели ищут прямо сейчас</h2>
-      <p class="section-lead">Откликайтесь на заявки — средний отклик на платформе 3 часа. Все покупатели проверены, оплата через платформу.</p>
-    </div>
-    <div class="top-row">
-      <div class="catalog-chips">
-        <button class="c-chip active">Все запросы</button>
-        <button class="c-chip">🔥 Срочные</button>
-        <button class="c-chip">Пшеница</button>
-        <button class="c-chip">Ячмень</button>
-        <button class="c-chip">Кукуруза</button>
-        <button class="c-chip">Подсолнечник</button>
-        <button class="c-chip">Крупный опт (&gt; 200 т)</button>
+
+  <!-- Quick crop chips (top of content) -->
+  <div class="catalog-chips" style="margin-bottom:20px">
+    <button class="c-chip active" data-chip-crop="all">Все запросы</button>
+    <button class="c-chip" data-chip-crop="wheat">Пшеница <span style="opacity:.5">{crop_counts.get('wheat',0)}</span></button>
+    <button class="c-chip" data-chip-crop="barley">Ячмень <span style="opacity:.5">{crop_counts.get('barley',0)}</span></button>
+    <button class="c-chip" data-chip-crop="corn">Кукуруза <span style="opacity:.5">{crop_counts.get('corn',0)}</span></button>
+    <button class="c-chip" data-chip-crop="sunflower">Подсолнечник <span style="opacity:.5">{crop_counts.get('sunflower',0)}</span></button>
+    <button class="c-chip" data-chip-crop="rapeseed">Рапс <span style="opacity:.5">{crop_counts.get('rapeseed',0)}</span></button>
+    <button class="c-chip" data-chip-crop="oat">Овёс <span style="opacity:.5">{crop_counts.get('oat',0)}</span></button>
+  </div>
+
+  <!-- Mobile filter trigger -->
+  <button class="mobile-filter-trigger" id="mobileFilterTrigger">
+    {icon('search')} Фильтры <span class="count" id="mobileFilterCount">0</span>
+  </button>
+
+  <div class="catalog-layout">
+
+    <!-- Sidebar filters -->
+    <aside class="filters-aside">
+      <div class="filters-head">
+        <h3>Фильтры</h3>
+        <button class="reset" id="filtersReset">Сбросить</button>
       </div>
-      <div class="view-tools">
-        <div class="sort-select">
-          <select>
-            <option>Сортировка: новые сверху</option>
-            <option>По цене: ↓</option>
-            <option>По цене: ↑</option>
-            <option>По объёму: ↓</option>
-            <option>По срочности</option>
-          </select>
+
+      <div class="filters-scroll">
+
+        <div class="filter-group">
+          <h4>Культура</h4>
+          <div class="filter-checks">
+            {crop_row('wheat', 'Пшеница')}
+            <div style="padding-left:18px">
+              {crop_row('wheat-3', '— 3 класс')}
+              {crop_row('wheat-4', '— 4 класс')}
+              {crop_row('wheat-5', '— 5 класс')}
+              {crop_row('wheat-feed', '— кормовая')}
+            </div>
+            {crop_row('barley', 'Ячмень')}
+            <div style="padding-left:18px">
+              {crop_row('barley-feed', '— кормовой')}
+              {crop_row('barley-malt', '— пивоваренный')}
+            </div>
+            {crop_row('corn', 'Кукуруза')}
+            {crop_row('sunflower', 'Подсолнечник')}
+            {crop_row('rapeseed', 'Рапс')}
+            {crop_row('oat', 'Овёс')}
+            {crop_row('soy', 'Соя')}
+            {crop_row('pea', 'Горох')}
+            {crop_row('buckwheat', 'Гречиха')}
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Цена покупателя, ₽/т</h4>
+          <div class="filter-range">
+            <input type="number" placeholder="от" id="priceMin" />
+            <input type="number" placeholder="до" id="priceMax" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Минимальный объём</h4>
+          <div class="filter-range">
+            <input type="number" placeholder="от тонн" id="volumeMin" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>Регионы доставки</h4>
+          <div class="filter-checks">
+            {''.join(region_row(r, n) for r, n in top_regions)}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="filter-apply-bar">
+        <div class="count">Найдено: <strong id="filterCount">0</strong> заявок</div>
+      </div>
+    </aside>
+
+    <!-- Main grid -->
+    <div class="catalog-main">
+      <div class="catalog-head" style="margin-bottom:18px">
+        <div class="top-row">
+          <div class="view-tools" style="margin-left:auto">
+            <div class="view-toggle" data-target="reqsGrid">
+              <button class="active" data-view="grid" title="Сетка">{icon('grid')}<span>Сетка</span></button>
+              <button data-view="list" title="Список">{icon('list')}<span>Список</span></button>
+            </div>
+            <div class="sort-select">
+              <select id="sortSelect">
+                <option value="distance">По удалённости (ближайшие сверху)</option>
+                <option value="price-desc">Цена: по убыванию</option>
+                <option value="price-asc">Цена: по возрастанию</option>
+                <option value="volume-desc">Объём: по убыванию</option>
+                <option value="new">Новые сверху</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div class="req-grid cards-grid" id="reqsGrid">
+        {requests_html}
+      </div>
+
+      <div id="emptyFilterResult" class="empty-panel" style="display:none;background:var(--paper);border-radius:var(--radius-xl);margin-top:24px">
+        <div class="ic">{icon('search-lg')}</div>
+        <h4>По фильтрам ничего не найдено</h4>
+        <p>Попробуйте снять часть условий или расширить диапазон цены / объёма.</p>
+        <button class="btn btn-outline" onclick="document.getElementById('filtersReset').click()">Сбросить фильтры</button>
+      </div>
     </div>
+
   </div>
 
-  <div class="tabs-bar">
-    <button class="tab-btn active" data-tab="active">
-      Активные <span class="tab-count" id="saleCount">{len(REQUESTS)}</span>
-    </button>
-    <button class="tab-btn" data-tab="archive">
-      В архиве <span class="tab-count">{len(ARCHIVE_REQUESTS)}</span>
-    </button>
-  </div>
-
-  <div class="tab-pane" data-pane="active">
-    <div class="req-grid">
-      {requests_html}
+  <!-- Archive section -->
+  <div class="archive-section">
+    <div class="archive-head">
+      <div>
+        <h2>Архив заявок</h2>
+        <p>Закрытые заявки покупателей — для понимания исторических цен и трендов спроса.</p>
+      </div>
+      <span class="mono" style="color:var(--slate-400);font-size:12px" id="archiveCount">0 записей</span>
     </div>
-  </div>
-  <div class="tab-pane" data-pane="archive" style="display:none">
-    <div class="req-grid">
+    <div class="req-grid cards-grid">
       {arch_requests_html}
     </div>
   </div>
+
 </section>
 
 <section class="section" style="padding-top:0">
   <div class="reverse-card">
     <div>
-      <span class="reverse-chip">{icon('clock')} Отклик в течение 3 часов</span>
-      <h3>Хотите продать свой урожай выгодно?</h3>
-      <p class="lead">Разместите товар — покупатели сами предложат вам лучшие условия. Без посредников, с защитой оплаты через платформу.</p>
+      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 3 часа</span>
+      <h3>Не нашли подходящее предложение?</h3>
+      <p class="lead">Создайте заявку и получите персональные предложения от фермеров и поставщиков по вашим параметрам. 86% заявок закрываются за сутки.</p>
     </div>
     <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
       <input type="text" placeholder="Наименование продукта" />
-      <input type="text" placeholder="Ваш регион" />
-      <div class="sel"><span>С НДС / без НДС</span><span class="chev">▾</span></div>
+      <input type="text" placeholder="Адрес доставки" />
+      <div class="sel"><span>Тип заявки</span><span class="chev">▾</span></div>
       <div class="sel"><span>Объём партии (т)</span><span class="chev">▾</span></div>
-      <button class="submit" type="submit">Продать свой урожай {icon('arrow-sm')}</button>
+      <button class="submit" type="submit">Отправить заявку {icon('arrow-sm')}</button>
     </form>
   </div>
 </section>
 
-<section class="section">
-  <div class="how-grid">
-    <div>
-      <span class="eyebrow">{icon('sparkles')} Как быстро начать</span>
-      <h2 class="h2">Запустите продажи за 4 простых шага</h2>
-      <p class="section-lead">От регистрации до первой сделки — обычно проходит меньше суток. Платформа ведёт вас на каждом этапе.</p>
-    </div>
-    <div class="steps-grid">
-      <div class="step">
-        <div class="ic-wrap">{icon('user')}</div>
-        <h4>Создайте личный кабинет</h4>
-        <p>Регистрация займёт 1 минуту. Подтверждение номера по SMS и реквизитов юр.лица — до 2 часов.</p>
-      </div>
-      <div class="step">
-        <div class="ic-wrap">{icon('calendar')}</div>
-        <h4>Добавьте товар</h4>
-        <p>Укажите цену, качество и регион. Чем подробнее заполнены показатели качества — тем выше позиция в выдаче.</p>
-      </div>
-      <div class="step">
-        <div class="ic-wrap">{icon('message')}</div>
-        <h4>Получайте заявки</h4>
-        <p>Уведомления о новых заявках — в личный кабинет, email и Telegram. Отвечайте за 1 клик.</p>
-      </div>
-      <div class="step">
-        <div class="ic-wrap">{icon('handshake')}</div>
-        <h4>Закрывайте сделки</h4>
-        <p>Подтверждайте условия, подписывайте типовой договор и получайте оплату через платформу после отгрузки.</p>
-      </div>
-    </div>
+<!-- Contacts section copied from production catalog -->
+<section class="section" style="padding-top:0">
+  <div class="contacts-grid">
+    <a class="contact-card" href="/contacts.html">
+      <div class="ic">{icon('message')}</div>
+      <h4>Задать вопрос</h4>
+      <p>Получите ответ в течение нескольких минут через форму обратной связи</p>
+      <span class="link-cta">Открыть {icon('arrow-sm')}</span>
+    </a>
+    <a class="contact-card" href="tel:+79300129797">
+      <div class="ic">{icon('phone')}</div>
+      <h4>Позвонить</h4>
+      <p>+7 930 012-97-97</p>
+      <span class="link-cta">Позвонить {icon('arrow-sm')}</span>
+    </a>
+    <a class="contact-card" href="https://t.me/tdrusagro" target="_blank" rel="noopener">
+      <div class="ic">📨</div>
+      <h4>Написать в Telegram</h4>
+      <p>@tdrusagro</p>
+      <span class="link-cta">Открыть Telegram {icon('arrow-sm')}</span>
+    </a>
   </div>
 </section>'''
-    return page('Продать', body, active='sale',
-                description='Продавайте урожай напрямую покупателям на площадке Русский Урожай. Без посредников, с гарантией безопасности. 30 актуальных запросов.')
+    return page('Продать · Заявки покупателей', body, active='sale',
+                description='Актуальные заявки покупателей на сельхозпродукцию. Откликайтесь напрямую и продавайте без посредников через безопасную сделку.')
+
 
 
 def build_about():
@@ -1464,27 +1417,26 @@ def build_about():
       <span class="sep">/</span>
       <span>О компании</span>
     </div>
-    <h1>Делаем рынок сельхозпродукции прозрачнее</h1>
-    <p>«Русский Урожай» — онлайн-платформа, которая соединяет производителей и покупателей сельхозпродукции напрямую, без посредников и переплат.</p>
+    <h1>О компании</h1>
+    <p>«Русский Урожай» — это онлайн-платформа, которая помогает производителям сельхозпродукции и покупателям заключать сделки напрямую, без посредников и переплат.</p>
+    <p>Мы делаем рынок прозрачным, а взаимодействие между сторонами — быстрым, удобным и безопасным.</p>
   </div>
 </section>
 
 <section class="section">
   <span class="eyebrow">{icon('sparkles')} Для кого мы работаем</span>
-  <h2 class="h2">Две стороны одной сделки</h2>
-  <p class="section-lead">Платформа одинаково удобна и выгодна как для фермеров, так и для покупателей. Вся логика выстроена вокруг прозрачности и скорости.</p>
 
   <div class="about-targets">
     <div class="target-card">
       <div class="ic-big">{icon('tractor')}</div>
-      <h4>Фермерам и агрохозяйствам</h4>
-      <p>Которые хотят продать урожай по справедливой цене. Прямой выход на покупателя, реальная цена рынка, защита оплаты и поддержка по документам.</p>
+      <h4>Для фермеров и агрохозяйств</h4>
+      <p>Которые хотят продать урожай по справедливой цене</p>
       <a class="btn btn-primary" href="/sale.html" style="align-self:flex-start">Разместить товар {icon('arrow-sm')}</a>
     </div>
     <div class="target-card">
       <div class="ic-big">{icon('buyer')}</div>
-      <h4>Покупателям</h4>
-      <p>Которые ищут надёжных поставщиков без длинных цепочек поставок. Сравнение офферов, проверенные поставщики, безопасная сделка и быстрый отклик.</p>
+      <h4>Для покупателей</h4>
+      <p>Которые ищут надежных поставщиков без длинных цепочек поставок</p>
       <a class="btn btn-primary" href="/catalog.html" style="align-self:flex-start">Найти поставщика {icon('arrow-sm')}</a>
     </div>
   </div>
@@ -1494,37 +1446,35 @@ def build_about():
   <div class="how-grid">
     <div>
       <span class="eyebrow">{icon('sparkles')} Как это работает</span>
-      <h2 class="h2">Путь сделки — от объявления до оплаты</h2>
-      <p class="section-lead">Платформа сопровождает процесс на каждом этапе: от размещения объявления до завершения сделки.</p>
     </div>
     <div class="steps-grid">
       <div class="step">
-        <div class="ic-wrap">{icon('tractor')}</div>
-        <h4>1. Размещение товара</h4>
-        <p>Продавцы размещают свои товары на платформе с описанием и ценой.</p>
+        <div class="ic-wrap">1</div>
+        <h4>Размещение товара</h4>
+        <p>Продавцы размещают свои товары на платформе с описанием и ценой</p>
       </div>
       <div class="step">
-        <div class="ic-wrap">{icon('search-lg')}</div>
-        <h4>2. Поиск и отклики</h4>
-        <p>Покупатели оставляют заявки на покупку или откликаются на предложения.</p>
+        <div class="ic-wrap">2</div>
+        <h4>Поиск и отклики</h4>
+        <p>Покупатели оставляют заявки на покупку или откликаются на предложения</p>
       </div>
       <div class="step">
-        <div class="ic-wrap">{icon('message')}</div>
-        <h4>3. Согласование условий</h4>
-        <p>Стороны согласовывают детали сделки: объем, цену, сроки, доставку.</p>
+        <div class="ic-wrap">3</div>
+        <h4>Согласование условий</h4>
+        <p>Стороны согласовывают детали сделки: объем, цену, сроки, доставку</p>
       </div>
       <div class="step">
-        <div class="ic-wrap">{icon('handshake')}</div>
-        <h4>4. Сопровождение сделки</h4>
-        <p>Платформа сопровождает процесс до получения оплаты или отгрузки.</p>
+        <div class="ic-wrap">4</div>
+        <h4>Сопровождение сделки</h4>
+        <p>Платформа сопровождает процесс до получения оплаты или отгрузки</p>
       </div>
     </div>
+    <p class="section-lead">Платформа помогает на каждом этапе: от размещения объявления до завершения сделки, обеспечивая прозрачность и безопасность для всех участников.</p>
   </div>
 </section>
 
 <section class="section" style="padding-top:0">
-  <span class="eyebrow">{icon('sparkles')} Что мы обеспечиваем</span>
-  <h2 class="h2">Четыре гарантии для каждой сделки</h2>
+  <span class="eyebrow">{icon('sparkles')} Мы обеспечиваем</span>
 
   <div class="guarantees">
     <div class="guarantee">
@@ -1532,16 +1482,16 @@ def build_about():
       <h5>Проверку контрагентов</h5>
     </div>
     <div class="guarantee">
-      <div class="ic">{icon('headset')}</div>
+      <div class="ic">{icon('check-big')}</div>
       <h5>Поддержку на всех этапах сделки</h5>
     </div>
     <div class="guarantee">
-      <div class="ic">{icon('mail')}</div>
+      <div class="ic">{icon('check-big')}</div>
       <h5>Контроль документации</h5>
     </div>
     <div class="guarantee">
-      <div class="ic">{icon('truck')}</div>
-      <h5>Расчёты и логистику через сервис</h5>
+      <div class="ic">{icon('check-big')}</div>
+      <h5>Возможность расчётов и логистики через сервис (опционально)</h5>
     </div>
   </div>
 
@@ -1624,7 +1574,7 @@ def build_how():
         <h4>Как найти товар</h4>
         <ul>
           <li>Используйте фильтры по региону, культуре и объёму</li>
-          <li>Изучите карточку продавца и его рейтинг</li>
+          <li>Изучите карточку продавца и его профиль</li>
           <li>Сравните предложения по цене и условиям доставки</li>
         </ul>
       </div>
@@ -1643,9 +1593,8 @@ def build_how():
         <h4>Гарантии и безопасность</h4>
         <ul>
           <li>Все продавцы проходят проверку платформы</li>
-          <li>Оплата только через платформу-счёт</li>
+          <li>Возможность оплаты через эскроу</li>
           <li>Поддержка на всех этапах сделки</li>
-          <li>Система рейтингов и арбитраж при спорах</li>
         </ul>
       </div>
     </div>

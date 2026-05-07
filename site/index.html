@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/main.css?v=1778071048">
+<link rel="stylesheet" href="/assets/css/main.css?v=1778176047">
 </head>
 <body>
 
@@ -142,20 +142,20 @@
     </div>
 
     <div>
-      <div class="focus-wrap">
+      <div class="focus-wrap" id="focusWrap">
         <div class="focus-head">
           <div>
             <div class="label"><span class="dot"></span>СЕГОДНЯ В ФОКУСЕ</div>
-            <div class="title">Пшеница 3 класс</div>
+            <div class="title" id="focusTitle">—</div>
           </div>
-          <div class="focus-price">14 200 ₽/т</div>
+          <div class="focus-price" id="focusPrice">—</div>
         </div>
         <div class="focus-card">
           <div class="focus-grid">
-            <div class="focus-cell"><div class="k">Объём</div><div class="v">120 тонн</div></div>
-            <div class="focus-cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-            <div class="focus-cell"><div class="k">Регион</div><div class="v">Арзамас</div></div>
-            <div class="focus-cell"><div class="k">Статус</div><div class="v">Проверено</div></div>
+            <div class="focus-cell"><div class="k">Объём</div><div class="v" id="focusVolume">—</div></div>
+            <div class="focus-cell"><div class="k">Урожай</div><div class="v" id="focusYear">—</div></div>
+            <div class="focus-cell"><div class="k">Регион</div><div class="v" id="focusRegion">—</div></div>
+            <div class="focus-cell"><div class="k">Активно до</div><div class="v" id="focusUntil">—</div></div>
           </div>
           <div class="focus-benefits">
             <div class="h"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V5z"/><path d="m7 10 2 2 4-4"/></svg> Ключевые преимущества</div>
@@ -163,7 +163,7 @@
             <div class="row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg>Доступна логистика через платформу</div>
             <div class="row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg>Гарантия безопасной сделки</div>
           </div>
-          <a class="cta" href="/product.html">Открыть предложение <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+          <a class="cta" href="/catalog.html" id="focusCta">Открыть предложение <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
         </div>
       </div>
     </div>
@@ -184,7 +184,6 @@
         <a class="c-chip" href="/catalog.html?crop=barley">Ячмень</a>
         <a class="c-chip" href="/catalog.html?crop=corn">Кукуруза</a>
         <a class="c-chip" href="/catalog.html?crop=sunflower">Подсолнечник</a>
-        <a class="c-chip" href="/catalog.html?delivery=1">С доставкой</a>
       </div>
       <div class="view-tools">
         <div class="view-toggle" data-target="homeGrid">
@@ -197,411 +196,13 @@
   </div>
 
   <div class="cards-grid" id="homeGrid">
-    <article class="card card-featured" data-offer="0" data-crop="barley" data-region="Балахна" data-price="13000" data-distance="39" data-delivery="1" data-vat="1" data-lab="1" data-title="Ячмень кормовой">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge featured">Горячее</span>
-        <h3 class="card-title">Ячмень кормовой</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">13 000 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
+    <!-- Грузится из Supabase: api.listOffers limit=8. См. assets/js/admin.js → syncCatalog -->
+    <div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate-500)">
+      <div style="font-size:14px">Загружаем актуальные предложения…</div>
     </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">10 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Балахна</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="0">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">5 параметров</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="0"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">5 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">1 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Протеин</span><span class="v">11 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Натура</span><span class="v">570 г/л</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Зараженность</span><span class="v">нет</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Балахна → Нижний Новгород</span>
-        <span class="km">39 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка <span class="mono">450 ₽/т</span></span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.9</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-8832</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Есть доставка</span>
-    <a class="cta" href="/product.html?id=0">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article>
-    <article class="card" data-offer="1" data-crop="corn" data-region="Дзержинск" data-price="15000" data-distance="38" data-delivery="1" data-vat="1" data-lab="0" data-title="Кукуруза">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge orange">Хит недели</span>
-        <h3 class="card-title">Кукуруза</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">15 000 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">80 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Дзержинск</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="1">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">3 параметра</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="1"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">14 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">5 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Зерно битое</span><span class="v">1,1 %</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Дзержинск → Нижний Новгород</span>
-        <span class="km">38 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка <span class="mono">450 ₽/т</span></span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>5.0</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-1934</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка 450 ₽/т</span>
-    <a class="cta" href="/product.html?id=1">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="2" data-crop="wheat" data-region="Семёнов" data-price="12000" data-distance="71" data-delivery="0" data-vat="1" data-lab="0" data-title="Пшеница кормовая">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge">Быстрый отклик</span>
-        <h3 class="card-title">Пшеница кормовая</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">12 000 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">20 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Семёнов</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="2">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">2 параметра</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="2"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">5 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">1 %</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Семёнов → Нижний Новгород</span>
-        <span class="km">71 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.7</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-6718</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-    <a class="cta" href="/product.html?id=2">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="3" data-crop="sunflower" data-region="Лысково" data-price="28400" data-distance="92" data-delivery="1" data-vat="0" data-lab="1" data-title="Подсолнечник">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge orange">Премиум</span>
-        <h3 class="card-title">Подсолнечник</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">28 400 ₽/т</span>
-        <span class="small">без НДС</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">60 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Лысково</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="3">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">4 параметра</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="3"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Масличность</span><span class="v">46,2 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">7,1 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">1,4 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Кислотное число</span><span class="v">1,2</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Лысково → Нижний Новгород</span>
-        <span class="km">92 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost free"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg><span class="mono">Доставка включена</span></span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.9</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-3312</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка включена</span>
-    <a class="cta" href="/product.html?id=3">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="4" data-crop="oat" data-region="Арзамас" data-price="10800" data-distance="112" data-delivery="0" data-vat="1" data-lab="0" data-title="Овёс фуражный">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge">Проверено</span>
-        <h3 class="card-title">Овёс фуражный</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">10 800 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">45 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Арзамас</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="4">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">2 параметра</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="4"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">14,0 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">2,8 %</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Арзамас → Нижний Новгород</span>
-        <span class="km">112 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.6</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-6712</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-    <a class="cta" href="/product.html?id=4">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="5" data-crop="wheat" data-region="Муром" data-price="14800" data-distance="137" data-delivery="1" data-vat="1" data-lab="1" data-title="Пшеница 3 класс">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge">Лаб. анализ</span>
-        <h3 class="card-title">Пшеница 3 класс</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">14 800 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">150 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Муром</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="5">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">6 параметров</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="5"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Протеин</span><span class="v">13,1 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Клейковина</span><span class="v">28 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">12,8 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Натура</span><span class="v">785 г/л</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">1,0 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Число падения</span><span class="v">290 с</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Муром → Нижний Новгород</span>
-        <span class="km">137 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка <span class="mono">600 ₽/т</span></span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.9</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-4005</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Доставка 600 ₽/т</span>
-    <a class="cta" href="/product.html?id=5">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="6" data-crop="wheat" data-region="Сергач" data-price="12000" data-distance="158" data-delivery="0" data-vat="1" data-lab="1" data-title="Пшеница 4 класс">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge">Проверено</span>
-        <h3 class="card-title">Пшеница 4 класс</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">12 000 ₽/т</span>
-        <span class="small">с НДС 10%</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">100 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2026</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Сергач</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="6">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">5 параметров</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="6"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Протеин</span><span class="v">11 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Клейковина</span><span class="v">18 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">13 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Натура</span><span class="v">780 г/л</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">5 %</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Сергач → Нижний Новгород</span>
-        <span class="km">158 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.8</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-2045</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-    <a class="cta" href="/product.html?id=6">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article><article class="card" data-offer="7" data-crop="rapeseed" data-region="Выкса" data-price="32100" data-distance="186" data-delivery="0" data-vat="0" data-lab="0" data-title="Рапс">
-  <div class="card-head">
-    <div class="card-top">
-      <div>
-        <span class="badge">Новый</span>
-        <h3 class="card-title">Рапс</h3>
-      </div>
-      <div class="card-price-pill">
-        <span class="num">32 100 ₽/т</span>
-        <span class="small">без НДС</span>
-      </div>
-    </div>
-    <div class="card-meta">
-      <div class="cell"><div class="k">Объём</div><div class="v">40 т</div></div>
-      <div class="cell"><div class="k">Урожай</div><div class="v">2025</div></div>
-      <div class="cell"><div class="k">Регион</div><div class="v">Выкса</div></div>
-    </div>
-  </div>
-  <button class="q-toggle" data-q="7">
-    <span class="lbl">
-      <span class="lbl-ic"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v4M10 13v.5"/></svg></span>
-      Показатели качества
-    </span>
-    <span class="right"><span class="count">3 параметра</span><span class="chev">▼</span></span>
-  </button>
-  <div class="q-body" data-q="7"><div class="q-body-inner"><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Масличность</span><span class="v">42 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Влажность</span><span class="v">8 %</span></div><div class="q-row"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10" cy="10" r="8"/><path d="m7 10 2 2 4-4"/></svg><span class="k">Сорная примесь</span><span class="v">2 %</span></div></div></div>
-  <div class="distance-strip">
-    <div class="distance-from">
-      <div class="pin-ic"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></div>
-      <div class="txt">
-        <span class="route">Выкса → Нижний Новгород</span>
-        <span class="km">186 км<small>до вас</small></span>
-      </div>
-    </div>
-    <span class="distance-cost"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-  </div>
-  <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg></span>Проверено платформой</span>
-    <div class="supplier-stat">
-      <span class="rating"><span class="star">★</span>4.8</span>
-      <span class="dot"></span>
-      <span>Безопасная сделка</span>
-      <span class="dot"></span>
-      <span class="id">Лот A-5502</span>
-    </div>
-  </div>
-  <div class="card-foot">
-    <span class="delivery-tag"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7h10v7H2zM12 10h4l2 3v1h-6zM5 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM14 17a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Самовывоз</span>
-    <a class="cta" href="/product.html?id=7">Купить <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
-  </div>
-</article>
   </div>
   <div style="text-align:center;margin-top:28px">
-    <a class="btn btn-dark btn-lg" href="/catalog.html">Открыть весь каталог · 30 предложений <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+    <a class="btn btn-dark btn-lg" href="/catalog.html">Открыть весь каталог <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
   </div>
 </section>
 
@@ -687,39 +288,40 @@
   <div class="foot-wrap">
     <div class="foot-brand">
       <img src="https://russian-harvest.ru/img/logo.svg" alt="Русский Урожай" />
-      <p>Онлайн-площадка для прямых сделок между фермерами и покупателями сельхозпродукции. Прозрачно, быстро, надёжно.</p>
-      <span class="mono" style="font-size:11px;color:var(--slate-400)">ИП Фролов В.А.</span>
+      <p>Растим будущее агробизнеса</p>
     </div>
     <div class="foot-col">
-      <h5>Разделы</h5>
-      <a href="/catalog.html">Купить</a>
-      <a href="/sale.html">Продать</a>
+      <h5>О нас</h5>
       <a href="/about.html">О компании</a>
-      <a href="/how.html">Помощь</a>
       <a href="/contacts.html">Контакты</a>
     </div>
     <div class="foot-col">
       <h5>Документы</h5>
       <a href="/offer.html">Публичная оферта</a>
-      <a href="/regulations.html">Правила площадки</a>
+      <a href="/regulations.html">Правила торговой площадки</a>
       <a href="/policy.html">Политика конфиденциальности</a>
-      <a href="/dispute.html">Регламент споров</a>
+      <a href="/dispute.html">Регламент разрешения споров</a>
+    </div>
+    <div class="foot-col">
+      <h5>Партнёрам</h5>
+      <a href="/sale.html">Продавцам</a>
+      <a href="/catalog.html">Покупателям</a>
+      <a href="/contacts.html">Реклама и сотрудничество</a>
     </div>
     <div class="foot-col">
       <h5>Контакты</h5>
       <a href="tel:+79300129797">+7 930 012-97-97</a>
       <a href="mailto:support@russian-harvest.ru">support@russian-harvest.ru</a>
-      <span class="txt">Нижний Новгород</span>
       <div class="foot-soc" style="margin-top:8px">
-        <a href="https://t.me/tdrusagro" title="Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg></a>
-        <a href="#" title="VK"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8 17.2c-5.6 0-8.8-3.8-8.9-10.1h2.8c.1 4.6 2.1 6.5 3.7 6.9V7.1h2.6v4c1.6-.2 3.3-2 3.9-4h2.6c-.4 2.5-2.2 4.3-3.5 5 1.3.6 3.4 2.2 4.2 5.1h-2.9c-.6-2-2.1-3.5-3.9-3.8v3.8h-.6z"/></svg></a>
-        <a href="#" title="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.5 5.9L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0z"/></svg></a>
+        <a href="https://t.me/tdrusagro" title="Telegram" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.6 8.2l-1.9 8.9c-.1.6-.5.8-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.7-5.1c.2-.2 0-.3-.4-.1l-7 4.4-3-.9c-.7-.2-.7-.7.1-1l11.7-4.5c.5-.2 1 .1.7 1z"/></svg></a>
+        <a href="#" title="VK" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8 17.2c-5.6 0-8.8-3.8-8.9-10.1h2.8c.1 4.6 2.1 6.5 3.7 6.9V7.1h2.6v4c1.6-.2 3.3-2 3.9-4h2.6c-.4 2.5-2.2 4.3-3.5 5 1.3.6 3.4 2.2 4.2 5.1h-2.9c-.6-2-2.1-3.5-3.9-3.8v3.8h-.6z"/></svg></a>
+        <a href="https://max.ru" title="MAX" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="11"/><text x="12" y="16" font-family="Arial Black, sans-serif" font-size="11" font-weight="900" fill="#fff" text-anchor="middle">M</text></svg></a>
       </div>
     </div>
   </div>
   <div class="foot-bot">
-    <span class="c">© 2026 Русский Урожай</span>
-    <span style="font-size:12px;color:var(--slate-400)">Сайт использует файлы cookies для улучшения работы.</span>
+    <span class="c">© 2026 Русский Урожай. Все права защищены</span>
+    <span style="font-size:12px;color:var(--slate-400)">Использование сайта означает согласие с Пользовательским соглашением и Политикой конфиденциальности сервиса Русский Урожай</span>
   </div>
 </footer>
 
@@ -751,21 +353,17 @@
       </div>
     </div>
     <div class="sd-sec">
-      <div class="sd-title">Культуры <span class="cnt">9 категорий</span></div>
-      <a class="sd-item" href="/catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница 3 класс</div><div class="sd-meta"><span>412 офферов</span><span class="dot"></span><span class="price">от 14 200 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div><div class="sd-meta"><span>143 оффера</span><span class="dot"></span><span class="price">от 15 000 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div><div class="sd-meta"><span>112 офферов</span><span class="dot"></span><span class="price">от 28 400 ₽/т</span></div></div><span class="sd-arrow">→</span></a>
-    </div>
-    <div class="sd-sec">
-      <div class="sd-title">Регионы</div>
-      <a class="sd-item" href="/catalog.html?q=нижегородская"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Нижегородская область</div><div class="sd-meta"><span>142 оффера</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/catalog.html?q=рязань"><div class="sd-ic orange">📍</div><div class="sd-main"><div class="sd-lbl">Рязанская область</div><div class="sd-meta"><span>89 офферов</span></div></div><span class="sd-arrow">→</span></a>
+      <div class="sd-title">Культуры</div>
+      <a class="sd-item" href="/catalog.html?q=пшеница"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Пшеница</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=ячмень"><div class="sd-ic">🌾</div><div class="sd-main"><div class="sd-lbl">Ячмень</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=кукуруза"><div class="sd-ic">🌽</div><div class="sd-main"><div class="sd-lbl">Кукуруза</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/catalog.html?q=подсолнечник"><div class="sd-ic">🌻</div><div class="sd-main"><div class="sd-lbl">Подсолнечник</div></div><span class="sd-arrow">→</span></a>
     </div>
     <div class="sd-sec">
       <div class="sd-title">Разделы сайта</div>
-      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Безопасность сделок</div><div class="sd-meta"><span>защита сделки</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div><div class="sd-meta"><span>миссия, команда, партнёры</span></div></div><span class="sd-arrow">→</span></a>
-      <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Поддержка · контакты</div><div class="sd-meta"><span>регистрация, споры, оплата</span></div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/how.html"><div class="sd-ic">🔒</div><div class="sd-main"><div class="sd-lbl">Помощь</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/about.html"><div class="sd-ic">ℹ️</div><div class="sd-main"><div class="sd-lbl">О компании</div></div><span class="sd-arrow">→</span></a>
+      <a class="sd-item" href="/contacts.html"><div class="sd-ic">📞</div><div class="sd-main"><div class="sd-lbl">Контакты</div></div><span class="sd-arrow">→</span></a>
     </div>
   </div>
   <div class="so-ft">
@@ -927,11 +525,11 @@
   </div>
 </div>
 
-<script src="/assets/js/config.js?v=1778071048"></script>
-<script src="/assets/js/cities.js?v=1778071048"></script>
-<script src="/assets/js/api.js?v=1778071048"></script>
-<script src="/assets/js/main.js?v=1778071048"></script>
-<script src="/assets/js/admin.js?v=1778071048"></script>
-<script src="/assets/js/tour.js?v=1778071048"></script>
+<script src="/assets/js/config.js?v=1778176047"></script>
+<script src="/assets/js/cities.js?v=1778176047"></script>
+<script src="/assets/js/api.js?v=1778176047"></script>
+<script src="/assets/js/main.js?v=1778176047"></script>
+<script src="/assets/js/admin.js?v=1778176047"></script>
+<script src="/assets/js/tour.js?v=1778176047"></script>
 </body>
 </html>

@@ -507,7 +507,7 @@
   // CREATE REQUEST MODAL — for buyers
   // ============================================================
   async function openCreateRequestModal(user) {
-    const crops = await api.listCrops().catch(() => []);
+    const cropsSelectHtml = await renderCropsSelect({ name: 'crop_id', label: 'Культура' });
     const html = `
       <div class="modal-backdrop on" id="creqBackdrop"></div>
       <div class="modal on" id="creqModal" style="max-width:540px;max-height:90vh;display:flex;flex-direction:column">
@@ -517,13 +517,7 @@
           <p style="color:var(--slate-500);margin-top:6px;font-size:14px">Поставщики увидят заявку и смогут предложить вам свой товар.</p>
         </div>
         <form id="creqForm" style="overflow-y:auto;padding:20px 28px;flex:1">
-          <div class="form-group">
-            <label>Культура <span class="req">*</span></label>
-            <select name="crop_id" required style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
-              <option value="">— выберите —</option>
-              ${crops.map(c => `<option value="${c.id}">${c.emoji || ''} ${c.name}</option>`).join('')}
-            </select>
-          </div>
+          ${cropsSelectHtml}
           <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="form-group">
               <label>Объём, т <span class="req">*</span></label>
@@ -547,18 +541,11 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Нужно к дате</label>
+              <label>Активна до</label>
               <input name="needed_by" type="date" />
             </div>
           </div>
-          <div class="form-group">
-            <label>Регион доставки <span class="req">*</span></label>
-            <input name="delivery_region" required placeholder="Нижегородская область" value="Нижегородская область" />
-          </div>
-          <div class="form-group">
-            <label>Город</label>
-            <input name="delivery_city" list="rhCityList" placeholder="Нижний Новгород" />
-          </div>
+          <div class="form-group" id="creqGeoMount"></div>
           <div class="form-group">
             <label>Описание</label>
             <textarea name="description" rows="3" placeholder="Дополнительные требования к качеству, доставке..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
@@ -572,7 +559,8 @@
       </div>
     `;
     const wrap = openModal(html);
-
+    // Mount cascade (region → district → city)
+    await mountGeoCascade(wrap.querySelector('#creqGeoMount'), { prefix: 'delivery' });
 
     wrap.querySelector('#creqSubmit').addEventListener('click', async () => {
       const form = wrap.querySelector('#creqForm');
@@ -582,9 +570,17 @@
       const fd = new FormData(form);
       const payload = Object.fromEntries(fd);
 
-      // Find crop name for title
-      const crop = crops.find(c => c.id === payload.crop_id);
-      payload.title = crop?.name || 'Заявка на закупку';
+      // Find crop name for title — try tree first, fallback to flat
+      let cropName = 'Заявка на закупку';
+      try {
+        const tree = await api.listCropsTree();
+        for (const p of tree) {
+          if (p.id === payload.crop_id) { cropName = p.name; break; }
+          const child = (p.children || []).find(c => c.id === payload.crop_id);
+          if (child) { cropName = child.name; break; }
+        }
+      } catch(_) {}
+      payload.title = cropName;
 
       const submit = wrap.querySelector('#creqSubmit');
       submit.disabled = true;
@@ -886,6 +882,7 @@
             <option value="sold" ${o.status==='sold'?'selected':''}>💰 Продан</option>
             <option value="archived" ${o.status==='archived'?'selected':''}>📦 Архив</option>
           </select>
+          <button class="btn btn-sm" data-action="vip-toggle" data-is-premium="${o.is_premium ? '1' : '0'}" style="font-size:11px;padding:6px 10px;background:${o.is_premium ? 'linear-gradient(135deg,#FFD700,#FFA500)' : '#fff'};color:${o.is_premium ? '#3d2900' : 'var(--ink)'};border:1px solid ${o.is_premium ? '#FFA500' : 'var(--slate-200)'};font-weight:700">${o.is_premium ? '⭐ VIP активен' : '⭐ Сделать VIP'}</button>
           <button class="btn btn-outline btn-sm" data-action="edit-offer" style="font-size:11px;padding:6px 10px">✏ Изменить</button>
           <button class="btn btn-outline btn-sm" data-action="delete" style="color:var(--red);border-color:var(--red)">✕ Удалить</button>
         </div>
@@ -926,6 +923,41 @@
           sel.value = original;
         } finally {
           sel.disabled = false;
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-action="vip-toggle"]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const row = btn.closest('[data-offer-id]');
+        const isPremium = btn.dataset.isPremium === '1';
+        if (isPremium) {
+          if (!confirm('Деактивировать VIP-статус оффера?')) return;
+          btn.disabled = true;
+          try {
+            await api.deactivateVip(row.dataset.offerId);
+            showToast('✓ VIP деактивирован');
+            reload();
+          } catch(err) {
+            showToast('⚠ ' + err.message);
+            btn.disabled = false;
+          }
+        } else {
+          // Ask for tier and duration
+          const days = parseInt(prompt('На сколько дней активировать VIP?', '30') || '0', 10);
+          if (!days || days < 1) return;
+          const amountStr = prompt('Стоимость промо (₽), для отчётности (можно 0):', '0');
+          const amount = parseFloat(amountStr) || 0;
+          btn.disabled = true;
+          try {
+            await api.activateVip(row.dataset.offerId, { tier: 'vip', days, amount_rub: amount });
+            showToast(`✓ VIP активирован на ${days} дней`);
+            reload();
+          } catch(err) {
+            showToast('⚠ ' + err.message);
+            btn.disabled = false;
+          }
         }
       });
     });
@@ -2146,6 +2178,153 @@
     }[c]));
   }
 
+  // ============================================================
+  // DICTIONARY HELPERS — culture & geo cascades from DB
+  // ============================================================
+
+  /** Returns HTML for a <select name="..."> with crops grouped by parent.
+   *  Use with: form innerHTML += await renderCropsSelect({name: 'crop_id', selected: 'wheat-3'})
+   */
+  async function renderCropsSelect({ name = 'crop_id', selected = '', required = true, label = 'Культура' } = {}) {
+    let tree = [];
+    try { tree = await api.listCropsTree(); } catch(e) { console.warn('crops tree', e); }
+
+    let opts = '<option value="">— выберите —</option>';
+    if (tree.length) {
+      // Render nested optgroups (parent + children)
+      for (const parent of tree) {
+        if (parent.children && parent.children.length) {
+          opts += `<optgroup label="${escapeHtml(parent.emoji || '')} ${escapeHtml(parent.name)}">`;
+          // Allow selecting parent itself if no children
+          opts += `<option value="${escapeHtml(parent.id)}"${selected === parent.id ? ' selected' : ''}>${escapeHtml(parent.name)} (любая)</option>`;
+          for (const child of parent.children) {
+            opts += `<option value="${escapeHtml(child.id)}"${selected === child.id ? ' selected' : ''}>${escapeHtml(child.name)}</option>`;
+          }
+          opts += `</optgroup>`;
+        } else {
+          opts += `<option value="${escapeHtml(parent.id)}"${selected === parent.id ? ' selected' : ''}>${escapeHtml(parent.emoji || '')} ${escapeHtml(parent.name)}</option>`;
+        }
+      }
+    } else {
+      // Fallback flat list
+      const crops = await api.listCrops().catch(() => []);
+      opts += crops.map(c => `<option value="${escapeHtml(c.id)}"${selected === c.id ? ' selected' : ''}>${escapeHtml(c.emoji || '')} ${escapeHtml(c.name)}</option>`).join('');
+    }
+
+    return `
+      <div class="form-group rh-crops-group">
+        <label>${escapeHtml(label)} <span class="req">*</span></label>
+        <select name="${escapeHtml(name)}" ${required ? 'required' : ''} style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
+          ${opts}
+        </select>
+      </div>
+    `;
+  }
+
+  /** Mounts a cascade Region → District → City selector inside container.
+   *  Triggers form fields: <input name="${prefix}_region">, <input name="${prefix}_district">, <input name="${prefix}_city">
+   *  Also sets data-* attrs for parent-child wiring.
+   */
+  async function mountGeoCascade(container, { prefix = 'delivery', selected = {}, label = 'Регион / район / город' } = {}) {
+    container.innerHTML = `
+      <div class="rh-geo-cascade">
+        <label style="display:block;font-size:13px;color:var(--slate-700);margin-bottom:6px;font-weight:600">${escapeHtml(label)}</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <select name="${prefix}_region_id" data-geo-level="1" style="padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:13px">
+            <option value="">— регион —</option>
+          </select>
+          <select name="${prefix}_district_id" data-geo-level="2" disabled style="padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:13px;background:var(--slate-50)">
+            <option value="">— район —</option>
+          </select>
+          <select name="${prefix}_city_id" data-geo-level="3" disabled style="padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:13px;background:var(--slate-50)">
+            <option value="">— город —</option>
+          </select>
+        </div>
+        <input type="hidden" name="${prefix}_region" />
+        <input type="hidden" name="${prefix}_city" />
+      </div>
+    `;
+
+    const regionSel   = container.querySelector('[data-geo-level="1"]');
+    const districtSel = container.querySelector('[data-geo-level="2"]');
+    const citySel     = container.querySelector('[data-geo-level="3"]');
+    const regionHidden= container.querySelector(`input[name="${prefix}_region"]`);
+    const cityHidden  = container.querySelector(`input[name="${prefix}_city"]`);
+
+    // Load regions
+    try {
+      const regions = await api.listGeoRegions();
+      regions.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id; opt.textContent = r.name; opt.dataset.name = r.name;
+        if (selected.region_id === r.id) opt.selected = true;
+        regionSel.appendChild(opt);
+      });
+      // Auto-select if only one region
+      if (regions.length === 1) {
+        regionSel.value = regions[0].id;
+        regionHidden.value = regions[0].name;
+        await loadDistricts(regions[0].id);
+      } else if (selected.region_id) {
+        regionHidden.value = regionSel.options[regionSel.selectedIndex]?.dataset.name || '';
+        await loadDistricts(selected.region_id);
+      }
+    } catch(e) { console.warn('geo regions', e); }
+
+    async function loadDistricts(region_id) {
+      districtSel.innerHTML = '<option value="">— район —</option>';
+      citySel.innerHTML = '<option value="">— город —</option>';
+      citySel.disabled = true; citySel.style.background = 'var(--slate-50)';
+      if (!region_id) {
+        districtSel.disabled = true; districtSel.style.background = 'var(--slate-50)';
+        return;
+      }
+      districtSel.disabled = false; districtSel.style.background = '';
+      try {
+        const districts = await api.listGeoDistricts(region_id);
+        districts.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.id; opt.textContent = d.name; opt.dataset.name = d.name;
+          if (selected.district_id === d.id) opt.selected = true;
+          districtSel.appendChild(opt);
+        });
+        if (selected.district_id) {
+          await loadCities(selected.district_id);
+        }
+      } catch(e) { console.warn('geo districts', e); }
+    }
+
+    async function loadCities(district_id) {
+      citySel.innerHTML = '<option value="">— город —</option>';
+      if (!district_id) { citySel.disabled = true; citySel.style.background = 'var(--slate-50)'; return; }
+      citySel.disabled = false; citySel.style.background = '';
+      try {
+        const cities = await api.listGeoCities(district_id);
+        cities.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id; opt.textContent = c.name; opt.dataset.name = c.name;
+          if (selected.city_id === c.id) { opt.selected = true; cityHidden.value = c.name; }
+          citySel.appendChild(opt);
+        });
+      } catch(e) { console.warn('geo cities', e); }
+    }
+
+    regionSel.addEventListener('change', async () => {
+      regionHidden.value = regionSel.options[regionSel.selectedIndex]?.dataset.name || '';
+      cityHidden.value = '';
+      await loadDistricts(regionSel.value);
+    });
+    districtSel.addEventListener('change', async () => {
+      cityHidden.value = '';
+      await loadCities(districtSel.value);
+    });
+    citySel.addEventListener('change', () => {
+      cityHidden.value = citySel.options[citySel.selectedIndex]?.dataset.name || '';
+    });
+
+    return container;
+  }
+
   // Toast animation keyframes
   if (!document.getElementById('rh-toast-css')) {
     const style = document.createElement('style');
@@ -2723,16 +2902,17 @@
     }
 
     return `
-      <div style="padding:18px 24px;border-bottom:1px solid var(--slate-100);display:flex;align-items:flex-start;gap:14px">
-        <button class="modal-close" style="position:absolute;right:14px;top:14px">✕</button>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <h2 style="font-size:17px;font-weight:700;margin:0">${title}</h2>
-            ${statusBadge}
-          </div>
-          <div style="margin-top:6px;font-size:13px;color:var(--slate-600)">${contextLine}</div>
-          <div style="margin-top:4px;font-size:12.5px;color:var(--slate-500)">
-            Контрагент: <b>${escapeHtml(cp?.handle || '—')}</b>${cpRating}${cpRegion}${cpVerified}
+      <div style="padding:18px 24px 14px;border-bottom:1px solid var(--slate-100);padding-right:48px">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <h2 style="font-size:17px;font-weight:700;margin:0">${title}</h2>
+              ${statusBadge}
+            </div>
+            <div style="margin-top:6px;font-size:13px;color:var(--slate-600)">${contextLine}</div>
+            <div style="margin-top:4px;font-size:12.5px;color:var(--slate-500)">
+              Контрагент: <b>${escapeHtml(cp?.handle || '—')}</b>${cpRating}${cpRegion}${cpVerified}
+            </div>
           </div>
         </div>
       </div>
@@ -2762,13 +2942,14 @@
     // Open empty modal first so user sees instant feedback
     const html = `
       <div class="modal-backdrop on"></div>
-      <div class="modal on" style="max-width:640px;width:96vw;height:90vh;display:flex;flex-direction:column;padding:0;position:relative">
-        <div id="chatHeader">
+      <div class="modal on chat-modal" style="max-width:640px;width:96vw;max-height:88vh;height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+        <button class="modal-close">✕</button>
+        <div id="chatHeader" style="flex:0 0 auto">
           <div style="padding:40px;text-align:center;color:var(--slate-500)">Загрузка чата…</div>
         </div>
-        <div id="chatBody" style="flex:1;overflow-y:auto;padding:14px 22px;background:#fafbfc"></div>
-        <div id="chatActions" style="padding:10px 22px;border-top:1px solid var(--slate-100);display:none;flex-wrap:wrap;gap:8px"></div>
-        <div id="chatComposer" style="padding:14px 22px;border-top:1px solid var(--slate-100);background:#fff">
+        <div id="chatBody" style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px 22px;background:#fafbfc"></div>
+        <div id="chatActions" style="flex:0 0 auto;padding:10px 22px;border-top:1px solid var(--slate-100);display:none;flex-wrap:wrap;gap:8px"></div>
+        <div id="chatComposer" style="flex:0 0 auto;padding:14px 22px;border-top:1px solid var(--slate-100);background:#fff">
           <form id="msgForm" style="display:flex;gap:10px;align-items:flex-end">
             <textarea id="msgInput" rows="2" placeholder="Напишите сообщение…" style="flex:1;padding:10px 14px;border:1px solid var(--slate-200);border-radius:12px;font-family:inherit;font-size:14px;resize:none;max-height:120px"></textarea>
             <button class="btn btn-primary" id="msgSend" type="submit" style="height:44px;padding:0 18px">Отправить</button>
@@ -3064,8 +3245,28 @@
     const grid = document.getElementById('offersGrid');
     if (!grid) return;
     try {
-      const offers = await api.listOffers({ limit: 100 });
-      if (!offers || !offers.length) return;  // keep static fallback
+      // Cache user's city for "from → to" distance label in cards
+      if (!window.__rh_user_city) {
+        try {
+          const u = await api.getCurrentUser();
+          window.__rh_user_city = u?.city || 'Нижний Новгород';
+        } catch(_) { window.__rh_user_city = 'Нижний Новгород'; }
+      }
+
+      // Use distance-aware listing if available; falls back to plain listOffers on error.
+      let offers;
+      try {
+        offers = await api.listOffersWithDistance({ limit: 100 });
+      } catch(e) {
+        console.warn('[catalog] distance RPC unavailable, falling back to listOffers', e);
+        offers = await api.listOffers({ limit: 100 });
+      }
+      if (!offers || !offers.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px">Пока нет активных предложений</div><div style="font-size:13px">Попробуйте позже или создайте заявку — фермеры предложат нужное вам.</div></div>';
+        const counter = document.getElementById('filterCount');
+        if (counter) counter.textContent = '0';
+        return;
+      }
 
       grid.innerHTML = offers.map(o => renderCatalogCard(o)).join('');
 
@@ -3118,21 +3319,32 @@
   }
 
   function renderCatalogCard(o) {
-    const featured = ['Горячее','Хит недели','Премиум','Лаб. анализ'].includes(o.badge);
-    const isFeatured = featured && Math.random() < 0.15; // some featured
-
     const cropKey = o.crop_id?.split('-')[0] || 'other';
     const priceR = (o.price_kopecks / 100).toLocaleString('ru-RU');
     const vatLabel = ({with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%', with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%', without_vat: 'без НДС'})[o.vat] || 'с НДС';
-    const distance = estimateDistance(o.region);
-    const deliveryPrice = o.delivery_price_per_ton_kopecks > 0
-      ? `Доставка ${(o.delivery_price_per_ton_kopecks/100).toLocaleString('ru-RU')} ₽/т`
-      : (o.has_delivery ? 'Есть доставка' : 'Самовывоз');
-    const sellerSid = 'A-' + (o.seller?.id || '').slice(-4).toUpperCase();
-    const rating = o.seller?.rating || '4.9';
-    const dealsCount = o.seller?.deals_count || 0;
-    const cls = isFeatured ? 'card card-featured' : 'card';
-    const badgeCls = ['Премиум','Хит недели','Лаб. анализ'].includes(o.badge) ? 'badge orange' : 'badge featured';
+    // Real Haversine distance from user's city (computed server-side via offers_with_distance RPC)
+    // Fallback to text-based estimate when offer has no city_id linked yet.
+    const distance = (o.distance_km != null) ? o.distance_km : estimateDistance(o.region);
+    const cityFrom = o.city || o.region || '—';
+    // Anonymized seller handle from profiles_public
+    const sellerSid = o.seller?.handle || ('A-' + (o.seller?.id || o.id || '').slice(-4).toUpperCase());
+
+    // VIP / premium classes
+    const isPremium = o.is_premium && (!o.premium_until || new Date(o.premium_until) > new Date());
+    const cardCls = isPremium && o.premium_tier === 'vip' ? 'card card-featured' : 'card';
+    const vipBadge = isPremium
+      ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#3d2900;font-weight:700;letter-spacing:.04em">⭐ VIP</span>`
+      : '';
+
+    // Active until — use offer.expires_at if exists, otherwise default to created+30d
+    let activeUntil = '—';
+    if (o.expires_at) {
+      activeUntil = new Date(o.expires_at).toLocaleDateString('ru-RU');
+    } else if (o.created_at) {
+      const d = new Date(o.created_at);
+      d.setDate(d.getDate() + 30);
+      activeUntil = d.toLocaleDateString('ru-RU');
+    }
 
     // Quality params
     const qEntries = Object.entries(o.quality || {});
@@ -3140,20 +3352,19 @@
       <div class="q-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>
     `).join('');
     const qWord = qEntries.length === 1 ? 'параметр' : (qEntries.length < 5 ? 'параметра' : 'параметров');
-    const dealsWord = dealsCount === 1 ? 'сделка' : (dealsCount < 5 ? 'сделки' : 'сделок');
 
     return `
-      <article class="${cls}"
+      <article class="${cardCls}"
         data-offer="${o.id}" data-crop="${cropKey}" data-region="${escapeHtml(o.region)}"
         data-price="${o.price_kopecks/100}" data-distance="${distance}"
         data-delivery="${o.has_delivery ? '1' : '0'}"
         data-vat="${o.vat !== 'without_vat' ? '1' : '0'}"
-        data-lab="${o.has_lab_analysis ? '1' : '0'}"
+        data-premium="${isPremium ? '1' : '0'}"
         data-title="${escapeHtml(o.title)}">
         <div class="card-head">
           <div class="card-top">
             <div>
-              <span class="${badgeCls}">${escapeHtml(o.badge || 'Проверено')}</span>
+              ${vipBadge}
               <h3 class="card-title">${escapeHtml(o.title)}</h3>
             </div>
             <div class="card-price-pill">
@@ -3165,6 +3376,9 @@
             <div class="cell"><div class="k">Объём</div><div class="v">${o.volume_tons} т</div></div>
             <div class="cell"><div class="k">Урожай</div><div class="v">${o.harvest_year || '2025'}</div></div>
             <div class="cell"><div class="k">Регион</div><div class="v">${escapeHtml(o.region)}</div></div>
+          </div>
+          <div class="card-meta" style="margin-top:8px">
+            <div class="cell"><div class="k">Активно до</div><div class="v">${activeUntil}</div></div>
           </div>
         </div>
         ${qEntries.length > 0 ? `
@@ -3181,24 +3395,20 @@
           <div class="distance-from">
             <span class="pin-ic">📍</span>
             <div>
-              <div class="route">${escapeHtml(o.region)} → Нижний Новгород</div>
+              <div class="route">${escapeHtml(cityFrom)} → ${escapeHtml(window.__rh_user_city || 'Нижний Новгород')}</div>
               <div class="km"><b>${distance}</b> км до вас</div>
             </div>
           </div>
-          ${o.delivery_price_per_ton_kopecks > 0 ? `<span class="distance-cost">🚚 Доставка ${(o.delivery_price_per_ton_kopecks/100).toLocaleString('ru-RU')} ₽/т</span>` : ''}
         </div>
         <div class="supplier-strip">
           <span class="supplier-verify"><span class="bc">✓</span>Проверено платформой</span>
           <div class="supplier-stat">
-            <span class="rating"><span class="star">★</span>4.9</span>
-            <span class="dot"></span>
             <span>Эскроу-защита</span>
             <span class="dot"></span>
-            <span class="id">Лот ${(o.id || '').slice(-4).toUpperCase()}</span>
+            <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(sellerSid)}</span>
           </div>
         </div>
         <div class="card-foot">
-          <span class="delivery-tag">🚚 ${deliveryPrice}</span>
           <a class="cta" href="/product.html?id=${o.id}">Купить →</a>
         </div>
       </article>
@@ -3224,7 +3434,12 @@
     if (!grids.length) return;
     try {
       const requests = await api.listRequests({ limit: 100 });
-      if (!requests || !requests.length) return;
+      if (!requests || !requests.length) {
+        grids[0].innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px">Пока нет активных заявок</div><div style="font-size:13px">Покупатели ещё не разместили заявки. Загляните позже.</div></div>';
+        const saleCount = document.getElementById('saleCount');
+        if (saleCount) saleCount.textContent = '0';
+        return;
+      }
 
       // Replace first grid (active) with DB requests
       grids[0].innerHTML = requests.map(r => renderRequestCard(r)).join('');
@@ -3245,17 +3460,7 @@
     const vatLabel = ({with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',without_vat:'без НДС'})[r.vat] || 'с НДС';
     // Use buyer's anonymous handle from profiles_public (not request.id — handle is per-buyer, stable)
     const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
-    const ageH = Math.max(0, Math.floor((Date.now() - new Date(r.created_at)) / 36e5));
-    const ageStr = ageH < 1 ? 'только что' : ageH < 24 ? `${ageH} ч назад` : `${Math.floor(ageH/24)} дн назад`;
-    const isUrgent = r.needed_by && (new Date(r.needed_by).getTime() - Date.now() < 7 * 86400000);
-    const isNew = ageH < 12;
-    const neededBy = r.needed_by ? `до ${new Date(r.needed_by).toLocaleDateString('ru-RU')}` : 'Не указан';
-    // Industry type guessed from crop_id ONLY — never from company_name (which is now unavailable)
-    const buyerType = guessBuyerType(null, r.crop_id);
-    const ratingStr = r.buyer?.rating > 0 ? parseFloat(r.buyer.rating).toFixed(1) : '—';
-    const verifiedDot = r.buyer?.is_verified
-      ? '<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="color:var(--brand)"><path d="m7.5 10 2 2 3.5-4 1.4 1.4L9.5 15 6 11.4z"/></svg>'
-      : '';
+    const neededBy = r.needed_by ? new Date(r.needed_by).toLocaleDateString('ru-RU') : '—';
 
     return `
       <article class="req-card"
@@ -3267,9 +3472,7 @@
         <div class="req-card-head">
           <div>
             <div class="req-badges">
-              ${isUrgent ? '<span class="badge orange">🔥 Срочно</span>' : ''}
-              ${isNew ? '<span class="badge featured">Новый</span>' : ''}
-              <span class="badge gray">№ ${(r.id || '').slice(0,8).toUpperCase()}</span>
+              <span class="badge gray mono" style="font-family:'JetBrains Mono',monospace">№ ${(r.id || '').slice(0,8).toUpperCase()}</span>
             </div>
             <h3 class="req-card-title">${escapeHtml(r.title || r.crop?.name || 'Заявка')}</h3>
           </div>
@@ -3281,17 +3484,13 @@
         <div class="req-attrs">
           <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons} т</div></div>
           <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(r.delivery_city || r.delivery_region || '—')}</div></div>
-          <div class="cell"><div class="k">Срок</div><div class="v">${neededBy}</div></div>
+          <div class="cell"><div class="k">Активно до</div><div class="v">${neededBy}</div></div>
         </div>
         <div class="req-meta">
-          <span class="item">👤 ${escapeHtml(buyerType)}</span>
-          <span class="dot"></span>
           <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID ${escapeHtml(buyerSid)}</span>
-          <span class="dot"></span>
-          <span class="item">🕐 ${ageStr}</span>
         </div>
         <div class="req-foot">
-          <span class="req-buyer">${r.buyer?.is_verified ? 'Проверено платформой · ' : ''}${verifiedDot} ★ ${ratingStr}</span>
+          <span class="req-buyer">✓ Проверено платформой</span>
           <button class="cta" data-action="respond" data-request-id="${r.id}">Откликнуться →</button>
         </div>
       </article>
@@ -3411,16 +3610,66 @@
     }
   }
 
+  // Index page: "Сегодня в фокусе" — first VIP or top offer from DB
+  async function syncFocus() {
+    const wrap = document.getElementById('focusWrap');
+    if (!wrap) return;
+    try {
+      const offers = await api.listOffers({ limit: 1 });
+      if (!offers || !offers.length) {
+        wrap.style.display = 'none';
+        return;
+      }
+      const o = offers[0];
+      const priceR = (o.price_kopecks/100).toLocaleString('ru-RU');
+      document.getElementById('focusTitle').textContent  = o.title;
+      document.getElementById('focusPrice').textContent  = priceR + ' ₽/т';
+      document.getElementById('focusVolume').textContent = (o.volume_tons || '—') + (o.volume_tons ? ' тонн' : '');
+      document.getElementById('focusYear').textContent   = o.harvest_year || '—';
+      document.getElementById('focusRegion').textContent = o.region || '—';
+      let until = '—';
+      if (o.expires_at) until = new Date(o.expires_at).toLocaleDateString('ru-RU');
+      else if (o.created_at) {
+        const d = new Date(o.created_at); d.setDate(d.getDate() + 30);
+        until = d.toLocaleDateString('ru-RU');
+      }
+      document.getElementById('focusUntil').textContent = until;
+      const cta = document.getElementById('focusCta');
+      if (cta) cta.href = '/product.html?id=' + o.id;
+    } catch(e) { console.warn('[focus]', e); wrap.style.display = 'none'; }
+  }
+
+  // Index page: "Recent offers" grid (id=homeGrid) — top 8
+  async function syncHomeOffers() {
+    const grid = document.getElementById('homeGrid');
+    if (!grid) return;
+    try {
+      const offers = await api.listOffers({ limit: 8 });
+      if (!offers || !offers.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--slate-500)">Пока нет активных предложений.</div>';
+        return;
+      }
+      grid.innerHTML = offers.map(o => renderCatalogCard(o)).join('');
+    } catch(e) {
+      console.warn('[home grid]', e);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--slate-500)">Не удалось загрузить предложения. Попробуйте обновить страницу.</div>';
+    }
+  }
+
   // Run after page loads
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       syncCatalog();
       syncSale();
       syncProduct();
+      syncFocus();
+      syncHomeOffers();
     });
   } else {
     syncCatalog();
     syncSale();
     syncProduct();
+    syncFocus();
+    syncHomeOffers();
   }
 })();

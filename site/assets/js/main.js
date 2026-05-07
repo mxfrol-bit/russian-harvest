@@ -299,15 +299,17 @@
     let visible = 0;
     cards.forEach(card => {
       const d = card.dataset;
+      const cropTokens = (d.crop || '').split(/\s+/).filter(Boolean);
       let ok = true;
-      if (state.crops.size && !state.crops.has(d.crop)) ok = false;
+      if (state.crops.size) {
+        // Match if ANY of the card's crop tokens is in the selected set
+        const hit = cropTokens.some(t => state.crops.has(t));
+        if (!hit) ok = false;
+      }
       if (ok && state.regions.size && !state.regions.has(d.region)) ok = false;
       if (ok && state.priceMin != null && parseFloat(d.price) < state.priceMin) ok = false;
       if (ok && state.priceMax != null && parseFloat(d.price) > state.priceMax) ok = false;
       if (ok && state.distMax != null && parseFloat(d.distance) > state.distMax) ok = false;
-      if (ok && state.withDelivery && d.delivery !== '1') ok = false;
-      if (ok && state.withLab && d.lab !== '1') ok = false;
-      if (ok && state.withVat && d.vat !== '1') ok = false;
       if (ok && state.query) {
         const q = state.query.toLowerCase();
         const hay = (d.crop + ' ' + d.region + ' ' + (d.title || '')).toLowerCase();
@@ -720,7 +722,7 @@ function filterRequests(){
       const matchesQuery =
         title.includes(q) ||
         r.toLowerCase().includes(q) ||
-        (queryCrop && cropKey === queryCrop);
+        (queryCrop && cropKey.split(/\s+/).includes(queryCrop));
       if (!matchesQuery) ok = false;
     }
     if (ok && region && r !== region) ok = false;
@@ -1001,81 +1003,12 @@ document.addEventListener('DOMContentLoaded', () => {
   tick(); setInterval(tick, 1000);
 })();
 
-/* ===== DEMO LOGIN (admin@russian-harvest.ru / user@russian-harvest.ru) ===== */
+/* ===== LOGIN FORM (regular sign-in via Supabase Auth) =====
+   SECURITY: Hard-coded demo accounts removed in v2.5.1.
+   The "demo" buttons now require admin to manually create accounts in Supabase Auth.
+   ===================================================== */
 (function(){
-  // Demo credentials map: short id → real email + password
-  const DEMO_ACCOUNTS = {
-    admin: {
-      email: 'admin@russian-harvest.ru',
-      password: 'AdminDemo2026!',
-      profile: {
-        full_name: 'Администратор Платформы',
-        company_name: 'Русский Урожай',
-        role: 'admin',
-        inn: '5253000000'
-      }
-    },
-    user: {
-      email: 'user@russian-harvest.ru',
-      password: 'UserDemo2026!',
-      profile: {
-        full_name: 'Демо Пользователь',
-        company_name: 'ИП Тестовый В.А.',
-        role: 'buyer',
-        inn: '525300000001'
-      }
-    }
-  };
-
-  async function demoLogin(key) {
-    const acc = DEMO_ACCOUNTS[key];
-    if (!acc || !window.RH_API) throw new Error('Демо-аккаунт не найден');
-    const api = window.RH_API;
-
-    // Try to sign in first — if account doesn't exist, create it
-    try {
-      await api.signIn({ email: acc.email, password: acc.password });
-    } catch (err) {
-      if (err.message?.includes('Invalid login')) {
-        // Create the demo account
-        const res = await api.signUp({
-          email: acc.email,
-          password: acc.password,
-          ...acc.profile
-        });
-        // If email confirmation is on, just sign in
-        if (!res.session) {
-          await new Promise(r => setTimeout(r, 500));
-          await api.signIn({ email: acc.email, password: acc.password }).catch(() => {});
-        }
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  // One-click demo buttons
-  document.querySelectorAll('.demo-account').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const key = btn.dataset.login; // 'admin' or 'user'
-      const originalText = btn.innerHTML;
-      btn.style.borderColor = 'var(--brand)';
-      const status = document.createElement('div');
-      status.style.cssText = 'margin-top:8px;font-size:12px;color:var(--brand-dark)';
-      status.textContent = 'Входим...';
-      btn.appendChild(status);
-      try {
-        await demoLogin(key);
-        window.location = '/account.html';
-      } catch (err) {
-        status.textContent = '⚠ ' + err.message;
-        status.style.color = 'var(--red)';
-        setTimeout(() => { status.remove(); btn.style.borderColor = ''; }, 3000);
-      }
-    });
-  });
-
-  // Manual form
+  // Manual login form on login.html / sign-in modal
   const demoSubmit = document.getElementById('demoSubmit');
   const demoHint = document.getElementById('demoHint');
   const demoUser = document.getElementById('demoUsername');
@@ -1093,22 +1026,132 @@ document.addEventListener('DOMContentLoaded', () => {
       demoSubmit.disabled = true;
       demoSubmit.textContent = 'Проверяем…';
       try {
-        // Map short logins to real demo accounts
-        if (u === 'admin' || u === 'user') {
-          await demoLogin(u);
-        } else {
-          // Treat as email
-          await window.RH_API.signIn({ email: u, password: p });
-        }
+        // Sign in via Supabase (email + password). No more hardcoded demo accounts.
+        await window.RH_API.signIn({ email: u, password: p });
         window.location = '/account.html';
       } catch (err) {
-        if (demoHint) { demoHint.textContent = '⚠ ' + err.message; demoHint.style.color = 'var(--red)'; }
+        if (demoHint) { demoHint.textContent = '⚠ ' + (err.message || 'Ошибка входа'); demoHint.style.color = 'var(--red)'; }
         demoSubmit.disabled = false;
         demoSubmit.innerHTML = 'Войти →';
       }
     });
   }
+
+  // Hide any "one-click demo" buttons that might still be in legacy HTML
+  document.querySelectorAll('.demo-account').forEach(btn => {
+    btn.style.display = 'none';
+  });
 })();
 
 /* ===== ACCOUNT PAGE: handled by admin.js (which uses async API) ===== */
 
+
+/* ============================================================
+   v2.5.0 — UNIVERSAL DICTIONARY: regions/districts/cities from DB
+   ============================================================ */
+(function() {
+  const REGIONS_DL_ID  = 'rh-geo-regions-datalist';
+  const DISTRICTS_DL_ID= 'rh-geo-districts-datalist';
+  const CITIES_DL_ID   = 'rh-geo-cities-datalist';
+  const ALL_DL_ID      = 'rh-geo-all-datalist';
+
+  let cachedAllNames = null;
+
+  async function ensureAllPlaces() {
+    if (cachedAllNames) return cachedAllNames;
+    if (!window.RH_API) return null;
+    try {
+      // Build a flat all-places list: regions + districts + cities
+      const [regions] = await Promise.all([ window.RH_API.listGeoRegions() ]);
+      const out = [...regions.map(r => ({ name: r.name, label: r.full_name || r.name }))];
+
+      // Load districts for the (only) region — currently only Нижегородская
+      for (const r of regions) {
+        const districts = await window.RH_API.listGeoDistricts(r.id);
+        out.push(...districts.map(d => ({ name: d.name, label: d.full_name || d.name })));
+        // Cities of each district
+        for (const d of districts) {
+          const cities = await window.RH_API.listGeoCities(d.id);
+          out.push(...cities.map(c => ({ name: c.name, label: c.full_name || c.name })));
+        }
+      }
+      cachedAllNames = out;
+      return out;
+    } catch(e) {
+      console.warn('[geo] dictionary load failed, falling back to cities.js', e);
+      // Fallback to local cities.js
+      if (window.RH_CITIES) {
+        cachedAllNames = window.RH_CITIES.map(c => ({ name: c.name, label: c.name + ' · ' + (c.region||'') }));
+        return cachedAllNames;
+      }
+      return [];
+    }
+  }
+
+  async function setupGeoDatalists() {
+    const places = await ensureAllPlaces();
+    if (!places || !places.length) return;
+
+    // Single combined datalist for ALL place names (city OR region OR district)
+    let dl = document.getElementById(ALL_DL_ID);
+    if (!dl) {
+      dl = document.createElement('datalist');
+      dl.id = ALL_DL_ID;
+      document.body.appendChild(dl);
+    }
+    dl.innerHTML = places.map(p =>
+      `<option value="${escapeAttr(p.name)}">${escapeAttr(p.label)}</option>`
+    ).join('');
+
+    // Bind to relevant inputs
+    document.querySelectorAll('input[type="text"], input:not([type])').forEach(inp => {
+      if (inp.list) return;
+      const ph = (inp.placeholder || '').toLowerCase();
+      const nm = (inp.name || '').toLowerCase();
+      const id = (inp.id || '').toLowerCase();
+      const all = ph + ' ' + nm + ' ' + id;
+      if (
+        all.includes('город') || all.includes('адрес') || all.includes('city') ||
+        all.includes('address') || all.includes('регион') || all.includes('region') ||
+        all.includes('область') || all.includes('район') || all.includes('district') ||
+        all.includes('куда') || all.includes('откуда') || all.includes('доставк')
+      ) {
+        inp.setAttribute('list', ALL_DL_ID);
+        inp.autocomplete = 'on';
+      }
+    });
+  }
+
+  function escapeAttr(s) {
+    return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  // Run after RH_API is ready (with retry until it appears)
+  function bootstrapGeo() {
+    if (!window.RH_API) {
+      setTimeout(bootstrapGeo, 200);
+      return;
+    }
+    setupGeoDatalists();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapGeo);
+  } else {
+    bootstrapGeo();
+  }
+
+  // Re-bind when dynamic content loads
+  window.addEventListener('rh:catalog-loaded', () => setupGeoDatalists());
+  window.addEventListener('rh:sale-loaded',    () => setupGeoDatalists());
+
+  // Periodic rebind for modals
+  let lastCount = 0;
+  setInterval(() => {
+    const cur = document.querySelectorAll('input[type="text"], input:not([type])').length;
+    if (cur !== lastCount) {
+      setupGeoDatalists();
+      lastCount = cur;
+    }
+  }, 1500);
+})();
