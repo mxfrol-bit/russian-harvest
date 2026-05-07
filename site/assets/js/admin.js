@@ -3238,7 +3238,18 @@
 // CATALOG / SALE PAGE — replace hardcoded cards with DB content
 // ============================================================
 (function(){
+  // ВАЖНО: эта IIFE отдельная от первой — поэтому объявляем api здесь же
+  // через window.RH_API, иначе ReferenceError → весь блок не выполнится.
+  if (!window.RH_API) return;
+  const api = window.RH_API;
   if (!api.isSupabase) return;
+
+  // Локальный escapeHtml (тот, что в первой IIFE, недоступен из этого замыкания)
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
 
   // ============================================================
   // DIAGNOSTIC HELPERS

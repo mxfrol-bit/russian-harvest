@@ -30,11 +30,21 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.5.5',
+  VERSION: '2.5.6',
   BUILD_DATE: '2026-05-07',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.5.6',
+      date: '2026-05-07',
+      summary: 'НАСТОЯЩИЙ root cause: api was undefined в IIFE каталога — весь блок не выполнялся',
+      changes: [
+        '🎯 ИСТИННАЯ ПРИЧИНА почему каталог никогда не работал: в admin.js вторая IIFE (с syncCatalog) ссылалась на переменную api, которая объявлена только в первой IIFE. ReferenceError: api is not defined → весь блок syncCatalog/syncFocus/syncHomeOffers не выполнялся.',
+        '🛠 Добавлены const api = window.RH_API и локальный escapeHtml в начало IIFE каталога.',
+        '✓ Все правки v2.5.2–2.5.5 (RPC v2, fetchOffersDirect, attachSellers) теперь начинают работать — раньше они просто никогда не запускались.',
+      ]
+    },
     {
       version: '2.5.5',
       date: '2026-05-07',
