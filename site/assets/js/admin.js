@@ -3399,38 +3399,37 @@
       const counter = document.getElementById('filterCount');
       if (counter) counter.textContent = offers.length;
 
-      // Re-compute per-crop counts: group by crop family (wheat-3/4/5 → "wheat", barley-malt → "barley", etc.)
-      const cropCounts = {};
-      const familyOf = (id) => {
-        if (!id) return null;
-        if (id.startsWith('wheat')) return 'wheat';
-        if (id.startsWith('barley')) return 'barley';
-        return id;
-      };
+      // Считаем оффера в двух разрезах:
+      //  1) по полному crop_id (wheat-3, corn-silage) — для подкатегорий-чекбоксов
+      //  2) по parent (wheat, corn) — для чипсов сверху и родительских чекбоксов
+      const cropCounts = {};   // полный id → count
+      const parentCounts = {}; // родитель → count
       offers.forEach(o => {
-        const fam = familyOf(o.crop_id);
-        if (!fam) return;
-        cropCounts[fam] = (cropCounts[fam] || 0) + 1;
+        const id = o.crop_id;
+        if (!id) return;
+        cropCounts[id] = (cropCounts[id] || 0) + 1;
+        const parent = id.split('-')[0];
+        parentCounts[parent] = (parentCounts[parent] || 0) + 1;
       });
 
-      // Update top crop-chip counters (e.g. "Пшеница 8" buttons above the grid)
+      // Чипсы сверху (data-chip-crop=wheat / barley / corn / ...) — используют parent
       document.querySelectorAll('[data-chip-crop]').forEach(chip => {
         const crop = chip.dataset.chipCrop;
         if (crop === 'all') {
-          // Total chip — replace inner number span
           const span = chip.querySelector('span');
           if (span) span.textContent = String(offers.length);
           return;
         }
-        const n = cropCounts[crop] || 0;
+        const n = parentCounts[crop] || 0;
         const span = chip.querySelector('span');
         if (span) span.textContent = String(n);
       });
 
-      // Update sidebar filter checkboxes' .count spans
+      // Чекбоксы в сайдбаре: для родителей — parentCounts, для подкатегорий — cropCounts
       document.querySelectorAll('.filter-check input[data-filter="crop"]').forEach(cb => {
-        const fam = cb.value;
-        const count = cropCounts[fam] || 0;
+        const v = cb.value;
+        const isParent = !v.includes('-');
+        const count = isParent ? (parentCounts[v] || 0) : (cropCounts[v] || 0);
         const lbl = cb.closest('.filter-check');
         const countEl = lbl?.querySelector('.count');
         if (countEl) countEl.textContent = String(count);
@@ -3452,7 +3451,12 @@
   }
 
   function renderCatalogCard(o) {
-    const cropKey = o.crop_id?.split('-')[0] || 'other';
+    // crop family для фильтра-родителя (wheat-3 → wheat) + полный id для подкатегории
+    const cropFull = o.crop_id || '';
+    const cropParent = cropFull.split('-')[0] || 'other';
+    // data-crop содержит оба токена через пробел — фильтр поддерживает multi-token match
+    const cropDataAttr = cropParent === cropFull ? cropParent : `${cropParent} ${cropFull}`;
+    const cropKey = cropParent;
     const priceR = (o.price_kopecks / 100).toLocaleString('ru-RU');
     const vatLabel = ({with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%', with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%', without_vat: 'без НДС'})[o.vat] || 'с НДС';
     // Real Haversine distance from user's city (computed server-side via offers_with_distance RPC)
@@ -3464,7 +3468,10 @@
 
     // VIP / premium classes
     const isPremium = o.is_premium && (!o.premium_until || new Date(o.premium_until) > new Date());
-    const cardCls = isPremium && o.premium_tier === 'vip' ? 'card card-featured' : 'card';
+    // Не используем card-featured — текущий CSS делает её нечитаемой
+    // (тёмно-зелёный фон + белый текст конфликтуют). Оставляем обычную карточку
+    // и небольшой VIP-бейдж в углу.
+    const cardCls = 'card';
     const vipBadge = isPremium
       ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#3d2900;font-weight:700;letter-spacing:.04em">⭐ VIP</span>`
       : '';
@@ -3488,7 +3495,7 @@
 
     return `
       <article class="${cardCls}"
-        data-offer="${o.id}" data-crop="${cropKey}" data-region="${escapeHtml(o.region)}"
+        data-offer="${o.id}" data-crop="${cropDataAttr}" data-region="${escapeHtml(o.region)}"
         data-price="${o.price_kopecks/100}" data-distance="${distance}"
         data-delivery="${o.has_delivery ? '1' : '0'}"
         data-vat="${o.vat !== 'without_vat' ? '1' : '0'}"
@@ -3562,44 +3569,118 @@
   }
 
   // SALE page: replace #requestsGrid contents
+  /**
+   * Прямой fetch на buyer_requests, минуя api.js и его джойны на view.
+   * Возвращает массив заявок в формате готовом для renderRequestCard.
+   */
+  async function fetchRequestsDirect() {
+    const cfg = window.RH_CONFIG || {};
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL/KEY не сконфигурированы');
+    // crops загружаем простым джойном — это настоящая таблица
+    const url = `${cfg.SUPABASE_URL}/rest/v1/buyer_requests?select=*,crop:crops(name,emoji,category)&status=eq.open&order=created_at.desc&limit=200`;
+    const r = await fetch(url, {
+      headers: {
+        'apikey': cfg.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+        'Accept': 'application/json'
+      }
+    });
+    if (!r.ok) {
+      const txt = await r.text();
+      throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
+    }
+    return await r.json();
+  }
+
   async function syncSale() {
     const grids = document.querySelectorAll('.req-grid');
     if (!grids.length) return;
     try {
-      const requests = await api.listRequests({ limit: 100 });
+      let requests = window.__rh_requests_cache;
+      if (!requests) {
+        try {
+          requests = await fetchRequestsDirect();
+          window.__rh_requests_cache = requests;
+        } catch(e) {
+          console.warn('[sale] fetchRequestsDirect failed, trying api.listRequests', e);
+          try { requests = await api.listRequests({ limit: 200 }); }
+          catch(_) { requests = []; }
+        }
+      }
+
       if (!requests || !requests.length) {
         grids[0].innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px">Пока нет активных заявок</div><div style="font-size:13px">Покупатели ещё не разместили заявки. Загляните позже.</div></div>';
         const saleCount = document.getElementById('saleCount');
         if (saleCount) saleCount.textContent = '0';
+        window.dispatchEvent(new CustomEvent('rh:sale-loaded'));
         return;
       }
 
-      // Replace first grid (active) with DB requests
       grids[0].innerHTML = requests.map(r => renderRequestCard(r)).join('');
 
-      // Update active tab counter
+      // Счётчики: по родителю и по полному crop_id (как в каталоге)
+      const cropCounts = {};
+      const parentCounts = {};
+      requests.forEach(r => {
+        const id = r.crop_id;
+        if (!id) return;
+        cropCounts[id] = (cropCounts[id] || 0) + 1;
+        const parent = id.split('-')[0];
+        parentCounts[parent] = (parentCounts[parent] || 0) + 1;
+      });
+
+      // Чипсы сверху
+      document.querySelectorAll('[data-chip-crop]').forEach(chip => {
+        const crop = chip.dataset.chipCrop;
+        if (crop === 'all') {
+          const span = chip.querySelector('span');
+          if (span) span.textContent = String(requests.length);
+          return;
+        }
+        const n = parentCounts[crop] || 0;
+        const span = chip.querySelector('span');
+        if (span) span.textContent = String(n);
+      });
+
+      // Чекбоксы в сайдбаре
+      document.querySelectorAll('.filter-check input[data-filter="crop"]').forEach(cb => {
+        const v = cb.value;
+        const isParent = !v.includes('-');
+        const count = isParent ? (parentCounts[v] || 0) : (cropCounts[v] || 0);
+        const lbl = cb.closest('.filter-check');
+        const countEl = lbl?.querySelector('.count');
+        if (countEl) countEl.textContent = String(count);
+      });
+
+      // Общий счётчик
       const saleCount = document.getElementById('saleCount');
       if (saleCount) saleCount.textContent = String(requests.length);
+      const filterCount = document.getElementById('filterCount');
+      if (filterCount) filterCount.textContent = String(requests.length);
 
       window.dispatchEvent(new CustomEvent('rh:sale-loaded'));
     } catch(e) {
-      console.warn('[Sale] DB sync failed:', e.message);
+      console.error('[Sale] DB sync failed:', e);
+      grids[0].innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#b00020"><div style="font-size:15px;font-weight:600;margin-bottom:8px">Не удалось загрузить заявки</div><div style="font-size:13px">' + escapeHtml(e?.message || '') + '</div></div>';
     }
   }
 
   function renderRequestCard(r) {
-    const cropKey = r.crop_id?.split('-')[0] || 'other';
+    const cropFull = r.crop_id || '';
+    const cropParent = cropFull.split('-')[0] || 'other';
+    const cropDataAttr = cropParent === cropFull ? cropParent : `${cropParent} ${cropFull}`;
     const priceR = r.target_price_kopecks ? (r.target_price_kopecks/100).toLocaleString('ru-RU') + ' ₽/т' : 'Договорная';
-    const vatLabel = ({with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',without_vat:'без НДС'})[r.vat] || 'с НДС';
-    // Use buyer's anonymous handle from profiles_public (not request.id — handle is per-buyer, stable)
+    const vatLabel = ({with_vat_5:'с НДС 5%',with_vat_7:'с НДС 7%',with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',with_vat_22:'с НДС 22%',without_vat:'без НДС'})[r.vat] || 'с НДС';
+    // Использовать buyer.handle если есть, иначе сгенерить псевдо-handle на основе buyer_id (стабильно per-buyer)
     const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
     const neededBy = r.needed_by ? new Date(r.needed_by).toLocaleDateString('ru-RU') : '—';
 
     return `
       <article class="req-card"
-        data-request="${r.id}" data-crop="${cropKey}"
+        data-request="${r.id}" data-crop="${cropDataAttr}"
         data-region="${escapeHtml(r.delivery_city || r.delivery_region || '')}"
-        data-volume="${r.volume_tons}"
+        data-volume="${r.volume_tons || 0}"
+        data-price="${(r.target_price_kopecks || 0) / 100}"
         data-vat="${r.vat !== 'without_vat' ? 'yes' : 'no'}"
         data-title="${escapeHtml(r.title || r.crop?.name || '')}">
         <div class="req-card-head">
@@ -3615,7 +3696,7 @@
           </div>
         </div>
         <div class="req-attrs">
-          <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons} т</div></div>
+          <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons || '—'} т</div></div>
           <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(r.delivery_city || r.delivery_region || '—')}</div></div>
           <div class="cell"><div class="k">Активно до</div><div class="v">${neededBy}</div></div>
         </div>

@@ -304,6 +304,36 @@ input,select,textarea{font-family:inherit}
 .page-hero-inner{position:relative;z-index:1;max-width:var(--container);margin:0 auto;padding:52px 28px 44px}
 .page-hero h1{font-size:clamp(32px,4vw,44px);font-weight:700;letter-spacing:-0.03em;color:#fff;max-width:820px}
 .page-hero p{margin-top:16px;font-size:17px;color:rgba(226,232,240,.85);max-width:640px}
+
+/* Hero-форма поиска (используется на /catalog.html и /sale.html) */
+.hero-search{
+  margin-top:28px;display:grid;grid-template-columns:2fr 1fr 1.4fr auto;gap:10px;
+  background:rgba(255,255,255,.08);backdrop-filter:blur(6px);
+  padding:14px;border-radius:var(--radius-xl);
+  border:1px solid rgba(255,255,255,.12);max-width:920px;
+}
+.hero-search-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hero-search-field label{
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.6);
+  text-transform:uppercase;letter-spacing:.1em;
+}
+.hero-search-field input{
+  padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.18);color:#fff;font-size:14px;outline:none;
+  transition:border-color .15s,background .15s;
+}
+.hero-search-field input::placeholder{color:rgba(255,255,255,.4)}
+.hero-search-field input:focus{border-color:var(--lime);background:rgba(0,0,0,.28)}
+.hero-search-btn{
+  background:var(--lime);color:#1a2410;font-weight:700;font-size:14px;
+  padding:0 22px;border-radius:8px;border:none;cursor:pointer;align-self:end;
+  height:42px;white-space:nowrap;transition:background .15s,transform .15s;
+}
+.hero-search-btn:hover{background:#a7d62b;transform:translateY(-1px)}
+@media (max-width:760px){
+  .hero-search{grid-template-columns:1fr;}
+  .hero-search-btn{align-self:stretch}
+}
 .breadcrumb{font-size:13px;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center;margin-bottom:14px}
 .breadcrumb a{color:rgba(255,255,255,.85)}
 .breadcrumb a:hover{color:#fff}
@@ -558,12 +588,17 @@ input,select,textarea{font-family:inherit}
   padding:24px;box-shadow:var(--shadow-md);position:relative;
   transition:transform .22s, box-shadow .22s;
   display:flex;flex-direction:column;gap:16px;
+  height:100%;  /* выравниваем по высоте максимальной в ряду */
 }
 .req-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .req-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .req-card-head > div{min-width:0;flex:1}
 .req-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.req-card-title{font-size:18px;font-weight:700;letter-spacing:-0.015em;line-height:1.2;color:var(--ink)}
+.req-card-title{
+  font-size:18px;font-weight:700;letter-spacing:-0.015em;line-height:1.25;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.5em;  /* всегда ровно 2 строки → одинаковая высота заголовка */
+}
 .req-target-price{
   padding:8px 14px;border-radius:var(--radius-sm);
   background:var(--emerald-soft);color:#065F46;white-space:nowrap;flex-shrink:0;
@@ -581,7 +616,7 @@ input,select,textarea{font-family:inherit}
 .req-meta .item .ic{color:var(--slate-400)}
 .req-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--slate-300)}
 
-.req-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--slate-100)}
+.req-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--slate-100);margin-top:auto}
 .req-buyer{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--slate-500)}
 .req-buyer .id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate-500)}
 .req-foot .cta{background:var(--ink);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
@@ -1232,6 +1267,30 @@ input,select,textarea{font-family:inherit}
   border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
 }
 .filter-check .count{margin-left:auto;color:var(--slate-400);font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500}
+
+/* Collapsible crop tree (parent + subitems) */
+.crop-filter-tree{display:flex;flex-direction:column;gap:2px}
+.crop-row{display:flex;align-items:center;gap:4px}
+.crop-row .filter-check{flex:1}
+.crop-toggle{
+  background:transparent;border:none;cursor:pointer;
+  width:26px;height:26px;border-radius:6px;
+  font-size:12px;color:var(--slate-400);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s,transform .25s ease;
+  flex-shrink:0;
+}
+.crop-toggle:hover{background:var(--slate-50);color:var(--slate-700)}
+.crop-toggle[aria-expanded="true"]{transform:rotate(180deg);color:var(--emerald)}
+.filter-subitems{
+  display:flex;flex-direction:column;gap:2px;
+  padding-left:22px;margin:0;
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .3s ease, opacity .25s ease, margin .25s ease;
+}
+.filter-subitems[hidden]{display:flex !important;}  /* keep flex for animation, hidden via max-height */
+.filter-subitems.expanded{max-height:400px;opacity:1;margin:2px 0 6px}
+.filter-subitems .filter-check{font-size:13px;color:var(--slate-600);padding:5px 8px}
 
 .filter-range{display:flex;gap:8px;margin-top:4px}
 .filter-range input{

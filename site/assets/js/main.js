@@ -338,6 +338,28 @@
     inp.addEventListener('change', () => {
       if (inp.checked) state.crops.add(inp.value); else state.crops.delete(inp.value);
       apply();
+
+      // Если выбрали родительскую культуру — раскрыть её подкатегории автоматически
+      const sub = document.querySelector(`.filter-subitems[data-subitems="${inp.value}"]`);
+      if (sub && inp.checked) {
+        sub.removeAttribute('hidden');
+        sub.classList.add('expanded');
+        const tog = document.querySelector(`.crop-toggle[data-toggle="${inp.value}"]`);
+        if (tog) tog.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Кнопки-стрелки раскрытия подкатегорий (независимо от чекбокса)
+  document.querySelectorAll('.crop-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.toggle;
+      const sub = document.querySelector(`.filter-subitems[data-subitems="${id}"]`);
+      if (!sub) return;
+      const expanded = sub.classList.toggle('expanded');
+      btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      if (expanded) sub.removeAttribute('hidden');
+      // не убираем атрибут hidden чтобы display:flex от .filter-subitems[hidden] продолжал держать структуру для анимации
     });
   });
   // Region checkboxes
@@ -446,6 +468,25 @@
     cards = Array.from(grid.querySelectorAll('.card[data-offer]'));
     apply();
   });
+
+  // Hero-search форма на catalog.html: связываем с фильтром state
+  const catHeroForm = document.getElementById('catalogHeroSearch');
+  if (catHeroForm) {
+    const qInp   = document.getElementById('catalogQ');
+    const volInp = document.getElementById('catalogVolume');
+    const regInp = document.getElementById('catalogRegion');
+    catHeroForm.addEventListener('submit', e => {
+      e.preventDefault();
+      state.query = (qInp?.value || '').trim();
+      // Объём от — фильтруем по data-volume (нет такого у offer-карточки),
+      // подменяем на title-search "X т" — простейший fallback
+      // Регион — пишем в search-state (фильтр уже умеет искать по region/title)
+      const reg = (regInp?.value || '').trim();
+      if (reg) state.query = (state.query + ' ' + reg).trim();
+      apply();
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 })();
 
 /* ===== INTEGRATION with RH_API (auth flow, logout, form submissions) ===== */
@@ -720,13 +761,24 @@ function filterRequests(){
     if (q.includes(keyword)) { queryCrop = key; break; }
   }
 
+  // Sidebar filter-checks (Пшеница, 3 класс, ...) — multi-token match как в каталоге
+  const selectedCrops = new Set();
+  document.querySelectorAll('[data-filter="crop"]').forEach(cb => {
+    if (cb.checked) selectedCrops.add(cb.value);
+  });
+  // Sidebar diapazon
+  const sbPriceMin = parseFloat(document.getElementById('priceMin')?.value) || null;
+  const sbPriceMax = parseFloat(document.getElementById('priceMax')?.value) || null;
+
   const cards = document.querySelectorAll('.req-card');
   let visible = 0;
   cards.forEach(card => {
     const title = (card.dataset.title || '').toLowerCase();
     const cropKey = (card.dataset.crop || '').toLowerCase();
+    const cropTokens = cropKey.split(/\s+/).filter(Boolean);
     const r = card.dataset.region || '';
     const v = parseInt(card.dataset.volume || '0') || 0;
+    const price = parseFloat(card.dataset.price || '0') || 0;
     const cardVat = card.dataset.vat || '';
 
     let ok = true;
@@ -735,11 +787,18 @@ function filterRequests(){
       const matchesQuery =
         title.includes(q) ||
         r.toLowerCase().includes(q) ||
-        (queryCrop && cropKey.split(/\s+/).includes(queryCrop));
+        (queryCrop && cropTokens.includes(queryCrop));
       if (!matchesQuery) ok = false;
     }
-    if (ok && region && r !== region) ok = false;
+    // Sidebar crops (multi-token)
+    if (ok && selectedCrops.size) {
+      const hit = cropTokens.some(t => selectedCrops.has(t));
+      if (!hit) ok = false;
+    }
+    if (ok && region && !r.toLowerCase().includes(region.toLowerCase())) ok = false;
     if (ok && minVol && v < minVol) ok = false;
+    if (ok && sbPriceMin != null && price < sbPriceMin) ok = false;
+    if (ok && sbPriceMax != null && price > sbPriceMax) ok = false;
     if (ok && vat === 'yes' && cardVat !== 'yes') ok = false;
     if (ok && vat === 'no' && cardVat !== 'no') ok = false;
 
@@ -748,6 +807,8 @@ function filterRequests(){
   });
   const counter = document.getElementById('saleCount');
   if (counter) counter.textContent = visible;
+  const filterCount = document.getElementById('filterCount');
+  if (filterCount) filterCount.textContent = visible;
 
   // Update active tab badges
   const activeTabBadge = document.querySelector('.tab-btn.active .tab-count');
@@ -812,6 +873,36 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.querySelectorAll('.req-card').length > 0) {
     filterRequests();
   }
+
+  // Sale-страница: sidebar filter-checks (Культура, цена) тоже должны триггерить filterRequests
+  // (только если на странице есть .req-card — иначе мы на /catalog.html и фильтр свой)
+  const saleSidebarTrigger = () => {
+    if (document.querySelectorAll('.req-card').length > 0) filterRequests();
+  };
+  document.querySelectorAll('[data-filter="crop"]').forEach(cb => {
+    cb.addEventListener('change', saleSidebarTrigger);
+  });
+  ['priceMin', 'priceMax', 'distMax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', saleSidebarTrigger);
+  });
+
+  // Sale hero search form: предотвращаем дефолтную submit (страница не должна перезагружаться)
+  const heroForm = document.getElementById('saleHeroSearch');
+  if (heroForm) {
+    heroForm.addEventListener('submit', e => {
+      e.preventDefault();
+      filterRequests();
+      // Скроллим к каталогу
+      const grid = document.getElementById('reqsGrid');
+      if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  // После того как admin.js догрузил карточки из БД — пересчитываем фильтр
+  window.addEventListener('rh:sale-loaded', () => {
+    if (document.querySelectorAll('.req-card').length > 0) filterRequests();
+  });
 });
 
 /* ===== GEOLOCATION + CITY PICKER ===== */
