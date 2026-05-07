@@ -281,7 +281,7 @@
   const grid = document.getElementById('offersGrid');
   if (!grid) return;
 
-  const cards = Array.from(grid.querySelectorAll('.card[data-offer]'));
+  let cards = Array.from(grid.querySelectorAll('.card[data-offer]'));
   const state = {
     crops: new Set(),       // selected crops
     regions: new Set(),     // selected regions
@@ -296,6 +296,13 @@
 
   // Live filter apply
   function apply(){
+    // Если каталог ещё грузится из БД — не трогаем пустой UI
+    // (иначе мигнёт "По фильтрам ничего не найдено" пока крутится loader)
+    if (grid.querySelector('.cards-loading')) {
+      const empty = document.getElementById('emptyFilterResult');
+      if (empty) empty.style.display = 'none';
+      return;
+    }
     let visible = 0;
     cards.forEach(card => {
       const d = card.dataset;
@@ -433,6 +440,12 @@
 
   // Initial run
   apply();
+
+  // Когда admin.js догрузил карточки из Supabase — пересобираем cards и пересчитываем
+  window.addEventListener('rh:catalog-loaded', () => {
+    cards = Array.from(grid.querySelectorAll('.card[data-offer]'));
+    apply();
+  });
 })();
 
 /* ===== INTEGRATION with RH_API (auth flow, logout, form submissions) ===== */

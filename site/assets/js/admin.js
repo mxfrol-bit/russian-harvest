@@ -3314,7 +3314,11 @@
       // Re-trigger filter handlers if they exist
       window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));
     } catch(e) {
-      console.warn('[Catalog] DB sync failed, using static fallback:', e.message);
+      console.error('[Catalog] DB sync failed:', e);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)"><div style="font-size:15px;font-weight:600;margin-bottom:6px;color:#b00020">Не удалось загрузить предложения</div><div style="font-size:13px">' + (e?.message ? escapeHtml(String(e.message)) : 'Проверьте подключение и обновите страницу.') + '</div></div>';
+      const counter = document.getElementById('filterCount');
+      if (counter) counter.textContent = '0';
+      window.dispatchEvent(new CustomEvent('rh:catalog-loaded'));
     }
   }
 

@@ -85,6 +85,27 @@
 
   function clearCache() { cachedUser = null; }
 
+  /**
+   * Догружает данные продавцов отдельным запросом к view profiles_public.
+   * PostgREST не умеет резолвить FK-constraint через view, поэтому
+   * связку offers→seller (и аналоги) приходится собирать вручную.
+   */
+  async function attachSellers(rows, idField = 'seller_id', attachAs = 'seller', columns = 'id, handle, role, rating, deals_count, is_verified, city, region') {
+    if (!rows || !rows.length) return rows || [];
+    const ids = [...new Set(rows.map(r => r[idField]).filter(Boolean))];
+    if (!ids.length) return rows;
+    try {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('profiles_public').select(columns).in('id', ids);
+      if (error) { console.warn('[attachSellers] profiles_public failed:', error.message); return rows; }
+      const map = new Map((data || []).map(p => [p.id, p]));
+      rows.forEach(r => { r[attachAs] = map.get(r[idField]) || null; });
+    } catch(e) {
+      console.warn('[attachSellers] exception:', e.message);
+    }
+    return rows;
+  }
+
   // ============================================================
   // PUBLIC API
   // ============================================================
@@ -274,8 +295,7 @@
       const sb = await ensureSupabase();
       let q = sb.from('offers').select(`
         *,
-        crop:crops(name, emoji, category),
-        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region)
+        crop:crops(name, emoji, category)
       `).eq('status', 'active')
         .order('is_premium', { ascending: false })
         .order('created_at', { ascending: false });
@@ -291,6 +311,7 @@
 
       const { data, error } = await q;
       if (error) throw error;
+      await attachSellers(data, 'seller_id', 'seller');
       return data;
     },
 
@@ -321,17 +342,17 @@
       if (error) throw error;
       if (!rows || !rows.length) return [];
 
-      // Enrich with crop + seller via a second query
+      // Enrich with crop via a second query (sellers — отдельным шагом через attachSellers)
       const ids = rows.map(r => r.id);
       const { data: enriched, error: e2 } = await sb.from('offers').select(`
-        id, harvest_year, has_delivery, has_lab_analysis, quality, expires_at,
-        crop:crops(name, emoji, category),
-        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region)
+        id, seller_id, harvest_year, has_delivery, has_lab_analysis, quality, expires_at,
+        crop:crops(name, emoji, category)
       `).in('id', ids);
       if (e2) throw e2;
 
       const map = new Map((enriched || []).map(e => [e.id, e]));
       const merged = rows.map(r => Object.assign({}, r, map.get(r.id) || {}));
+      await attachSellers(merged, 'seller_id', 'seller');
 
       // Apply client-side filters
       let result = merged;
@@ -366,10 +387,13 @@
       const sb = await ensureSupabase();
       const { data, error } = await sb.from('offers').select(`
         *,
-        crop:crops(*),
-        seller:profiles_public!offers_seller_id_fkey(id, handle, role, rating, deals_count, is_verified, city, region, avatar_url, bio)
+        crop:crops(*)
       `).eq('id', id).single();
       if (error) throw error;
+      if (data) {
+        await attachSellers([data], 'seller_id', 'seller',
+          'id, handle, role, rating, deals_count, is_verified, city, region, avatar_url, bio');
+      }
       return data;
     },
 
