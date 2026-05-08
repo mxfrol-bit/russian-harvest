@@ -201,7 +201,12 @@ input,select,textarea{font-family:inherit}
 .drawer-foot .phone{font-size:17px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:10px;padding:8px 0}
 
 /* =============== HERO (home) =============== */
-.hero{position:relative;overflow:hidden;color:#fff;isolation:isolate}
+.hero{position:relative;overflow:visible;color:#fff;isolation:isolate}
+/* Контейнер для фоновых ::before/::after и blob-2 — он клипует визуальные эффекты,
+   но НЕ инпуты/dropdown внутри hero (раньше overflow:hidden на .hero резал
+   autocomplete-подсказки которые свисают под форму поиска). */
+.hero > .hero-bg-clip,
+.hero::before, .hero::after{will-change:auto}
 .hero::before{
   content:"";position:absolute;inset:0;z-index:0;
   background:
@@ -271,7 +276,7 @@ input,select,textarea{font-family:inherit}
   border-radius:var(--radius-md);
   box-shadow:0 12px 32px rgba(26,36,16,.16), 0 0 0 1px rgba(0,0,0,.04);
   padding:6px;
-  z-index:50;
+  z-index:1000;
   max-height:280px; overflow-y:auto;
 }
 .hero-ac-item{
@@ -327,7 +332,7 @@ input,select,textarea{font-family:inherit}
 /* =============== CATALOG PAGE =============== */
 .page-hero{
   background:linear-gradient(135deg, #243012 0%, #324518 100%);
-  color:#fff;position:relative;overflow:hidden;
+  color:#fff;position:relative;overflow:visible;
 }
 .page-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 100%, rgba(97,139,39,.14), transparent 40%),radial-gradient(circle at 90% 0%, rgba(151,197,36,.16), transparent 45%);pointer-events:none}
 
@@ -620,53 +625,20 @@ input,select,textarea{font-family:inherit}
   .tab-btn{padding:9px 14px;font-size:13px}
 }
 
-/* =============== REQUEST CARD (Продать — заявки от покупателей) =============== */
-.req-card{
-  background:var(--paper);border-radius:var(--radius-xl);
-  padding:24px;box-shadow:var(--shadow-md);position:relative;
-  transition:transform .22s, box-shadow .22s;
-  display:flex;flex-direction:column;gap:16px;
-  height:100%;  /* выравниваем по высоте максимальной в ряду */
-}
-.req-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
-.req-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.req-card-head > div{min-width:0;flex:1}
-.req-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.req-card-title{
-  font-size:18px;font-weight:700;letter-spacing:-0.015em;line-height:1.25;color:var(--ink);
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-  min-height:2.5em;  /* всегда ровно 2 строки → одинаковая высота заголовка */
-}
-.req-target-price{
-  padding:8px 14px;border-radius:var(--radius-sm);
-  background:var(--emerald-soft);color:#065F46;white-space:nowrap;flex-shrink:0;
-  text-align:right;
-}
-.req-target-price .num{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;display:block}
-.req-target-price .small{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+/* =============== REQUEST CARD (Продать — заявки от покупателей) ===============
+   v2.6.10: Карточка заявки переведена на структуру catalog .card. Класс
+   .req-card остался ТОЛЬКО как маркер для JS-фильтра filterRequests().
+   Визуальные стили (.req-card-head, .req-attrs, .req-foot и т.д.) удалены —
+   их элементы больше не появляются в DOM. */
 
-.req-attrs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px;background:var(--slate-50);border-radius:var(--radius-sm)}
-.req-attrs .cell .k{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--slate-400);font-weight:700}
-.req-attrs .cell .v{font-size:13.5px;font-weight:600;color:var(--ink);margin-top:3px;line-height:1.3}
-
-.req-meta{display:flex;gap:12px;font-size:12.5px;color:var(--slate-500);flex-wrap:wrap;align-items:center}
-.req-meta .item{display:inline-flex;align-items:center;gap:5px}
-.req-meta .item .ic{color:var(--slate-400)}
-.req-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--slate-300)}
-
-.req-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--slate-100);margin-top:auto}
-.req-buyer{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--slate-500)}
-.req-buyer .id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate-500)}
-.req-foot .cta{background:var(--ink);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
-.req-foot .cta:hover{background:var(--ink-2)}
-
-.req-archive .req-card-title,.req-archive .req-target-price{opacity:.6}
-.req-archive .cta{background:var(--slate-400);pointer-events:none}
-
-/* Request grid */
+/* Request grid — те же 3 колонки что у каталога */
 .req-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 @media (max-width:1100px){.req-grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:720px){.req-grid{grid-template-columns:1fr}.req-attrs{grid-template-columns:1fr 1fr}.req-attrs .cell:last-child{grid-column:span 2}}
+@media (max-width:720px){.req-grid{grid-template-columns:1fr}}
+
+/* Архив — приглушённый стиль для закрытых заявок */
+.req-archive .card-title,.req-archive .card-price-pill{opacity:.6}
+.req-archive .cta{background:var(--slate-400);pointer-events:none}
 
 /* =============== REVERSE CARD =============== */
 .reverse-card{border-radius:var(--radius-xl);padding:40px;position:relative;overflow:hidden;background:linear-gradient(135deg,#1A2410 0%,#324518 100%);color:#fff;box-shadow:0 24px 80px rgba(26,36,16,.16);display:grid;grid-template-columns:1fr 1.05fr;gap:48px;align-items:center}

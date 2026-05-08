@@ -3945,46 +3945,81 @@
   }
 
   function renderRequestCard(r) {
+    // v2.6.10: переписан под структуру catalog card — sale-карточки теперь
+    // визуально идентичны catalog-карточкам (тот же класс .card, та же сетка
+    // card-head + card-meta + distance-strip + supplier-strip + card-foot).
+    // Различия: данные из buyer_requests (нет seller, есть needed_by);
+    // CTA — «Откликнуться» (data-action="respond") вместо «Купить».
     const cropFull = r.crop_id || '';
     const cropParent = cropFull.split('-')[0] || 'other';
     const cropDataAttr = cropParent === cropFull ? cropParent : `${cropParent} ${cropFull}`;
-    const priceR = r.target_price_kopecks ? (r.target_price_kopecks/100).toLocaleString('ru-RU') + ' ₽/т' : 'Договорная';
+    const priceR = r.target_price_kopecks ? (r.target_price_kopecks/100).toLocaleString('ru-RU') : 'Договор';
+    const priceUnit = r.target_price_kopecks ? ' ₽/т' : '';
     const vatLabel = ({with_vat_5:'с НДС 5%',with_vat_7:'с НДС 7%',with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',with_vat_22:'с НДС 22%',without_vat:'без НДС'})[r.vat] || 'с НДС';
-    // Использовать buyer.handle если есть, иначе сгенерить псевдо-handle на основе buyer_id (стабильно per-buyer)
     const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
+    const region = r.delivery_city || r.delivery_region || '—';
+    const cityFrom = window.__rh_user_city || 'Нижний Новгород';
+    const distance = (r.distance_km != null) ? r.distance_km : estimateDistance(r.delivery_city || r.delivery_region);
     const neededBy = r.needed_by ? new Date(r.needed_by).toLocaleDateString('ru-RU') : '—';
+    const title = r.title || r.crop?.name || 'Заявка';
+
+    // VAT флаг: для совместимости с catalog'ным фильтром («с НДС / без НДС»)
+    // используем '1' / '0' (как у offers), а не yes/no.
+    const vatFlag = r.vat && r.vat !== 'without_vat' ? '1' : '0';
 
     return `
-      <article class="req-card"
+      <article class="card req-card"
         data-request="${r.id}" data-crop="${cropDataAttr}"
-        data-region="${escapeHtml(r.delivery_city || r.delivery_region || '')}"
+        data-region="${escapeHtml(region)}"
         data-volume="${r.volume_tons || 0}"
         data-price="${(r.target_price_kopecks || 0) / 100}"
-        data-vat="${r.vat !== 'without_vat' ? 'yes' : 'no'}"
-        data-title="${escapeHtml(r.title || r.crop?.name || '')}">
-        <div class="req-card-head">
-          <div>
-            <div class="req-badges">
-              <span class="badge gray mono" style="font-family:'JetBrains Mono',monospace">№ ${(r.id || '').slice(0,8).toUpperCase()}</span>
+        data-distance="${distance}"
+        data-vat="${vatFlag}"
+        data-title="${escapeHtml(title)}">
+        <!-- Ячейки для list-view (скрыты в grid через CSS) — те же что у catalog-карточки -->
+        <span class="card-list-cell title">${escapeHtml(title)}</span>
+        <span class="card-list-cell muted">${escapeHtml(r.crop?.name || cropFull || '—')}</span>
+        <span class="card-list-cell price">${priceR}${priceUnit}</span>
+        <span class="card-list-cell">${r.volume_tons || '—'} т</span>
+        <span class="card-list-cell muted">${escapeHtml(region)}</span>
+        <span class="card-list-cell muted">${distance != null ? distance + ' км' : '—'}</span>
+        <span class="card-list-cell cta"><button type="button" data-action="respond" data-request-id="${r.id}">Откликнуться</button></span>
+
+        <div class="card-head">
+          <div class="card-top">
+            <div>
+              <h3 class="card-title">${escapeHtml(title)}</h3>
             </div>
-            <h3 class="req-card-title">${escapeHtml(r.title || r.crop?.name || 'Заявка')}</h3>
+            <div class="card-price-pill">
+              <span class="num">${priceR}${priceUnit}</span>
+              <span class="small">${r.target_price_kopecks ? vatLabel : ' '}</span>
+            </div>
           </div>
-          <div class="req-target-price">
-            <span class="num">${priceR}</span>
-            <span class="small">${vatLabel}</span>
+          <div class="card-meta">
+            <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons || '—'} т</div></div>
+            <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(region)}</div></div>
+            <div class="cell"><div class="k">Поставка до</div><div class="v">${neededBy}</div></div>
           </div>
         </div>
-        <div class="req-attrs">
-          <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons || '—'} т</div></div>
-          <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(r.delivery_city || r.delivery_region || '—')}</div></div>
-          <div class="cell"><div class="k">Активно до</div><div class="v">${neededBy}</div></div>
+        <div class="distance-strip">
+          <div class="distance-from">
+            <span class="pin-ic">📍</span>
+            <div>
+              <div class="route">${escapeHtml(cityFrom)} → ${escapeHtml(region)}</div>
+              <div class="km"><b>${distance}</b> км от вас</div>
+            </div>
+          </div>
         </div>
-        <div class="req-meta">
-          <span class="item mono" style="color:var(--slate-500);font-family:'JetBrains Mono',monospace">ID ${escapeHtml(buyerSid)}</span>
+        <div class="supplier-strip">
+          <span class="supplier-verify"><span class="bc">✓</span>Проверено платформой</span>
+          <div class="supplier-stat">
+            <span data-feature="escrow">Эскроу-защита</span>
+            <span class="dot" data-feature="escrow"></span>
+            <span class="id mono" style="font-family:'JetBrains Mono',monospace">Покупатель ${escapeHtml(buyerSid)}</span>
+          </div>
         </div>
-        <div class="req-foot">
-          <span class="req-buyer">✓ Проверено платформой</span>
-          <button class="cta" data-action="respond" data-request-id="${r.id}">Откликнуться →</button>
+        <div class="card-foot">
+          <button class="cta" type="button" data-action="respond" data-request-id="${r.id}">Откликнуться →</button>
         </div>
       </article>
     `;

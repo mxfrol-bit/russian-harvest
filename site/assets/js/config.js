@@ -31,11 +31,31 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.6.9',
+  VERSION: '2.6.11',
   BUILD_DATE: '2026-05-08',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.6.11',
+      date: '2026-05-08',
+      summary: 'Onboarding: Продать → Купить (порядок изменён)',
+      changes: [
+        '🔄 Welcome-окно (всплывает при первом входе): «Я хочу продать урожай» теперь сверху, «Я хочу купить урожай» снизу. Раньше было наоборот. Изменение в onboarding_modal() в build.py.',
+      ]
+    },
+    {
+      version: '2.6.10',
+      date: '2026-05-08',
+      summary: 'Sale-карточки = catalog-карточки, dropdown autocomplete не обрезается, /how + /contacts получили фотофон',
+      changes: [
+        '🎨 /sale.html карточки переписаны под структуру catalog .card: card-head + card-meta (Объём/Куда/Поставка до) + distance-strip (маршрут от вас → город покупателя + км) + supplier-strip («Проверено платформой» + Покупатель B-XXXX) + card-foot с кнопкой «Откликнуться →». Класс .req-card остался ТОЛЬКО как маркер для filterRequests() — все визуальные стили теперь от .card.',
+        '🧹 Удалены legacy CSS-правила .req-card, .req-card-head, .req-attrs, .req-foot, .req-meta, .req-target-price, .req-buyer — их селекторы больше не существуют в DOM. Сохранён только .req-grid (3-колоночная сетка) и .req-archive (приглушённый стиль закрытых заявок).',
+        '🔝 Hero overflow:hidden → overflow:visible на .hero и .page-hero — autocomplete-dropdown с подсказками культур больше не обрезается нижней границей секции (до этого 3-я подсказка свисала за hero и резалась). Z-index dropdown поднят с 50 до 1000 — выше sticky-фильтра.',
+        '🌾 /how.html получил data-bg="field" (зелёное поле + силосы), /contacts.html получил data-bg="company" (силосы + грузовик). Все 6 продуктовых страниц теперь визуально согласованы.',
+        '🔍 VAT-фильтр на /sale.html: новые чекбоксы data-filter="vat" (with/without) подключены к filterRequests() через saleSidebarTrigger; data-vat изменён с "yes"/"no" на "1"/"0" для совместимости с catalog-фильтром.',
+      ]
+    },
     {
       version: '2.6.9',
       date: '2026-05-08',

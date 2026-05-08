@@ -237,20 +237,20 @@ def onboarding_modal():
     <p>Выберите сценарий — мы подстроим интерфейс под ваши задачи. Это можно будет изменить в любой момент.</p>
   </div>
   <div class="onb-choices">
-    <button class="onb-choice" data-role="buyer">
-      <div class="onb-choice-ic">{icon('buyer')}</div>
-      <div class="onb-choice-body">
-        <h3>Я хочу купить урожай</h3>
-        <p>Покажем каталог офферов, биржу цен и калькулятор доставки до вашего склада.</p>
-        <span class="onb-choice-go">Перейти в каталог {icon('arrow-sm')}</span>
-      </div>
-    </button>
     <button class="onb-choice" data-role="seller">
       <div class="onb-choice-ic">{icon('seller')}</div>
       <div class="onb-choice-body">
         <h3>Я хочу продать урожай</h3>
         <p>Покажем заявки покупателей, подскажем рыночную цену и поможем разместить оффер.</p>
         <span class="onb-choice-go">Смотреть заявки {icon('arrow-sm')}</span>
+      </div>
+    </button>
+    <button class="onb-choice" data-role="buyer">
+      <div class="onb-choice-ic">{icon('buyer')}</div>
+      <div class="onb-choice-body">
+        <h3>Я хочу купить урожай</h3>
+        <p>Покажем каталог офферов, биржу цен и калькулятор доставки до вашего склада.</p>
+        <span class="onb-choice-go">Перейти в каталог {icon('arrow-sm')}</span>
       </div>
     </button>
   </div>
@@ -1692,7 +1692,7 @@ def build_about():
 
 
 def build_how():
-    body = f'''<section class="page-hero">
+    body = f'''<section class="page-hero" data-bg="field">
   <div class="page-hero-inner">
     <div class="breadcrumb">
       <a href="/index.html">Главная</a>
@@ -1834,7 +1834,7 @@ def build_how():
 
 
 def build_contacts():
-    body = f'''<section class="page-hero">
+    body = f'''<section class="page-hero" data-bg="company">
   <div class="page-hero-inner">
     <div class="breadcrumb">
       <a href="/index.html">Главная</a>

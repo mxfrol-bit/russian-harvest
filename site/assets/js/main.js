@@ -806,7 +806,6 @@ function filterRequests(){
   const q = (document.getElementById('saleQ')?.value || '').toLowerCase().trim();
   const region = document.getElementById('saleRegion')?.value || '';
   const minVol = parseInt(document.getElementById('saleVolume')?.value || '0') || 0;
-  const vat = document.getElementById('saleVat')?.value || '';
 
   // Map Russian search terms to crop keys
   const cropKeyMap = {
@@ -824,6 +823,11 @@ function filterRequests(){
   document.querySelectorAll('[data-filter="crop"]').forEach(cb => {
     if (cb.checked) selectedCrops.add(cb.value);
   });
+  // Sidebar VAT — новый блок с чекбоксами «с НДС / без НДС» (значения 'with' / 'without')
+  const selectedVat = new Set();
+  document.querySelectorAll('[data-filter="vat"]').forEach(cb => {
+    if (cb.checked) selectedVat.add(cb.value);
+  });
   // Sidebar diapazon
   const sbPriceMin = parseFloat(document.getElementById('priceMin')?.value) || null;
   const sbPriceMax = parseFloat(document.getElementById('priceMax')?.value) || null;
@@ -837,7 +841,7 @@ function filterRequests(){
     const r = card.dataset.region || '';
     const v = parseInt(card.dataset.volume || '0') || 0;
     const price = parseFloat(card.dataset.price || '0') || 0;
-    const cardVat = card.dataset.vat || '';
+    const cardVat = card.dataset.vat === '1' ? 'with' : 'without';
 
     let ok = true;
     // Search by query: match against crop key, title, or region
@@ -857,8 +861,8 @@ function filterRequests(){
     if (ok && minVol && v < minVol) ok = false;
     if (ok && sbPriceMin != null && price < sbPriceMin) ok = false;
     if (ok && sbPriceMax != null && price > sbPriceMax) ok = false;
-    if (ok && vat === 'yes' && cardVat !== 'yes') ok = false;
-    if (ok && vat === 'no' && cardVat !== 'no') ok = false;
+    // VAT — если что-то выбрано, карточка должна попасть в один из выбранных вариантов
+    if (ok && selectedVat.size && !selectedVat.has(cardVat)) ok = false;
 
     card.style.display = ok ? '' : 'none';
     if (ok) visible++;
@@ -938,6 +942,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelectorAll('.req-card').length > 0) filterRequests();
   };
   document.querySelectorAll('[data-filter="crop"]').forEach(cb => {
+    cb.addEventListener('change', saleSidebarTrigger);
+  });
+  // Новый VAT-блок в sidebar (с НДС / без НДС) — тоже триггерит фильтр.
+  document.querySelectorAll('[data-filter="vat"]').forEach(cb => {
     cb.addEventListener('change', saleSidebarTrigger);
   });
   ['priceMin', 'priceMax', 'distMax'].forEach(id => {
