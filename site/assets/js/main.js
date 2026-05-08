@@ -44,14 +44,20 @@
   if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
   if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
 
-  // ---------- Quality accordion ----------
-  document.querySelectorAll('.q-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.q;
-      const body = document.querySelector(`.q-body[data-q="${id}"]`);
-      btn.classList.toggle('open');
-      if (body) body.classList.toggle('open');
-    });
+  // ---------- Quality accordion (event delegation — работает для динамически догруженных карточек) ----------
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.q-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    const id = btn.dataset.q;
+    const body = document.querySelector(`.q-body[data-q="${id}"]`);
+    const expanded = btn.classList.toggle('open');
+    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (body) {
+      body.classList.toggle('open', expanded);
+      if (expanded) body.removeAttribute('hidden');
+      else body.setAttribute('hidden', '');
+    }
   });
 
   // ---------- Tabs (Active / Archive) ----------
@@ -926,6 +932,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Rebuild safely
       chip.innerHTML = `<span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span> ${city.name} <span class="change">изменить</span>`;
     });
+    // Сохраняем в глобальные переменные чтобы admin.js syncCatalog мог использовать координаты
+    window.__rh_user_city = city.name || 'Нижний Новгород';
+    if (city.lat && city.lng) window.__rh_user_coords = { lat: city.lat, lng: city.lng };
     window.dispatchEvent(new CustomEvent('rh:city-changed', { detail: city }));
   }
 

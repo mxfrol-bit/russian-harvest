@@ -2028,10 +2028,22 @@
   // CREATE OFFER MODAL — for sellers
   // ============================================================
   async function openCreateOfferModal() {
+    const F = window.RH_CONFIG?.FEATURES || {};
     const crops = await api.listCrops().catch(() => []);
+
+    // Загружаем справочник параметров качества из БД
+    let qualitySpecs = [];
+    try {
+      const cfg = window.RH_CONFIG;
+      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/crop_quality_specs?select=*&order=family.asc,sort_order.asc`, {
+        headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY }
+      });
+      if (r.ok) qualitySpecs = await r.json();
+    } catch(_) {}
+
     const html = `
       <div class="modal-backdrop on" id="cofBackdrop"></div>
-      <div class="modal on" id="cofModal" style="max-width:560px;max-height:90vh;display:flex;flex-direction:column">
+      <div class="modal on" id="cofModal" style="max-width:620px;max-height:92vh;display:flex;flex-direction:column">
         <button class="modal-close" id="cofClose">✕</button>
         <div style="padding:24px 28px;border-bottom:1px solid var(--slate-100)">
           <h2 style="font-size:22px;font-weight:700">Разместить оффер</h2>
@@ -2040,7 +2052,7 @@
         <form id="cofForm" style="overflow-y:auto;padding:20px 28px;flex:1">
           <div class="form-group">
             <label>Культура <span class="req">*</span></label>
-            <select name="crop_id" required style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
+            <select name="crop_id" id="cofCropSelect" required style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px">
               ${crops.map(c => `<option value="${c.id}">${c.emoji || ''} ${c.name}</option>`).join('')}
             </select>
           </div>
@@ -2078,27 +2090,36 @@
           <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="form-group">
               <label>Регион <span class="req">*</span></label>
-              <input name="region" required placeholder="Нижегородская область" value="Нижегородская область" />
+              <input name="region" required list="rhCityList" placeholder="Нижегородская область" value="Нижегородская область" />
             </div>
             <div class="form-group">
               <label>Город склада</label>
               <input name="city" list="rhCityList" placeholder="Арзамас" />
             </div>
           </div>
-          <div class="form-group">
+
+          <!-- Чекбокс доставки скрываем когда логистика выключена -->
+          <div class="form-group" data-feature="delivery" style="${F.delivery_enabled === false ? 'display:none' : ''}">
             <label style="display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px">
               <input type="checkbox" name="has_delivery" /> Возможна доставка
             </label>
           </div>
-          <div class="form-group" data-delivery-group style="display:none">
-            <label>Стоимость доставки за тонну, ₽</label>
-            <input name="delivery_price" type="number" min="0" step="50" placeholder="450" />
-          </div>
+
           <div class="form-group">
             <label style="display:flex;align-items:center;gap:8px;font-weight:500;font-size:14px">
               <input type="checkbox" name="has_lab_analysis" /> Есть лабораторный анализ
             </label>
           </div>
+
+          <!-- ПОКАЗАТЕЛИ КАЧЕСТВА: динамически по выбранной культуре -->
+          <div class="form-group" id="cofQualityWrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <label style="margin:0">Показатели качества</label>
+              <span class="form-hint" id="cofQualityHint" style="font-size:12px;color:var(--slate-400)">Зависят от выбранной культуры</span>
+            </div>
+            <div id="cofQualityFields" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+
           <div class="form-group">
             <label>Описание</label>
             <textarea name="description" rows="3" placeholder="Дополнительная информация о партии..." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
@@ -2113,13 +2134,44 @@
     `;
     const wrap = openModal(html);
 
+    // Динамические quality-поля по выбранной культуре
+    const cropSel = wrap.querySelector('#cofCropSelect');
+    const qFields = wrap.querySelector('#cofQualityFields');
+    const qHint   = wrap.querySelector('#cofQualityHint');
 
-    // Toggle delivery group
-    const delCb = wrap.querySelector('input[name="has_delivery"]');
-    const delGrp = wrap.querySelector('[data-delivery-group]');
-    delCb.addEventListener('change', () => {
-      delGrp.style.display = delCb.checked ? '' : 'none';
-    });
+    function familyOf(cropId) {
+      // Пшеница 3/4/5 класс → wheat; corn-silage → corn; etc.
+      if (!cropId) return '';
+      // Если crop_id уже совпадает с family — вернём как есть
+      const parts = cropId.split('-');
+      return parts[0];
+    }
+
+    function renderQualityFields() {
+      const fam = familyOf(cropSel.value);
+      const specs = qualitySpecs.filter(s => s.family === fam);
+      if (!specs.length) {
+        qFields.innerHTML = '<div style="color:var(--slate-400);font-size:13px;padding:8px 0">Для этой культуры параметры качества не заданы — заполните в описании.</div>';
+        qHint.textContent = '';
+        return;
+      }
+      qHint.textContent = `${specs.length} параметров — заполните те, что есть в анализе`;
+      qFields.innerHTML = specs.map(s => `
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:8px;align-items:start">
+          <div style="padding:9px 4px 9px 0">
+            <div style="font-size:13.5px;color:var(--slate-700);font-weight:500">${escapeHtml(s.param_key)}${s.unit ? ` <span style="color:var(--slate-400);font-weight:400">(${escapeHtml(s.unit)})</span>` : ''}</div>
+            ${s.description ? `<div style="font-size:11.5px;color:var(--slate-400);margin-top:1px">${escapeHtml(s.description)}</div>` : ''}
+          </div>
+          <input type="text"
+                 data-quality-key="${escapeHtml(s.param_key)}"
+                 placeholder="${escapeHtml(s.example || '—')}"
+                 style="padding:8px 10px;border:1px solid var(--slate-200);border-radius:8px;font-family:inherit;font-size:13.5px;width:100%" />
+        </div>
+      `).join('');
+    }
+
+    cropSel.addEventListener('change', renderQualityFields);
+    renderQualityFields();
 
     wrap.querySelector('#cofSubmit').addEventListener('click', async () => {
       const form = wrap.querySelector('#cofForm');
@@ -2131,6 +2183,14 @@
       payload.has_delivery = !!fd.get('has_delivery');
       payload.has_lab_analysis = !!fd.get('has_lab_analysis');
 
+      // Собираем quality JSON только из заполненных полей
+      const quality = {};
+      wrap.querySelectorAll('[data-quality-key]').forEach(inp => {
+        const v = (inp.value || '').trim();
+        if (v) quality[inp.dataset.qualityKey] = v;
+      });
+      if (Object.keys(quality).length) payload.quality = quality;
+
       const submit = wrap.querySelector('#cofSubmit');
       submit.disabled = true;
       submit.textContent = 'Сохраняем...';
@@ -2139,7 +2199,6 @@
         await api.createOffer(payload);
         close();
         showToast('✓ Оффер отправлен на модерацию');
-        // Reload page to refresh deals/offers
         setTimeout(() => location.reload(), 800);
       } catch(err) {
         errEl.textContent = err.message;
@@ -2348,15 +2407,44 @@
     }
 
     // Inject city datalist for autocomplete in all forms
-    if (window.RH_CITIES && !document.getElementById('rhCityList')) {
+    if (!document.getElementById('rhCityList')) {
       const dl = document.createElement('datalist');
       dl.id = 'rhCityList';
-      window.RH_CITIES.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.name || c;
-        dl.appendChild(opt);
-      });
+      // 1. Сначала из статичного списка RH_CITIES (cities.js)
+      const seen = new Set();
+      if (window.RH_CITIES) {
+        window.RH_CITIES.forEach(c => {
+          const name = c.name || c;
+          if (seen.has(name)) return;
+          seen.add(name);
+          const opt = document.createElement('option');
+          opt.value = name;
+          dl.appendChild(opt);
+        });
+      }
       document.body.appendChild(dl);
+
+      // 2. Дополняем из geo_units (БД) — асинхронно, чтобы автокомплит был полнее
+      try {
+        const cfg = window.RH_CONFIG || {};
+        if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
+          fetch(`${cfg.SUPABASE_URL}/rest/v1/geo_units?select=name,full_name,kind&order=sort_order.asc&limit=500`, {
+            headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY }
+          })
+            .then(r => r.ok ? r.json() : [])
+            .then(rows => {
+              (rows || []).forEach(row => {
+                const name = row.name;
+                if (!name || seen.has(name)) return;
+                seen.add(name);
+                const opt = document.createElement('option');
+                opt.value = name;
+                dl.appendChild(opt);
+              });
+            })
+            .catch(() => {});
+        }
+      } catch(_) {}
     }
 
     if (document.getElementById('accName')) {
@@ -2504,23 +2592,106 @@
     return user;
   }
 
+  /**
+   * Записывает обращение пользователя (купить/откликнуться/предложить цену)
+   * в admin_inbox для ручной обработки админом.
+   * Возвращает true если успешно (модалка-благодарность откроется).
+   */
+  async function sendToAdminInbox({ kind, offer = null, request = null, message = '', volume = null, user = null }) {
+    const cfg = window.RH_CONFIG || {};
+    const phone = (cfg.SUPPORT_PHONE || '+7-930-012-97-97').replace(/[^\d+]/g, '');
+
+    // Пишем в БД через прямой fetch (минуем api.js)
+    try {
+      const payload = {
+        kind,
+        user_id: user?.id || null,
+        user_name: user?.full_name || user?.company_name || null,
+        user_phone: user?.phone || null,
+        user_email: user?.email || null,
+        offer_id: offer?.id || null,
+        request_id: request?.id || null,
+        volume_tons: volume,
+        message: message || null,
+        payload: {
+          offer_title: offer?.title,
+          offer_price_kopecks: offer?.price_kopecks,
+          request_title: request?.title,
+          page: location.pathname,
+          ts: new Date().toISOString()
+        }
+      };
+      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/admin_inbox`, {
+        method: 'POST',
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) console.warn('[admin_inbox]', r.status, await r.text());
+    } catch(e) {
+      console.warn('[admin_inbox] failed:', e.message);
+    }
+
+    // Показываем благодарность независимо от того, записалось ли в БД
+    showAdminContactModal(kind, offer || request);
+  }
+
+  function showAdminContactModal(kind, item) {
+    const cfg = window.RH_CONFIG || {};
+    const title = ({
+      purchase_request:    'Спасибо! Заявка принята',
+      price_proposal:      'Спасибо! Предложение отправлено',
+      respond_to_request:  'Спасибо! Отклик отправлен',
+    })[kind] || 'Спасибо! Обращение принято';
+    const subtitle = ({
+      purchase_request:    'Администратор свяжется с вами в течение 3 часов и поможет оформить покупку.',
+      price_proposal:      'Администратор передаст ваше предложение продавцу и вернётся с ответом.',
+      respond_to_request:  'Администратор передаст ваш отклик покупателю и вернётся с ответом.',
+    })[kind] || 'Администратор скоро свяжется с вами.';
+
+    const html = `
+      <div class="modal-backdrop on"></div>
+      <div class="modal on" style="max-width:460px;text-align:center;padding:36px 30px">
+        <button class="modal-close">✕</button>
+        <div style="font-size:48px;margin-bottom:14px">✓</div>
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${escapeHtml(title)}</h2>
+        <p style="color:var(--slate-500);margin-bottom:18px;line-height:1.55">${escapeHtml(subtitle)}</p>
+        ${item?.title ? `<div style="background:var(--slate-50);padding:12px 16px;border-radius:10px;margin-bottom:18px;font-size:13px;color:var(--slate-700)"><b>${escapeHtml(item.title)}</b></div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <a class="btn btn-primary" href="tel:${escapeHtml(cfg.SUPPORT_PHONE || '+79300129797')}">📞 Позвонить: ${escapeHtml(cfg.SUPPORT_PHONE || '+7 930 012-97-97')}</a>
+          <a class="btn btn-outline" href="https://t.me/${escapeHtml(cfg.SUPPORT_TELEGRAM || 'tdrusagro')}" target="_blank">Написать в Telegram</a>
+          <button class="btn btn-outline modal-close">Закрыть</button>
+        </div>
+      </div>
+    `;
+    openModal(html);
+  }
+
   async function handlePurchase(btn) {
-    const user = await requireLogin('купить');
-    if (!user) return;
+    const F = window.RH_CONFIG?.FEATURES || {};
+    const user = await api.getCurrentUser().catch(() => null);
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) {
       showToast('Не удалось определить оффер. Откройте страницу товара.');
       return;
     }
-
-    const withDelivery = btn.dataset.delivery === '1';
     const offer = await api.getOffer(offerId).catch(() => null);
-    if (!offer) {
-      showToast('Оффер не найден или удалён');
+    if (!offer) { showToast('Оффер не найден или удалён'); return; }
+
+    // ⏸ Эскроу выключен — направляем в admin_inbox для ручной обработки
+    if (!F.escrow_enabled) {
+      await sendToAdminInbox({ kind: 'purchase_request', offer, user, volume: offer.volume_tons });
       return;
     }
 
+    // С эскроу — старый flow
+    if (!user) { await requireLogin('купить'); return; }
+    const withDelivery = btn.dataset.delivery === '1';
     openPurchaseModal(offer, withDelivery, user);
   }
 
@@ -2624,23 +2795,23 @@
   }
 
   async function handleProposal(btn) {
-    const user = await requireLogin('сделать ценовое предложение');
-    if (!user) return;
+    const F = window.RH_CONFIG?.FEATURES || {};
+    const user = await api.getCurrentUser().catch(() => null);
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) { showToast('Не удалось определить оффер. Откройте страницу товара.'); return; }
-
     const offer = await api.getOffer(offerId).catch(() => null);
     if (!offer) { showToast('Оффер не найден или удалён'); return; }
 
-    if (user.role === 'seller' && offer.seller_id === user.id) {
-      showToast('Это ваш собственный оффер');
+    // ⏸ Чат выключен — отправляем в admin_inbox
+    if (!F.realtime_chat) {
+      await sendToAdminInbox({ kind: 'price_proposal', offer, user });
       return;
     }
-    if (user.role === 'seller') {
-      showToast('Откликаются на офферы только покупатели');
-      return;
-    }
+
+    if (!user) { await requireLogin('сделать ценовое предложение'); return; }
+    if (user.role === 'seller' && offer.seller_id === user.id) { showToast('Это ваш собственный оффер'); return; }
+    if (user.role === 'seller') { showToast('Откликаются на офферы только покупатели'); return; }
 
     const currentPrice = api.formatRub(offer.price_kopecks);
 
@@ -2704,10 +2875,41 @@
   }
 
   async function handleRespond(btn) {
-    const user = await requireLogin('откликнуться на заявку');
-    if (!user) return;
+    const F = window.RH_CONFIG?.FEATURES || {};
+    const user = await api.getCurrentUser().catch(() => null);
 
-    // Only sellers and admins can respond to buyer requests
+    const requestId = btn.dataset.requestId;
+    let request = null;
+    if (requestId && requestId.includes('-')) {
+      try {
+        const cfg = window.RH_CONFIG || {};
+        const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/buyer_requests?id=eq.${requestId}&select=*`, {
+          headers: { 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY }
+        });
+        if (r.ok) {
+          const arr = await r.json();
+          request = arr?.[0] || null;
+        }
+      } catch(_) {}
+    }
+    // Если запрос не нашли — возьмём данные из карточки
+    if (!request) {
+      const card = btn.closest('.req-card, [data-request]');
+      request = {
+        id: requestId,
+        title: card?.querySelector('.req-card-title')?.textContent || 'Заявка',
+      };
+    }
+
+    // ⏸ Чат выключен — пишем в admin_inbox и показываем благодарность
+    if (!F.realtime_chat) {
+      await sendToAdminInbox({ kind: 'respond_to_request', request, user });
+      return;
+    }
+
+    // Старый flow с чатом
+    if (!user) { await requireLogin('откликнуться на заявку'); return; }
+
     if (user.role === 'buyer') {
       const html = `
         <div class="modal-backdrop on"></div>
@@ -2723,7 +2925,6 @@
       return;
     }
 
-    const requestId = btn.dataset.requestId;
     if (!requestId || !requestId.includes('-')) {
       showToast('Эта карточка демонстрационная — откликнитесь на реальную заявку');
       return;
@@ -3281,12 +3482,17 @@
     const cfg = window.RH_CONFIG || {};
     if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL/KEY не сконфигурированы');
 
-    // Координаты — из профиля если есть, иначе НН
+    // Координаты — приоритет: явно сменённый город (__rh_user_coords) → профиль → НН
     let lat = 56.3269, lng = 44.0075;
-    try {
-      const u = await api.getCurrentUser();
-      if (u?.city_lat && u?.city_lng) { lat = parseFloat(u.city_lat); lng = parseFloat(u.city_lng); }
-    } catch(_) {}
+    if (window.__rh_user_coords?.lat && window.__rh_user_coords?.lng) {
+      lat = parseFloat(window.__rh_user_coords.lat);
+      lng = parseFloat(window.__rh_user_coords.lng);
+    } else {
+      try {
+        const u = await api.getCurrentUser();
+        if (u?.city_lat && u?.city_lng) { lat = parseFloat(u.city_lat); lng = parseFloat(u.city_lng); }
+      } catch(_) {}
+    }
 
     const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/rpc/offers_with_distance`, {
       method: 'POST',
@@ -3500,7 +3706,16 @@
         data-delivery="${o.has_delivery ? '1' : '0'}"
         data-vat="${o.vat !== 'without_vat' ? '1' : '0'}"
         data-premium="${isPremium ? '1' : '0'}"
-        data-title="${escapeHtml(o.title)}">
+        data-title="${escapeHtml(o.title)}"
+        data-list-title="${escapeHtml(o.title)}">
+        <!-- Ячейки для list-view (скрыты в grid через CSS) -->
+        <span class="card-list-cell muted">${escapeHtml(o.crop?.name || cropFull || '—')}</span>
+        <span class="card-list-cell price">${priceR} ₽/т</span>
+        <span class="card-list-cell">${o.volume_tons || '—'} т</span>
+        <span class="card-list-cell muted">${escapeHtml(o.region || '—')}</span>
+        <span class="card-list-cell muted">${distance != null ? distance + ' км' : '—'}</span>
+        <span class="card-list-cell cta"><a href="/product.html?id=${o.id}">Купить</a></span>
+
         <div class="card-head">
           <div class="card-top">
             <div>
@@ -3522,14 +3737,14 @@
           </div>
         </div>
         ${qEntries.length > 0 ? `
-          <button class="q-toggle" data-q="${o.id}">
+          <button class="q-toggle" data-q="${o.id}" type="button" aria-expanded="false">
             <span class="lbl">
               <span class="lbl-ic">ⓘ</span>
               Показатели качества
             </span>
             <span class="right"><span class="count">${qEntries.length} ${qWord}</span><span class="chev">▼</span></span>
           </button>
-          <div class="q-body" data-q="${o.id}"><div class="q-body-inner">${qRows}</div></div>
+          <div class="q-body" data-q="${o.id}" hidden><div class="q-body-inner">${qRows}</div></div>
         ` : ''}
         <div class="distance-strip">
           <div class="distance-from">
@@ -3543,8 +3758,8 @@
         <div class="supplier-strip">
           <span class="supplier-verify"><span class="bc">✓</span>Проверено платформой</span>
           <div class="supplier-stat">
-            <span>Эскроу-защита</span>
-            <span class="dot"></span>
+            <span data-feature="escrow">Эскроу-защита</span>
+            <span class="dot" data-feature="escrow"></span>
             <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(sellerSid)}</span>
           </div>
         </div>
@@ -3879,6 +4094,36 @@
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--slate-500)">Не удалось загрузить предложения. Попробуйте обновить страницу.</div>';
     }
   }
+
+  // Применяем feature flags к <body> — CSS скрывает .escrow-only / [data-feature="escrow"] и аналогично chat/delivery
+  function applyFeatureBodyAttrs() {
+    const F = window.RH_CONFIG?.FEATURES || {};
+    document.body.setAttribute('data-feature-escrow', F.escrow_enabled ? 'on' : 'off');
+    document.body.setAttribute('data-feature-chat',   F.realtime_chat   ? 'on' : 'off');
+    document.body.setAttribute('data-feature-delivery', F.delivery_enabled ? 'on' : 'off');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyFeatureBodyAttrs);
+  } else {
+    applyFeatureBodyAttrs();
+  }
+
+  // Слушаем смену города → чистим кеш и перезагружаем грид с новыми расстояниями
+  window.addEventListener('rh:city-changed', e => {
+    const city = e?.detail || {};
+    window.__rh_user_city = city.name || 'Нижний Новгород';
+    window.__rh_offers_cache = null;  // важно — чтобы fetchOffersDirect пересчитал distance
+    window.__rh_requests_cache = null;
+    if (window.RH_API && window.RH_API.getCurrentUser) {
+      // Если у пользователя нет своих координат — fetchOffersDirect возьмёт из __rh_user_coords
+      window.__rh_user_coords = (city.lat && city.lng) ? { lat: city.lat, lng: city.lng } : null;
+    }
+    // Перерисовываем сетки, на каких бы страницах мы ни были
+    syncCatalog();
+    syncFocus();
+    syncHomeOffers();
+    syncSale();
+  });
 
   // Run after page loads
   if (document.readyState === 'loading') {

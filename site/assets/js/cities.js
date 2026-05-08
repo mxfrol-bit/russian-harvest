@@ -162,8 +162,18 @@ window.RH_CITIES_FIND_BY_COORDS = function(lat, lng) {
 // Quick helper: search by name
 window.RH_CITIES_SEARCH = function(query, limit = 10) {
   const q = (query || '').toLowerCase().trim();
-  if (!q) return window.RH_CITIES.slice(0, limit);
-  return window.RH_CITIES
-    .filter(c => c.name.toLowerCase().startsWith(q) || c.region.toLowerCase().includes(q))
-    .slice(0, limit);
+  if (!q) {
+    // Без запроса — топ-10 крупнейших городов
+    return window.RH_CITIES.slice().sort((a,b) => (b.pop||0) - (a.pop||0)).slice(0, limit);
+  }
+  // Сортируем: сначала startsWith (более релевантно), потом includes
+  const startsWith = [];
+  const contains = [];
+  window.RH_CITIES.forEach(c => {
+    const name = c.name.toLowerCase();
+    const region = (c.region || '').toLowerCase();
+    if (name.startsWith(q)) startsWith.push(c);
+    else if (name.includes(q) || region.includes(q)) contains.push(c);
+  });
+  return [...startsWith, ...contains].slice(0, limit);
 };

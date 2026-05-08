@@ -432,6 +432,7 @@ input,select,textarea{font-family:inherit}
 .q-toggle.open .chev{transform:rotate(180deg)}
 .card-featured .q-toggle .chev{color:rgba(255,255,255,.6)}
 .q-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.q-body[hidden]{display:block !important;max-height:0}
 .q-body.open{max-height:400px}
 .q-body-inner{padding:4px 20px 16px}
 .q-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13.5px;color:var(--slate-600)}
@@ -1428,30 +1429,71 @@ input,select,textarea{font-family:inherit}
 .view-toggle button svg{flex-shrink:0}
 
 /* ===============================================
-   LIST VIEW for cards-grid (simple & robust)
+   LIST VIEW — компактный табличный формат (как в Excel)
    =============================================== */
 .cards-grid.list-view{
   grid-template-columns:1fr !important;
-  gap:10px;
+  gap:6px;
 }
-.cards-grid.list-view > .card-featured{
-  grid-column:span 1 !important;
-}
+.cards-grid.list-view > .card-featured{grid-column:span 1 !important;}
+
+/* Карточка сворачивается в одну горизонтальную строку */
 .cards-grid.list-view .card{
-  display:flex;flex-direction:column;
+  display:grid;
+  grid-template-columns: 2.4fr 1.1fr 0.9fr 0.9fr 1.4fr 1fr 1.1fr;
+  align-items:center;
+  padding:10px 14px;gap:12px;
+  border:1px solid var(--slate-100);box-shadow:none;
+  border-radius:10px;min-height:auto;
+  transition:border-color .12s, background .12s;
 }
-.cards-grid.list-view .card-head{padding:18px 20px}
-.cards-grid.list-view .card-title{font-size:16px;line-height:1.25}
-.cards-grid.list-view .card-meta{margin-top:10px;gap:14px}
-.cards-grid.list-view .card-meta .cell{padding:8px 10px}
-.cards-grid.list-view .card-meta .cell .k{font-size:10px}
-.cards-grid.list-view .card-meta .cell .v{font-size:13px}
-.cards-grid.list-view .q-toggle{padding:10px 20px}
-.cards-grid.list-view .q-body[data-q]{display:none}
-.cards-grid.list-view .q-body.on{display:block}
-.cards-grid.list-view .distance-strip{padding:10px 20px;min-height:auto}
-.cards-grid.list-view .supplier-strip{padding:10px 20px}
-.cards-grid.list-view .card-foot{padding:14px 20px}
+.cards-grid.list-view .card:hover{
+  border-color:var(--emerald);background:var(--slate-50);
+  transform:none;box-shadow:none;
+}
+
+/* Скрываем тяжёлые блоки в list-view */
+.cards-grid.list-view .card-head,
+.cards-grid.list-view .card-meta,
+.cards-grid.list-view .q-block,
+.cards-grid.list-view .distance-strip,
+.cards-grid.list-view .supplier-strip,
+.cards-grid.list-view .card-foot,
+.cards-grid.list-view .card-photo,
+.cards-grid.list-view .badge:not(.badge-vip-tiny){display:none !important}
+
+/* Строки рисуем через ::before/::after из data-атрибутов */
+.cards-grid.list-view .card::before{
+  /* Заголовок */
+  content: attr(data-list-title);
+  font-weight:700;font-size:14.5px;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em;
+}
+.cards-grid.list-view .card-list-cell{
+  font-size:13px;color:var(--slate-700);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cards-grid.list-view .card-list-cell.muted{color:var(--slate-500);font-size:12.5px}
+.cards-grid.list-view .card-list-cell.price{font-weight:700;color:var(--emerald-600);font-variant-numeric:tabular-nums}
+.cards-grid.list-view .card-list-cell.cta{text-align:right}
+.cards-grid.list-view .card-list-cell.cta a{
+  display:inline-block;padding:6px 14px;border-radius:8px;
+  background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;
+  text-decoration:none;transition:background .12s;
+}
+.cards-grid.list-view .card-list-cell.cta a:hover{background:var(--emerald-600)}
+
+/* Шапка таблицы (опционально через ::before на гриде) */
+.cards-grid.list-view::before{
+  content:'';display:none;
+}
+@media (max-width:920px){
+  .cards-grid.list-view .card{
+    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-areas: "title price cta" "vol region region";
+    gap:6px 10px;padding:10px 12px;
+  }
+}
 
 @media (max-width:640px){
   .view-toggle button span{display:none}
@@ -1484,6 +1526,58 @@ input,select,textarea{font-family:inherit}
 .cp-item-name{font-size:14.5px;font-weight:600;color:var(--ink)}
 .cp-item-region{font-size:12px;color:var(--slate-500)}
 .cp-empty{text-align:center;padding:24px 16px;color:var(--slate-400);font-size:13.5px}
+
+/* ===============================================
+   FEATURE FLAGS — глобальное скрытие эскроу/чатов
+   =============================================== */
+/* Активируется через body[data-feature-escrow="off"] и body[data-feature-chat="off"]
+   (устанавливается main.js при загрузке из window.RH_CONFIG.FEATURES). */
+body[data-feature-escrow="off"] .escrow-only,
+body[data-feature-escrow="off"] [data-feature="escrow"]{
+  display:none !important;
+}
+body[data-feature-chat="off"] .chat-only,
+body[data-feature-chat="off"] [data-feature="chat"],
+body[data-feature-chat="off"] .chat-button,
+body[data-feature-chat="off"] [data-action="chat"]{
+  display:none !important;
+}
+body[data-feature-delivery="off"] .delivery-only,
+body[data-feature-delivery="off"] [data-feature="delivery"]{
+  display:none !important;
+}
+
+/* About: hero-stats + principle-grid */
+.hero-stats{
+  margin-top:32px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:760px;
+}
+.hero-stat{
+  background:rgba(255,255,255,.07);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:18px 16px;
+}
+.hero-stat .num{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1}
+.hero-stat .lbl{margin-top:6px;font-size:12.5px;color:rgba(226,232,240,.75);line-height:1.35}
+@media (max-width:760px){
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+}
+
+.principle-grid{
+  margin-top:24px;display:grid;grid-template-columns:repeat(2,1fr);gap:18px;
+}
+.principle{
+  background:var(--paper);border:1px solid var(--slate-100);border-radius:18px;
+  padding:24px 24px 22px;display:flex;flex-direction:column;gap:8px;
+  transition:border-color .15s, transform .2s;
+}
+.principle:hover{border-color:var(--emerald);transform:translateY(-2px)}
+.principle-num{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+  color:var(--emerald);letter-spacing:.06em;
+}
+.principle h4{font-size:18px;font-weight:700;letter-spacing:-0.015em;color:var(--ink)}
+.principle p{font-size:14px;color:var(--slate-600);line-height:1.55}
+@media (max-width:760px){.principle-grid{grid-template-columns:1fr}}
 
 /* ===============================================
    LIVE QUOTES (Биржа котировок)
