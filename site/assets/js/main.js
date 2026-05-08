@@ -300,6 +300,7 @@
   const state = {
     crops: new Set(),       // selected crops
     regions: new Set(),     // selected regions
+    vat: new Set(),         // selected vat values: 'with' | 'without'
     priceMin: null,
     priceMax: null,
     distMax: null,
@@ -329,6 +330,12 @@
         if (!hit) ok = false;
       }
       if (ok && state.regions.size && !state.regions.has(d.region)) ok = false;
+      // VAT-фильтр: data-vat="1" → "с НДС", "0" → "без НДС".
+      // Если выбраны оба чекбокса — пройдут все. Если ни одного — фильтр выключен.
+      if (ok && state.vat.size) {
+        const cardVat = d.vat === '1' ? 'with' : 'without';
+        if (!state.vat.has(cardVat)) ok = false;
+      }
       if (ok && state.priceMin != null && parseFloat(d.price) < state.priceMin) ok = false;
       if (ok && state.priceMax != null && parseFloat(d.price) > state.priceMax) ok = false;
       if (ok && state.distMax != null && parseFloat(d.distance) > state.distMax) ok = false;
@@ -384,6 +391,13 @@
       apply();
     });
   });
+  // VAT checkboxes (с НДС / без НДС)
+  document.querySelectorAll('[data-filter="vat"]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (inp.checked) state.vat.add(inp.value); else state.vat.delete(inp.value);
+      apply();
+    });
+  });
   // Price range
   const priceMin = document.getElementById('priceMin');
   const priceMax = document.getElementById('priceMax');
@@ -433,7 +447,7 @@
   // Reset
   const resetBtn = document.getElementById('filtersReset');
   if (resetBtn) resetBtn.addEventListener('click', () => {
-    state.crops.clear(); state.regions.clear();
+    state.crops.clear(); state.regions.clear(); state.vat.clear();
     state.priceMin = state.priceMax = state.distMax = null;
     state.withDelivery = state.withLab = state.withVat = false;
     document.querySelectorAll('[data-filter]').forEach(i => i.checked = false);
@@ -507,6 +521,29 @@
       apply();
       grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+
+    // Live-фильтрация: каталог реагирует пока юзер печатает (как на /sale.html).
+    // Дебаунс 120 мс — чтобы при быстром наборе не дёргать apply() на каждой букве.
+    let liveTimer = null;
+    const liveApply = () => {
+      const q = (document.getElementById('catalogQ')?.value || '').trim();
+      const vol = document.getElementById('catalogVolume')?.value || '';
+      state.query = q;
+      state.volMin = vol ? parseInt(vol) : null;
+      apply();
+    };
+    const catQ = document.getElementById('catalogQ');
+    if (catQ) {
+      catQ.addEventListener('input', () => {
+        clearTimeout(liveTimer);
+        liveTimer = setTimeout(liveApply, 120);
+      });
+    }
+    const catVol = document.getElementById('catalogVolume');
+    if (catVol) {
+      // У <select> срабатывает change (мгновенно при выборе) — без дебаунса.
+      catVol.addEventListener('change', liveApply);
+    }
   }
 })();
 
@@ -1348,4 +1385,148 @@ document.addEventListener('DOMContentLoaded', () => {
       lastCount = cur;
     }
   }, 1500);
+})();
+
+/* ===== HERO-SEARCH AUTOCOMPLETE =====
+   Подсказки культур пока юзер печатает в hero-форме (index / catalog / sale).
+   Список совпадает с фильтром crop_filter_tree() в build.py. */
+(function(){
+  const SUGGESTIONS = [
+    'Пшеница продовольственная, 3 класс',
+    'Пшеница продовольственная, 4 класс',
+    'Пшеница кормовая',
+    'Ячмень кормовой',
+    'Ячмень продовольственный',
+    'Кукуруза',
+    'Кукуруза дроблёная',
+    'Рожь',
+    'Овёс',
+    'Тритикале кормовое',
+    'Гречиха',
+    'Горох кормовой',
+    'Горох продовольственный зелёный',
+    'Соя продовольственная',
+    'Люпин',
+    'Вика',
+    'Нут белый',
+    'Нут красный',
+    'Чечевица зелёная',
+    'Чечевица красная',
+    'Подсолнечник',
+    'Рапс',
+    'Семена горчицы',
+    'Плоды кориандра',
+    'Семена льна масличного',
+    'Рыжик для переработки',
+  ];
+  // Экспонируем чтобы переиспользовать в других местах (например — chips на главной).
+  window.RH_SEARCH_SUGGESTIONS = SUGGESTIONS;
+
+  function wire(input) {
+    if (!input || input.dataset.acWired) return;
+    input.dataset.acWired = '1';
+
+    // Создаём dropdown под input.
+    // Родитель .field имеет position:relative — dropdown ставим absolute снизу.
+    const field = input.closest('.field') || input.parentElement;
+    if (!field) return;
+    field.style.position = field.style.position || 'relative';
+
+    const dd = document.createElement('div');
+    dd.className = 'hero-ac';
+    dd.setAttribute('role', 'listbox');
+    dd.hidden = true;
+    field.appendChild(dd);
+
+    let activeIdx = -1;
+
+    function render(query) {
+      const q = (query || '').trim().toLowerCase();
+      const items = q
+        ? SUGGESTIONS.filter(s => s.toLowerCase().includes(q)).slice(0, 8)
+        : SUGGESTIONS.slice(0, 8); // top-8 при пустом инпуте
+      if (!items.length) {
+        dd.hidden = true;
+        activeIdx = -1;
+        return;
+      }
+      dd.innerHTML = items.map((s, i) => {
+        // Подсветка совпадения — через bold внутри строки
+        let html = s;
+        if (q) {
+          const idx = s.toLowerCase().indexOf(q);
+          if (idx >= 0) {
+            html = s.slice(0, idx) + '<b>' + s.slice(idx, idx + q.length) + '</b>' + s.slice(idx + q.length);
+          }
+        }
+        return `<div class="hero-ac-item" role="option" data-i="${i}" data-val="${s.replace(/"/g,'&quot;')}">${html}</div>`;
+      }).join('');
+      dd.hidden = false;
+      activeIdx = -1;
+    }
+
+    function pick(value) {
+      input.value = value;
+      dd.hidden = true;
+      activeIdx = -1;
+      // Триггерим input event — это активирует live-фильтрацию каталога/sale.
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      // Submit формы — чтобы на главной сразу прыгнуть на каталог с ?q=...
+      const form = input.closest('form');
+      if (form && form.id === 'heroSearchForm') {
+        form.requestSubmit ? form.requestSubmit() : form.submit();
+      }
+    }
+
+    input.addEventListener('focus', () => render(input.value));
+    input.addEventListener('input', () => render(input.value));
+    input.addEventListener('keydown', e => {
+      if (dd.hidden) return;
+      const items = dd.querySelectorAll('.hero-ac-item');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIdx = (activeIdx + 1) % items.length;
+        items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+        items[activeIdx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIdx = (activeIdx - 1 + items.length) % items.length;
+        items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+        items[activeIdx].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && activeIdx >= 0) {
+        e.preventDefault();
+        pick(items[activeIdx].dataset.val);
+      } else if (e.key === 'Escape') {
+        dd.hidden = true;
+        activeIdx = -1;
+      }
+    });
+
+    dd.addEventListener('mousedown', e => {
+      // mousedown а не click — иначе input theryt blur раньше чем мы поймаем клик
+      const item = e.target.closest('.hero-ac-item');
+      if (!item) return;
+      e.preventDefault();
+      pick(item.dataset.val);
+    });
+
+    // Закрываем dropdown при потере фокуса (с задержкой чтобы успел сработать pick)
+    input.addEventListener('blur', () => {
+      setTimeout(() => { dd.hidden = true; activeIdx = -1; }, 180);
+    });
+  }
+
+  function wireAll() {
+    ['heroInput', 'catalogQ', 'saleQ'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) wire(el);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireAll);
+  } else {
+    wireAll();
+  }
 })();

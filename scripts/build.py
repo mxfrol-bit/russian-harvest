@@ -913,68 +913,89 @@ def build_index():
 
 
 def crop_filter_tree():
-    """Полное дерево культур для фильтра sidebar — общее для catalog и sale.
+    """Дерево культур фильтра — общее для catalog и sale.
 
-    19 родителей (всё что есть в БД crops). Подразделы под parent через
-    отступ 18px (padding-left). Подкатегории-checkbox ставят value=crop_id
-    (например 'wheat-3'), parent — value=parent_id ('wheat').
+    Список согласован с заказчиком (v2.6.9) — это культуры, которые
+    реально торгуются на платформе. Без пивоваренного ячменя; только
+    самые ходовые подразделы (продовольственная пшеница 3/4 класса +
+    кормовая, без 5-го класса; продовольственная гречиха-тёрная +
+    татарская скрыты — оставлен только parent «Гречиха» и т.д.).
+
+    UI:
+    - Подкатегории по умолчанию свёрнуты (hidden).
+    - Кнопка ▾/▴ слева от родителя — раскрывает/скрывает sub-список.
+    - Если у родителя нет ходовых подразделов — отображается одна строка
+      без кнопки toggle (Кукуруза целая, Рожь, Овёс, Люпин, Гречиха,
+      Рапс, Вика, Подсолнечник).
     """
     def row(key, label):
         return f'<label class="filter-check"><input type="checkbox" data-filter="crop" value="{key}"><span>{label}</span><span class="count">0</span></label>'
 
-    def sub(items):
-        inner = '\n              '.join(row(k, l) for k, l in items)
-        return f'<div style="padding-left:18px">\n              {inner}\n            </div>'
+    def parent_with_subs(parent_key, parent_label, subs):
+        """Родитель + кнопка toggle + collapsible <div> со списком sub-чекбоксов."""
+        sub_rows = '\n              '.join(row(k, l) for k, l in subs)
+        return f'''<div class="crop-row" data-parent="{parent_key}">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="{parent_key}"><span>{parent_label}</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="{parent_key}" aria-expanded="false" aria-label="Развернуть подкатегории">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="{parent_key}" hidden>
+              {sub_rows}
+            </div>'''
+
+    def parent_only(key, label):
+        """Родитель без подкатегорий — обычный чекбокс."""
+        return f'<div class="crop-row" data-parent="{key}">{row(key, label)}</div>'
 
     return '\n            '.join([
-        row('wheat', 'Пшеница'),
-        sub([('wheat-3', '— 3 класс'), ('wheat-4', '— 4 класс'),
-             ('wheat-5', '— 5 класс'), ('wheat-feed', '— кормовая')]),
-        row('barley', 'Ячмень'),
-        sub([('barley-feed', '— кормовой'), ('barley-food', '— продовольственный'),
-             ('barley-malt', '— пивоваренный')]),
-        row('corn', 'Кукуруза'),
-        sub([('corn-whole', '— целая'), ('corn-crushed', '— дроблёная'),
-             ('corn-feed', '— фуражная'), ('corn-silage', '— силосная'),
-             ('corn-popcorn', '— для попкорна')]),
-        row('rye', 'Рожь'),
-        sub([('rye-food', '— продовольственная'), ('rye-feed', '— кормовая')]),
-        row('oat', 'Овёс'),
-        sub([('oat-food', '— продовольственный'), ('oat-feed', '— кормовой'),
-             ('oat-naked', '— голозёрный'), ('oat-grits', '— крупяной')]),
-        row('triticale', 'Тритикале'),
-        sub([('triticale-feed', '— кормовое')]),
-        row('buckwheat', 'Гречиха'),
-        sub([('buckwheat-food', '— продовольственная'),
-             ('buckwheat-tatar', '— татарская')]),
-        row('pea', 'Горох'),
-        sub([('pea-feed', '— кормовой'),
-             ('pea-food-yellow', '— жёлтый продовольственный'),
-             ('pea-food-green', '— зелёный продовольственный'),
-             ('pea-pelyushka', '— пелюшка')]),
-        row('soy', 'Соя'),
-        sub([('soy-food', '— продовольственная'), ('soy-feed', '— кормовая'),
-             ('soy-nongmo', '— non-GMO')]),
-        row('lupin', 'Люпин'),
-        row('vetch', 'Вика'),
-        row('chickpea', 'Нут'),
-        sub([('chickpea-white', '— белый'), ('chickpea-red', '— красный')]),
-        row('lentil', 'Чечевица'),
-        sub([('lentil-green', '— зелёная'), ('lentil-red', '— красная')]),
-        row('sunflower', 'Подсолнечник'),
-        sub([('sunflower-oil', '— масличный'), ('sunflower-conf', '— кондитерский'),
-             ('sunflower-bird', '— для птицы'), ('sunflower-ho', '— высокоолеиновый')]),
-        row('rapeseed', 'Рапс'),
-        sub([('rapeseed-winter', '— озимый'), ('rapeseed-spring', '— яровой'),
-             ('rapeseed-00', '— «00» технический'), ('rapeseed-food', '— пищевой')]),
-        row('mustard', 'Горчица'),
-        sub([('mustard-seeds', '— семена')]),
-        row('coriander', 'Кориандр'),
-        sub([('coriander-fruits', '— плоды')]),
-        row('flax', 'Лён масличный'),
-        sub([('flax-oil', '— семена')]),
-        row('camelina', 'Рыжик'),
-        sub([('camelina-process', '— для переработки')]),
+        parent_with_subs('wheat', 'Пшеница', [
+            ('wheat-3', '— продовольственная, 3 класс'),
+            ('wheat-4', '— продовольственная, 4 класс'),
+            ('wheat-feed', '— кормовая'),
+        ]),
+        parent_with_subs('barley', 'Ячмень', [
+            ('barley-feed', '— кормовой'),
+            ('barley-food', '— продовольственный'),
+        ]),
+        parent_with_subs('corn', 'Кукуруза', [
+            ('corn-crushed', '— дроблёная'),
+        ]),
+        parent_only('rye', 'Рожь'),
+        parent_only('oat', 'Овёс'),
+        parent_with_subs('triticale', 'Тритикале', [
+            ('triticale-feed', '— кормовое'),
+        ]),
+        parent_only('buckwheat', 'Гречиха'),
+        parent_with_subs('pea', 'Горох', [
+            ('pea-feed', '— кормовой'),
+            ('pea-food-green', '— продовольственный зелёный'),
+        ]),
+        parent_with_subs('soy', 'Соя', [
+            ('soy-food', '— продовольственная'),
+        ]),
+        parent_only('lupin', 'Люпин'),
+        parent_only('vetch', 'Вика'),
+        parent_with_subs('chickpea', 'Нут', [
+            ('chickpea-white', '— белый'),
+            ('chickpea-red', '— красный'),
+        ]),
+        parent_with_subs('lentil', 'Чечевица', [
+            ('lentil-green', '— зелёная'),
+            ('lentil-red', '— красная'),
+        ]),
+        parent_only('sunflower', 'Подсолнечник'),
+        parent_only('rapeseed', 'Рапс'),
+        parent_with_subs('mustard', 'Горчица', [
+            ('mustard-seeds', '— семена'),
+        ]),
+        parent_with_subs('coriander', 'Кориандр', [
+            ('coriander-fruits', '— плоды'),
+        ]),
+        parent_with_subs('flax', 'Лён масличный', [
+            ('flax-oil', '— семена'),
+        ]),
+        parent_with_subs('camelina', 'Рыжик', [
+            ('camelina-process', '— для переработки'),
+        ]),
     ])
 
 
@@ -1093,6 +1114,14 @@ def build_catalog():
           <h4>Расстояние</h4>
           <div class="filter-range">
             <input type="number" placeholder="до вас, км" id="distMax" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>НДС</h4>
+          <div class="filter-checks">
+            <label class="filter-check"><input type="checkbox" data-filter="vat" value="with"><span>с НДС</span><span class="count">0</span></label>
+            <label class="filter-check"><input type="checkbox" data-filter="vat" value="without"><span>без НДС</span><span class="count">0</span></label>
           </div>
         </div>
 
@@ -1314,11 +1343,11 @@ def build_sale():
     <!-- Поиск по заявкам — стиль как на главной/каталоге -->
     <form class="hero-search" id="saleHeroSearch" autocomplete="off">
       <label class="field" for="saleQ">
-        <span class="k">Какая культура</span>
+        <span class="k">Что ищете</span>
         <input id="saleQ" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
       </label>
       <label class="field select-field">
-        <span class="k">Объём заявки</span>
+        <span class="k">Объём партии</span>
         <select name="volume" id="saleVolume">
           <option value="">любой</option>
           <option value="20">от 20 т</option>
@@ -1397,6 +1426,14 @@ def build_sale():
           <h4>Минимальный объём</h4>
           <div class="filter-range">
             <input type="number" placeholder="от тонн" id="volumeMin" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4>НДС</h4>
+          <div class="filter-checks">
+            <label class="filter-check"><input type="checkbox" data-filter="vat" value="with"><span>с НДС</span><span class="count">0</span></label>
+            <label class="filter-check"><input type="checkbox" data-filter="vat" value="without"><span>без НДС</span><span class="count">0</span></label>
           </div>
         </div>
 

@@ -48,12 +48,13 @@
         # Content Security Policy — главная защита от XSS
         # Разрешаем:
         #  - default-src 'self' — только свои ресурсы
-        #  - script-src 'self' + jsdelivr (для Supabase SDK) + 'unsafe-inline' (нужно для inline-handlers)
+        #  - script-src 'self' + jsdelivr (для Supabase SDK) + 'unsafe-inline' (нужно для inline-handlers) + kaspersky-labs.com (корпоративный AV инжектит main.js)
+        #  - script-src-elem дублирует script-src — Chromium 119+ требует явное определение, иначе fallback может зафильтровать inline-handlers и AV-скрипты
         #  - style-src 'self' + Google Fonts + 'unsafe-inline' (нужно для динамических стилей)
         #  - img-src — свои + русский урожай logo + data: для inline SVG
-        #  - connect-src — Supabase API + свой домен
+        #  - connect-src — Supabase API + свой домен + jsdelivr (sourcemaps) + kaspersky-labs (телеметрия AV)
         #  - frame-ancestors 'self' — двойная защита от clickjacking
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://russian-harvest.ru https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.kaspersky-labs.com; script-src-elem 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.kaspersky-labs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://russian-harvest.ru https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net https://*.kaspersky-labs.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
         # Скрыть версию сервера
         -Server
