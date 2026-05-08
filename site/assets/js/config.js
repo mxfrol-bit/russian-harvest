@@ -31,11 +31,25 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.6.6',
+  VERSION: '2.6.7',
   BUILD_DATE: '2026-05-08',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.6.7',
+      date: '2026-05-08',
+      summary: 'КРИТ: правки HTML теперь идут через build.py (раньше стирались деплоем)',
+      changes: [
+        '🚨 КОРЕНЬ ПРОБЛЕМЫ: site/*.html в .gitignore и .dockerignore — Railway регенерирует их через scripts/build.py при каждом деплое. Все мои правки в site/*.html (hero-search, фотофоны, расширенные культуры) стирались до того как пользователь их видел. Теперь все HTML-правки внесены В build.py — они переживают деплой.',
+        '🔍 Hero-форма поиска на /catalog.html и /sale.html — наконец-то реально появится после деплоя. На /index.html форма уже была в build_index. Поля: «Что ищете / Объём партии», 5 чипов «Часто ищут».',
+        '🌾 Фотофоны hero: data-bg="field" / "harvest" / "company" добавлены в build_catalog / build_sale / build_about. Картинки лежат в site/assets/img/hero/ (16 файлов webp+jpg, ~1MB), CSS .page-hero[data-bg=...] подставляет правильную картинку с overlay.',
+        '🌱 19 культур во всех фильтрах: добавлен общий helper crop_filter_tree() в build.py, который генерит полное дерево культур из БД (Тритикале, Люпин, Вика, Нут, Чечевица, Горчица, Кориандр, Лён, Рыжик + все подразделы). build_catalog и build_sale теперь используют один источник.',
+        '🔘 Чипы сверху расширены до 11 культур (+ Соя, Горох, Гречиха, Рожь) на /catalog.html и /sale.html.',
+        '🎨 /about.html: target-card переверстан компактнее — иконка inline с заголовком слева, кнопка снизу через margin-top:auto. Padding уменьшен с 36 до 28px. Добавлен hover-эффект. Блок «Как это работает» переделан в full-width: eyebrow + h2 + lead сверху, 4 шага в одну строку (steps-grid-4). На мобиле 2x2, на узких — 1.',
+        '📊 Hero-stats блок (450+/9/3ч/24/7) восстановлен в hero на /about.html.',
+      ]
+    },
     {
       version: '2.6.6',
       date: '2026-05-08',

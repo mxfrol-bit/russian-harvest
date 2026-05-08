@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/main.css?v=1778176047">
+<link rel="stylesheet" href="/assets/css/main.css?v=1778227328">
 </head>
 <body>
 
@@ -110,16 +110,24 @@
 
   <div class="about-targets">
     <div class="target-card">
-      <div class="ic-big"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l2-4h6l2 4h5v6H2zM5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div>
-      <h4>Для фермеров и агрохозяйств</h4>
-      <p>Которые хотят продать урожай по справедливой цене</p>
-      <a class="btn btn-primary" href="/sale.html" style="align-self:flex-start">Разместить товар <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+      <div class="target-card-head">
+        <div class="ic-big"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l2-4h6l2 4h5v6H2zM5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div>
+        <div>
+          <h4>Для фермеров и агрохозяйств</h4>
+          <p>Которые хотят продать урожай по справедливой цене</p>
+        </div>
+      </div>
+      <a class="btn btn-primary" href="/sale.html">Разместить товар <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
     </div>
     <div class="target-card">
-      <div class="ic-big"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></div>
-      <h4>Для покупателей</h4>
-      <p>Которые ищут надежных поставщиков без длинных цепочек поставок</p>
-      <a class="btn btn-primary" href="/catalog.html" style="align-self:flex-start">Найти поставщика <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
+      <div class="target-card-head">
+        <div class="ic-big"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16l-1.5 11H5.5z"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></div>
+        <div>
+          <h4>Для покупателей</h4>
+          <p>Которые ищут надёжных поставщиков без длинных цепочек поставок</p>
+        </div>
+      </div>
+      <a class="btn btn-primary" href="/catalog.html">Найти поставщика <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 10h12M11 5l5 5-5 5"/></svg></a>
     </div>
   </div>
 </section>
@@ -152,11 +160,13 @@
 </section>
 
 <section class="section" style="padding-top:0">
-  <div class="how-grid">
-    <div>
+  <div class="how-section">
+    <div class="how-section-head">
       <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 1l2.4 6.1 6.6.5-5 4.4 1.5 6.4L10 15l-5.5 3.4L6 12 1 7.6l6.6-.5z"/></svg> Как это работает</span>
+      <h2 class="h2">Четыре шага от объявления до сделки</h2>
+      <p class="section-lead">Платформа помогает на каждом этапе: от размещения объявления до завершения сделки, обеспечивая прозрачность и безопасность для всех участников.</p>
     </div>
-    <div class="steps-grid">
+    <div class="steps-grid steps-grid-4">
       <div class="step">
         <div class="ic-wrap">1</div>
         <h4>Размещение товара</h4>
@@ -178,7 +188,6 @@
         <p>Платформа сопровождает процесс до получения оплаты или отгрузки</p>
       </div>
     </div>
-    <p class="section-lead">Платформа помогает на каждом этапе: от размещения объявления до завершения сделки, обеспечивая прозрачность и безопасность для всех участников.</p>
   </div>
 </section>
 
@@ -268,7 +277,7 @@
 <div class="so" id="so">
   <div class="so-in">
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
-    <input type="text" id="soInput" name="rh-search" placeholder="Поиск по сайту: культуры, регионы, поставщики…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    <input type="text" id="soInput" placeholder="Поиск по сайту: культуры, регионы, поставщики…" autocomplete="off" />
     <span class="esc">Esc</span>
   </div>
   <div class="so-body">
@@ -455,11 +464,11 @@
   </div>
 </div>
 
-<script src="/assets/js/config.js?v=1778176047"></script>
-<script src="/assets/js/cities.js?v=1778176047"></script>
-<script src="/assets/js/api.js?v=1778176047"></script>
-<script src="/assets/js/main.js?v=1778176047"></script>
-<script src="/assets/js/admin.js?v=1778176047"></script>
-<script src="/assets/js/tour.js?v=1778176047"></script>
+<script src="/assets/js/config.js?v=1778227328"></script>
+<script src="/assets/js/cities.js?v=1778227328"></script>
+<script src="/assets/js/api.js?v=1778227328"></script>
+<script src="/assets/js/main.js?v=1778227328"></script>
+<script src="/assets/js/admin.js?v=1778227328"></script>
+<script src="/assets/js/tour.js?v=1778227328"></script>
 </body>
 </html>

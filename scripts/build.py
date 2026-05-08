@@ -912,6 +912,72 @@ def build_index():
     return page('Главная', body, active='')
 
 
+def crop_filter_tree():
+    """Полное дерево культур для фильтра sidebar — общее для catalog и sale.
+
+    19 родителей (всё что есть в БД crops). Подразделы под parent через
+    отступ 18px (padding-left). Подкатегории-checkbox ставят value=crop_id
+    (например 'wheat-3'), parent — value=parent_id ('wheat').
+    """
+    def row(key, label):
+        return f'<label class="filter-check"><input type="checkbox" data-filter="crop" value="{key}"><span>{label}</span><span class="count">0</span></label>'
+
+    def sub(items):
+        inner = '\n              '.join(row(k, l) for k, l in items)
+        return f'<div style="padding-left:18px">\n              {inner}\n            </div>'
+
+    return '\n            '.join([
+        row('wheat', 'Пшеница'),
+        sub([('wheat-3', '— 3 класс'), ('wheat-4', '— 4 класс'),
+             ('wheat-5', '— 5 класс'), ('wheat-feed', '— кормовая')]),
+        row('barley', 'Ячмень'),
+        sub([('barley-feed', '— кормовой'), ('barley-food', '— продовольственный'),
+             ('barley-malt', '— пивоваренный')]),
+        row('corn', 'Кукуруза'),
+        sub([('corn-whole', '— целая'), ('corn-crushed', '— дроблёная'),
+             ('corn-feed', '— фуражная'), ('corn-silage', '— силосная'),
+             ('corn-popcorn', '— для попкорна')]),
+        row('rye', 'Рожь'),
+        sub([('rye-food', '— продовольственная'), ('rye-feed', '— кормовая')]),
+        row('oat', 'Овёс'),
+        sub([('oat-food', '— продовольственный'), ('oat-feed', '— кормовой'),
+             ('oat-naked', '— голозёрный'), ('oat-grits', '— крупяной')]),
+        row('triticale', 'Тритикале'),
+        sub([('triticale-feed', '— кормовое')]),
+        row('buckwheat', 'Гречиха'),
+        sub([('buckwheat-food', '— продовольственная'),
+             ('buckwheat-tatar', '— татарская')]),
+        row('pea', 'Горох'),
+        sub([('pea-feed', '— кормовой'),
+             ('pea-food-yellow', '— жёлтый продовольственный'),
+             ('pea-food-green', '— зелёный продовольственный'),
+             ('pea-pelyushka', '— пелюшка')]),
+        row('soy', 'Соя'),
+        sub([('soy-food', '— продовольственная'), ('soy-feed', '— кормовая'),
+             ('soy-nongmo', '— non-GMO')]),
+        row('lupin', 'Люпин'),
+        row('vetch', 'Вика'),
+        row('chickpea', 'Нут'),
+        sub([('chickpea-white', '— белый'), ('chickpea-red', '— красный')]),
+        row('lentil', 'Чечевица'),
+        sub([('lentil-green', '— зелёная'), ('lentil-red', '— красная')]),
+        row('sunflower', 'Подсолнечник'),
+        sub([('sunflower-oil', '— масличный'), ('sunflower-conf', '— кондитерский'),
+             ('sunflower-bird', '— для птицы'), ('sunflower-ho', '— высокоолеиновый')]),
+        row('rapeseed', 'Рапс'),
+        sub([('rapeseed-winter', '— озимый'), ('rapeseed-spring', '— яровой'),
+             ('rapeseed-00', '— «00» технический'), ('rapeseed-food', '— пищевой')]),
+        row('mustard', 'Горчица'),
+        sub([('mustard-seeds', '— семена')]),
+        row('coriander', 'Кориандр'),
+        sub([('coriander-fruits', '— плоды')]),
+        row('flax', 'Лён масличный'),
+        sub([('flax-oil', '— семена')]),
+        row('camelina', 'Рыжик'),
+        sub([('camelina-process', '— для переработки')]),
+    ])
+
+
 def build_catalog():
     # Static fallback: no demo cards. Real offers loaded via syncCatalog() (admin.js).
     cards_html = '''<div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)">
@@ -931,7 +997,7 @@ def build_catalog():
     def region_row(name, n):
         return f'<label class="filter-check"><input type="checkbox" data-filter="region" value="{name}"><span>{name}</span><span class="count">{n}</span></label>'
 
-    body = f'''<section class="page-hero">
+    body = f'''<section class="page-hero" data-bg="field">
   <div class="page-hero-inner">
     <div class="breadcrumb">
       <a href="/index.html">Главная</a>
@@ -940,6 +1006,38 @@ def build_catalog():
     </div>
     <h1>Купить урожай напрямую у фермеров — без посредников и переплат</h1>
     <p>Прямые сделки между фермерами и покупателями. Безопасная оплата через платформу.</p>
+
+    <!-- Поиск по офферам — стиль как на главной -->
+    <form class="hero-search" id="catalogHeroSearch" autocomplete="off">
+      <label class="field" for="catalogQ">
+        <span class="k">Что ищете</span>
+        <input id="catalogQ" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
+      </label>
+      <label class="field select-field">
+        <span class="k">Объём партии</span>
+        <select name="volume" id="catalogVolume">
+          <option value="">любой</option>
+          <option value="20">от 20 т</option>
+          <option value="50">от 50 т</option>
+          <option value="100">от 100 т</option>
+          <option value="200">от 200 т</option>
+          <option value="500">от 500 т</option>
+        </select>
+      </label>
+      <button class="hero-search-submit" type="submit">
+        {icon('search')}
+        Найти
+      </button>
+    </form>
+
+    <div class="popular">
+      <span class="label">Часто ищут:</span>
+      <button class="pq" type="button">пшеница 3 класс</button>
+      <button class="pq" type="button">кукуруза с НДС</button>
+      <button class="pq" type="button">рапс с доставкой</button>
+      <button class="pq" type="button">подсолнечник опт</button>
+      <button class="pq" type="button">ячмень кормовой</button>
+    </div>
   </div>
 </section>
 
@@ -954,6 +1052,10 @@ def build_catalog():
     <button class="c-chip" data-chip-crop="sunflower">Подсолнечник <span style="opacity:.5">{crop_counts.get('sunflower',0)}</span></button>
     <button class="c-chip" data-chip-crop="rapeseed">Рапс <span style="opacity:.5">{crop_counts.get('rapeseed',0)}</span></button>
     <button class="c-chip" data-chip-crop="oat">Овёс <span style="opacity:.5">{crop_counts.get('oat',0)}</span></button>
+    <button class="c-chip" data-chip-crop="soy">Соя <span style="opacity:.5">{crop_counts.get('soy',0)}</span></button>
+    <button class="c-chip" data-chip-crop="pea">Горох <span style="opacity:.5">{crop_counts.get('pea',0)}</span></button>
+    <button class="c-chip" data-chip-crop="buckwheat">Гречиха <span style="opacity:.5">{crop_counts.get('buckwheat',0)}</span></button>
+    <button class="c-chip" data-chip-crop="rye">Рожь <span style="opacity:.5">{crop_counts.get('rye',0)}</span></button>
   </div>
 
   <!-- Mobile filter trigger -->
@@ -975,25 +1077,7 @@ def build_catalog():
         <div class="filter-group">
           <h4>Культура</h4>
           <div class="filter-checks">
-            {crop_row('wheat', 'Пшеница')}
-            <div style="padding-left:18px">
-              {crop_row('wheat-3', '— 3 класс')}
-              {crop_row('wheat-4', '— 4 класс')}
-              {crop_row('wheat-5', '— 5 класс')}
-              {crop_row('wheat-feed', '— кормовая')}
-            </div>
-            {crop_row('barley', 'Ячмень')}
-            <div style="padding-left:18px">
-              {crop_row('barley-feed', '— кормовой')}
-              {crop_row('barley-malt', '— пивоваренный')}
-            </div>
-            {crop_row('corn', 'Кукуруза')}
-            {crop_row('sunflower', 'Подсолнечник')}
-            {crop_row('rapeseed', 'Рапс')}
-            {crop_row('oat', 'Овёс')}
-            {crop_row('soy', 'Соя')}
-            {crop_row('pea', 'Горох')}
-            {crop_row('buckwheat', 'Гречиха')}
+            {crop_filter_tree()}
           </div>
         </div>
 
@@ -1217,7 +1301,7 @@ def build_sale():
     def region_row(name, n):
         return f'<label class="filter-check"><input type="checkbox" data-filter="region" value="{name}"><span>{name}</span><span class="count">{n}</span></label>'
 
-    body = f'''<section class="page-hero">
+    body = f'''<section class="page-hero" data-bg="harvest">
   <div class="page-hero-inner">
     <div class="breadcrumb">
       <a href="/index.html">Главная</a>
@@ -1226,6 +1310,38 @@ def build_sale():
     </div>
     <h1>Продавайте урожай напрямую покупателям — быстро, выгодно и надёжно</h1>
     <p>Получайте заявки от проверенных компаний и заключайте выгодные сделки.</p>
+
+    <!-- Поиск по заявкам — стиль как на главной/каталоге -->
+    <form class="hero-search" id="saleHeroSearch" autocomplete="off">
+      <label class="field" for="saleQ">
+        <span class="k">Какая культура</span>
+        <input id="saleQ" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
+      </label>
+      <label class="field select-field">
+        <span class="k">Объём заявки</span>
+        <select name="volume" id="saleVolume">
+          <option value="">любой</option>
+          <option value="20">от 20 т</option>
+          <option value="50">от 50 т</option>
+          <option value="100">от 100 т</option>
+          <option value="200">от 200 т</option>
+          <option value="500">от 500 т</option>
+        </select>
+      </label>
+      <button class="hero-search-submit" type="submit">
+        {icon('search')}
+        Найти
+      </button>
+    </form>
+
+    <div class="popular">
+      <span class="label">Часто ищут:</span>
+      <button class="pq" type="button">пшеница 3 класс</button>
+      <button class="pq" type="button">кукуруза с НДС</button>
+      <button class="pq" type="button">рапс с доставкой</button>
+      <button class="pq" type="button">подсолнечник опт</button>
+      <button class="pq" type="button">ячмень кормовой</button>
+    </div>
   </div>
 </section>
 
@@ -1240,6 +1356,10 @@ def build_sale():
     <button class="c-chip" data-chip-crop="sunflower">Подсолнечник <span style="opacity:.5">{crop_counts.get('sunflower',0)}</span></button>
     <button class="c-chip" data-chip-crop="rapeseed">Рапс <span style="opacity:.5">{crop_counts.get('rapeseed',0)}</span></button>
     <button class="c-chip" data-chip-crop="oat">Овёс <span style="opacity:.5">{crop_counts.get('oat',0)}</span></button>
+    <button class="c-chip" data-chip-crop="soy">Соя <span style="opacity:.5">{crop_counts.get('soy',0)}</span></button>
+    <button class="c-chip" data-chip-crop="pea">Горох <span style="opacity:.5">{crop_counts.get('pea',0)}</span></button>
+    <button class="c-chip" data-chip-crop="buckwheat">Гречиха <span style="opacity:.5">{crop_counts.get('buckwheat',0)}</span></button>
+    <button class="c-chip" data-chip-crop="rye">Рожь <span style="opacity:.5">{crop_counts.get('rye',0)}</span></button>
   </div>
 
   <!-- Mobile filter trigger -->
@@ -1261,25 +1381,7 @@ def build_sale():
         <div class="filter-group">
           <h4>Культура</h4>
           <div class="filter-checks">
-            {crop_row('wheat', 'Пшеница')}
-            <div style="padding-left:18px">
-              {crop_row('wheat-3', '— 3 класс')}
-              {crop_row('wheat-4', '— 4 класс')}
-              {crop_row('wheat-5', '— 5 класс')}
-              {crop_row('wheat-feed', '— кормовая')}
-            </div>
-            {crop_row('barley', 'Ячмень')}
-            <div style="padding-left:18px">
-              {crop_row('barley-feed', '— кормовой')}
-              {crop_row('barley-malt', '— пивоваренный')}
-            </div>
-            {crop_row('corn', 'Кукуруза')}
-            {crop_row('sunflower', 'Подсолнечник')}
-            {crop_row('rapeseed', 'Рапс')}
-            {crop_row('oat', 'Овёс')}
-            {crop_row('soy', 'Соя')}
-            {crop_row('pea', 'Горох')}
-            {crop_row('buckwheat', 'Гречиха')}
+            {crop_filter_tree()}
           </div>
         </div>
 
@@ -1410,7 +1512,7 @@ def build_sale():
 
 
 def build_about():
-    body = f'''<section class="page-hero">
+    body = f'''<section class="page-hero" data-bg="company">
   <div class="page-hero-inner">
     <div class="breadcrumb">
       <a href="/index.html">Главная</a>
@@ -1420,6 +1522,14 @@ def build_about():
     <h1>О компании</h1>
     <p>«Русский Урожай» — это онлайн-платформа, которая помогает производителям сельхозпродукции и покупателям заключать сделки напрямую, без посредников и переплат.</p>
     <p>Мы делаем рынок прозрачным, а взаимодействие между сторонами — быстрым, удобным и безопасным.</p>
+
+    <!-- Стат-блок прямо в hero -->
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">450+</div><div class="lbl">проверенных поставщиков</div></div>
+      <div class="hero-stat"><div class="num">9</div><div class="lbl">основных культур</div></div>
+      <div class="hero-stat"><div class="num">3 ч</div><div class="lbl">средний отклик</div></div>
+      <div class="hero-stat"><div class="num">24/7</div><div class="lbl">приём заявок</div></div>
+    </div>
   </div>
 </section>
 
@@ -1428,26 +1538,63 @@ def build_about():
 
   <div class="about-targets">
     <div class="target-card">
-      <div class="ic-big">{icon('tractor')}</div>
-      <h4>Для фермеров и агрохозяйств</h4>
-      <p>Которые хотят продать урожай по справедливой цене</p>
-      <a class="btn btn-primary" href="/sale.html" style="align-self:flex-start">Разместить товар {icon('arrow-sm')}</a>
+      <div class="target-card-head">
+        <div class="ic-big">{icon('tractor')}</div>
+        <div>
+          <h4>Для фермеров и агрохозяйств</h4>
+          <p>Которые хотят продать урожай по справедливой цене</p>
+        </div>
+      </div>
+      <a class="btn btn-primary" href="/sale.html">Разместить товар {icon('arrow-sm')}</a>
     </div>
     <div class="target-card">
-      <div class="ic-big">{icon('buyer')}</div>
-      <h4>Для покупателей</h4>
-      <p>Которые ищут надежных поставщиков без длинных цепочек поставок</p>
-      <a class="btn btn-primary" href="/catalog.html" style="align-self:flex-start">Найти поставщика {icon('arrow-sm')}</a>
+      <div class="target-card-head">
+        <div class="ic-big">{icon('buyer')}</div>
+        <div>
+          <h4>Для покупателей</h4>
+          <p>Которые ищут надёжных поставщиков без длинных цепочек поставок</p>
+        </div>
+      </div>
+      <a class="btn btn-primary" href="/catalog.html">Найти поставщика {icon('arrow-sm')}</a>
     </div>
   </div>
 </section>
 
 <section class="section" style="padding-top:0">
-  <div class="how-grid">
-    <div>
-      <span class="eyebrow">{icon('sparkles')} Как это работает</span>
+  <span class="eyebrow">{icon('sparkles')} Наши принципы</span>
+
+  <div class="principle-grid">
+    <div class="principle">
+      <div class="principle-num">01</div>
+      <h4>Прозрачность</h4>
+      <p>Каждое предложение содержит реальные параметры качества, объём, регион. Никаких скрытых наценок и серых сделок.</p>
     </div>
-    <div class="steps-grid">
+    <div class="principle">
+      <div class="principle-num">02</div>
+      <h4>Прямой контакт</h4>
+      <p>Покупатель и продавец работают друг с другом напрямую. Платформа берёт на себя только сопровождение сделки.</p>
+    </div>
+    <div class="principle">
+      <div class="principle-num">03</div>
+      <h4>Проверенные участники</h4>
+      <p>Все поставщики проходят базовую верификацию по ИНН, ОГРН и реквизитам. На карточках видно сколько сделок уже закрыто.</p>
+    </div>
+    <div class="principle">
+      <div class="principle-num">04</div>
+      <h4>Локальный фокус</h4>
+      <p>Мы стартуем с Нижегородской области и ПФО — региона, где знаем каждое хозяйство и где сильна логистика по прямым маршрутам.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="how-section">
+    <div class="how-section-head">
+      <span class="eyebrow">{icon('sparkles')} Как это работает</span>
+      <h2 class="h2">Четыре шага от объявления до сделки</h2>
+      <p class="section-lead">Платформа помогает на каждом этапе: от размещения объявления до завершения сделки, обеспечивая прозрачность и безопасность для всех участников.</p>
+    </div>
+    <div class="steps-grid steps-grid-4">
       <div class="step">
         <div class="ic-wrap">1</div>
         <h4>Размещение товара</h4>
@@ -1469,7 +1616,6 @@ def build_about():
         <p>Платформа сопровождает процесс до получения оплаты или отгрузки</p>
       </div>
     </div>
-    <p class="section-lead">Платформа помогает на каждом этапе: от размещения объявления до завершения сделки, обеспечивая прозрачность и безопасность для всех участников.</p>
   </div>
 </section>
 
