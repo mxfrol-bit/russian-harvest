@@ -319,7 +319,7 @@
      *  Used for distance calculation in listings. */
     async getUserCoords() {
       try {
-        const user = await this.getCurrentUser();
+        const user = await this.currentUser();
         if (user?.city_lat && user?.city_lng) {
           return { lat: parseFloat(user.city_lat), lng: parseFloat(user.city_lng), source: 'profile' };
         }

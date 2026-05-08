@@ -992,10 +992,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 6. Если юзер залогинен — асинхронно обновим его профиль (чтобы при перезагрузке город остался)
-    if (window.RH_API && window.RH_API.getCurrentUser) {
+    if (window.RH_API && window.RH_API.currentUser) {
       (async () => {
         try {
-          const u = await window.RH_API.getCurrentUser();
+          const u = await window.RH_API.currentUser();
           if (u && u.id && (u.city !== city.name)) {
             await window.RH_API.updateProfile?.({ city: city.name, region: city.region, city_lat: city.lat, city_lng: city.lng }).catch(() => {});
           }

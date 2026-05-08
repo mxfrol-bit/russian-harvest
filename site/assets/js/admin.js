@@ -2485,6 +2485,57 @@
       // (уже работает через <a href>, но запасной handler если кликнули по карточке без id)
     });
 
+    // ===== FALLBACK HANDLER: лупа в шапке (site search) =====
+    // Основной handler сидит в main.js (closure над soBtn). Если main.js
+    // загрузился раньше DOM-элементов (cached/legacy) или упал на промежуточной
+    // ошибке — лупа перестаёт открывать overlay. Этот делегированный handler
+    // работает даже если main.js не успел навеситься: ловит клик по
+    // #siteSearchBtn (или любому потомку) и переключает .so / .so-backdrop.
+    document.addEventListener('click', e => {
+      const sBtn = e.target.closest('#siteSearchBtn');
+      if (!sBtn) return;
+      const so = document.getElementById('so');
+      const soBd = document.getElementById('soBackdrop');
+      if (!so || !soBd) return;
+      // Если main.js уже навесил handler — overlay уже откроется им; делегат
+      // только зеркалит поведение, повторное добавление .on безопасно.
+      if (!so.classList.contains('on')) {
+        so.classList.add('on');
+        soBd.classList.add('on');
+        setTimeout(() => document.getElementById('soInput')?.focus(), 50);
+      }
+    });
+    // Закрытие overlay по клику на backdrop / Esc — делегат-зеркало.
+    document.addEventListener('click', e => {
+      if (e.target && e.target.id === 'soBackdrop') {
+        const so = document.getElementById('so');
+        const soBd = document.getElementById('soBackdrop');
+        if (so) so.classList.remove('on');
+        if (soBd) soBd.classList.remove('on');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const so = document.getElementById('so');
+        if (so && so.classList.contains('on')) {
+          so.classList.remove('on');
+          const bd = document.getElementById('soBackdrop');
+          if (bd) bd.classList.remove('on');
+        }
+      }
+      // ⌘K / Ctrl+K — fallback toggle
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        const so = document.getElementById('so');
+        const soBd = document.getElementById('soBackdrop');
+        if (!so || !soBd) return;
+        const open = so.classList.contains('on');
+        so.classList.toggle('on', !open);
+        soBd.classList.toggle('on', !open);
+        if (!open) setTimeout(() => document.getElementById('soInput')?.focus(), 50);
+      }
+    });
+
     // ===== GLOBAL MODAL CLOSE HANDLER =====
     // Работает ТОЛЬКО для динамически созданных модалок (admin-панель, edit-форма и т.д.)
     // Статические модалки login/onboarding/cityPicker имеют свои data-close обработчики (в main.js)
@@ -2673,7 +2724,7 @@
 
   async function handlePurchase(btn) {
     const F = window.RH_CONFIG?.FEATURES || {};
-    const user = await api.getCurrentUser().catch(() => null);
+    const user = await api.currentUser().catch(() => null);
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) {
@@ -2796,7 +2847,7 @@
 
   async function handleProposal(btn) {
     const F = window.RH_CONFIG?.FEATURES || {};
-    const user = await api.getCurrentUser().catch(() => null);
+    const user = await api.currentUser().catch(() => null);
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) { showToast('Не удалось определить оффер. Откройте страницу товара.'); return; }
@@ -2876,7 +2927,7 @@
 
   async function handleRespond(btn) {
     const F = window.RH_CONFIG?.FEATURES || {};
-    const user = await api.getCurrentUser().catch(() => null);
+    const user = await api.currentUser().catch(() => null);
 
     const requestId = btn.dataset.requestId;
     let request = null;
@@ -4173,7 +4224,7 @@
     window.__rh_user_city = city.name || 'Нижний Новгород';
     window.__rh_offers_cache = null;  // важно — чтобы fetchOffersDirect пересчитал distance
     window.__rh_requests_cache = null;
-    if (window.RH_API && window.RH_API.getCurrentUser) {
+    if (window.RH_API && window.RH_API.currentUser) {
       // Если у пользователя нет своих координат — fetchOffersDirect возьмёт из __rh_user_coords
       window.__rh_user_coords = (city.lat && city.lng) ? { lat: city.lat, lng: city.lng } : null;
     }

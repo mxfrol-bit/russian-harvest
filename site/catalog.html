@@ -146,6 +146,10 @@
     <button class="c-chip" data-chip-crop="sunflower">Подсолнечник <span style="opacity:.5">0</span></button>
     <button class="c-chip" data-chip-crop="rapeseed">Рапс <span style="opacity:.5">0</span></button>
     <button class="c-chip" data-chip-crop="oat">Овёс <span style="opacity:.5">0</span></button>
+    <button class="c-chip" data-chip-crop="soy">Соя <span style="opacity:.5">0</span></button>
+    <button class="c-chip" data-chip-crop="pea">Горох <span style="opacity:.5">0</span></button>
+    <button class="c-chip" data-chip-crop="buckwheat">Гречиха <span style="opacity:.5">0</span></button>
+    <button class="c-chip" data-chip-crop="rye">Рожь <span style="opacity:.5">0</span></button>
   </div>
 
   <!-- Mobile filter trigger -->
@@ -281,6 +285,81 @@
             <div class="filter-subitems" data-subitems="rye" hidden>
               <label class="filter-check"><input type="checkbox" data-filter="crop" value="rye-food"><span>— продовольственная</span><span class="count">0</span></label>
               <label class="filter-check"><input type="checkbox" data-filter="crop" value="rye-feed"><span>— кормовая</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Тритикале -->
+            <div class="crop-row" data-parent="triticale">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="triticale"><span>Тритикале</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="triticale" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="triticale" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="triticale-feed"><span>— кормовое</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Люпин -->
+            <div class="crop-row" data-parent="lupin">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="lupin"><span>Люпин</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Вика -->
+            <div class="crop-row" data-parent="vetch">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="vetch"><span>Вика</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Нут -->
+            <div class="crop-row" data-parent="chickpea">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="chickpea"><span>Нут</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="chickpea" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="chickpea" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="chickpea-white"><span>— белый</span><span class="count">0</span></label>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="chickpea-red"><span>— красный</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Чечевица -->
+            <div class="crop-row" data-parent="lentil">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="lentil"><span>Чечевица</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="lentil" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="lentil" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="lentil-green"><span>— зелёная</span><span class="count">0</span></label>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="lentil-red"><span>— красная</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Горчица -->
+            <div class="crop-row" data-parent="mustard">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="mustard"><span>Горчица</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="mustard" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="mustard" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="mustard-seeds"><span>— семена</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Кориандр -->
+            <div class="crop-row" data-parent="coriander">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="coriander"><span>Кориандр</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="coriander" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="coriander" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="coriander-fruits"><span>— плоды</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Лён масличный -->
+            <div class="crop-row" data-parent="flax">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="flax"><span>Лён масличный</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="flax" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="flax" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="flax-oil"><span>— семена</span><span class="count">0</span></label>
+            </div>
+
+            <!-- Рыжик -->
+            <div class="crop-row" data-parent="camelina">
+              <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="camelina"><span>Рыжик</span><span class="count">0</span></label>
+              <button class="crop-toggle" type="button" data-toggle="camelina" aria-expanded="false">▾</button>
+            </div>
+            <div class="filter-subitems" data-subitems="camelina" hidden>
+              <label class="filter-check"><input type="checkbox" data-filter="crop" value="camelina-process"><span>— для переработки</span><span class="count">0</span></label>
             </div>
 
           </div>
