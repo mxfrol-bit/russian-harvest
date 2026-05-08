@@ -3482,16 +3482,25 @@
     const cfg = window.RH_CONFIG || {};
     if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL/KEY не сконфигурированы');
 
-    // Координаты — приоритет: явно сменённый город (__rh_user_coords) → профиль → НН
+    // Координаты — единый источник истины: localStorage > __rh_user_coords > профиль > НН
     let lat = 56.3269, lng = 44.0075;
-    if (window.__rh_user_coords?.lat && window.__rh_user_coords?.lng) {
+    try {
+      // Приоритет 1: localStorage (читается синхронно, без race condition)
+      if (typeof window.RH_getCity === 'function') {
+        const c = window.RH_getCity();
+        if (c?.lat && c?.lng) { lat = parseFloat(c.lat); lng = parseFloat(c.lng); }
+      } else {
+        const raw = localStorage.getItem('rh_city');
+        if (raw) {
+          const c = JSON.parse(raw);
+          if (c?.lat && c?.lng) { lat = parseFloat(c.lat); lng = parseFloat(c.lng); }
+        }
+      }
+    } catch(_) {}
+    // Приоритет 2: глобальные __rh_user_coords (для случая если localStorage недоступен)
+    if ((lat === 56.3269 && lng === 44.0075) && window.__rh_user_coords?.lat && window.__rh_user_coords?.lng) {
       lat = parseFloat(window.__rh_user_coords.lat);
       lng = parseFloat(window.__rh_user_coords.lng);
-    } else {
-      try {
-        const u = await api.getCurrentUser();
-        if (u?.city_lat && u?.city_lng) { lat = parseFloat(u.city_lat); lng = parseFloat(u.city_lng); }
-      } catch(_) {}
     }
 
     const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/rpc/offers_with_distance`, {
@@ -3527,13 +3536,15 @@
 
     diagLog('start', { url: location.href, debug: DEBUG });
     try {
-      // Cache user's city for "from → to" distance label in cards
-      if (!window.__rh_user_city) {
-        try {
-          const u = await api.getCurrentUser();
-          window.__rh_user_city = u?.city || 'Нижний Новгород';
-        } catch(_) { window.__rh_user_city = 'Нижний Новгород'; }
-      }
+      // Читаем актуальный город из localStorage (через RH_getCity если доступен)
+      // НЕ перезаписываем профилем БД — единый источник истины это localStorage
+      try {
+        const c = (typeof window.RH_getCity === 'function')
+          ? window.RH_getCity()
+          : JSON.parse(localStorage.getItem('rh_city') || 'null');
+        if (c?.name) window.__rh_user_city = c.name;
+      } catch(_) {}
+      if (!window.__rh_user_city) window.__rh_user_city = 'Нижний Новгород';
 
       // Кеш на всю страницу — чтобы syncFocus/syncHomeOffers не дёргали RPC ещё раз
       let offers = window.__rh_offers_cache || null;

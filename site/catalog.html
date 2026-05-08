@@ -94,22 +94,44 @@
     <h1>Купить урожай напрямую у фермеров — без посредников и переплат</h1>
     <p>Прямые сделки между фермерами и покупателями. Безопасная оплата через платформу.</p>
 
-    <!-- Поиск по офферам -->
+    <!-- Поиск по офферам — стиль как на главной -->
     <form class="hero-search" id="catalogHeroSearch" autocomplete="off">
-      <div class="hero-search-field">
-        <label>Что ищете</label>
-        <input type="text" id="catalogQ" placeholder="Например: пшеница 3 класс, рапс, подсолнечник…" />
-      </div>
-      <div class="hero-search-field">
-        <label>Объём, т (от)</label>
-        <input type="number" id="catalogVolume" placeholder="50" min="0" />
-      </div>
-      <div class="hero-search-field">
-        <label>Регион</label>
-        <input type="text" id="catalogRegion" placeholder="Нижегородская область" />
-      </div>
-      <button type="submit" class="hero-search-btn">Найти →</button>
+      <label class="field" for="catalogQ">
+        <span class="k">Что ищете</span>
+        <input id="catalogQ" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
+      </label>
+      <label class="field select-field">
+        <span class="k">Тип заявки</span>
+        <select name="type" id="catalogType">
+          <option value="buy">Купить</option>
+          <option value="sell">Продать</option>
+        </select>
+      </label>
+      <label class="field select-field">
+        <span class="k">Объём партии</span>
+        <select name="volume" id="catalogVolume">
+          <option value="">любой</option>
+          <option value="20">от 20 т</option>
+          <option value="50">от 50 т</option>
+          <option value="100">от 100 т</option>
+          <option value="200">от 200 т</option>
+          <option value="500">от 500 т</option>
+        </select>
+      </label>
+      <button class="hero-search-submit" type="submit">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+        Найти
+      </button>
     </form>
+
+    <div class="popular">
+      <span class="label">Часто ищут:</span>
+      <button class="pq" type="button">пшеница 3 класс</button>
+      <button class="pq" type="button">кукуруза с НДС</button>
+      <button class="pq" type="button">рапс с доставкой</button>
+      <button class="pq" type="button">подсолнечник опт</button>
+      <button class="pq" type="button">ячмень кормовой</button>
+    </div>
   </div>
 </section>
 

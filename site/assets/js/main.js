@@ -79,13 +79,22 @@
 
   // ---------- Catalog/sale chips: handled by per-group handlers below in filterRequests / catalog filters ----------
 
-  // ---------- Popular chips → hero input ----------
+  // ---------- Popular chips → hero input (работает на главной, каталоге, продаже) ----------
   document.querySelectorAll('.pq').forEach(c => {
     c.addEventListener('click', () => {
-      const input = document.getElementById('heroInput');
+      // Найдём input в той же hero-форме
+      const form = c.closest('.page-hero, header')?.querySelector('form.hero-search');
+      const input = form?.querySelector('input[type="text"], input[name="q"]')
+        || document.getElementById('heroInput')
+        || document.getElementById('catalogQ')
+        || document.getElementById('saleQ');
       if (input) {
         input.value = c.textContent;
         input.focus();
+        // Если это форма submit-фильтра (catalog/sale) — отправим автоматически
+        if (form && form.id !== 'heroSearchForm') {
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
       }
     });
   });
@@ -475,20 +484,26 @@
     apply();
   });
 
-  // Hero-search форма на catalog.html: связываем с фильтром state
+  // Hero-search форма на catalog.html — combobox-стиль (Что/Тип/Объём)
   const catHeroForm = document.getElementById('catalogHeroSearch');
   if (catHeroForm) {
-    const qInp   = document.getElementById('catalogQ');
-    const volInp = document.getElementById('catalogVolume');
-    const regInp = document.getElementById('catalogRegion');
     catHeroForm.addEventListener('submit', e => {
       e.preventDefault();
-      state.query = (qInp?.value || '').trim();
-      // Объём от — фильтруем по data-volume (нет такого у offer-карточки),
-      // подменяем на title-search "X т" — простейший fallback
-      // Регион — пишем в search-state (фильтр уже умеет искать по region/title)
-      const reg = (regInp?.value || '').trim();
-      if (reg) state.query = (state.query + ' ' + reg).trim();
+      const q = (document.getElementById('catalogQ')?.value || '').trim();
+      const vol = document.getElementById('catalogVolume')?.value || '';
+      const type = document.getElementById('catalogType')?.value || 'buy';
+      // type=sell → редирект на /sale.html с теми же параметрами
+      if (type === 'sell') {
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (vol) params.set('vol', vol);
+        location.href = '/sale.html' + (params.toString() ? '?' + params.toString() : '');
+        return;
+      }
+      // Иначе — фильтруем in-place в каталоге
+      state.query = q;
+      // Volume от X — пишем в state, apply() будет искать в data-attribute карточки
+      state.volMin = vol ? parseInt(vol) : null;
       apply();
       grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -893,13 +908,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.addEventListener('input', saleSidebarTrigger);
   });
 
-  // Sale hero search form: предотвращаем дефолтную submit (страница не должна перезагружаться)
+  // Sale hero search form: combobox-стиль (Что/Тип/Объём)
   const heroForm = document.getElementById('saleHeroSearch');
   if (heroForm) {
     heroForm.addEventListener('submit', e => {
       e.preventDefault();
+      const q = (document.getElementById('saleQ')?.value || '').trim();
+      const vol = document.getElementById('saleVolume')?.value || '';
+      const type = document.getElementById('saleType')?.value || 'sell';
+      // type=buy → редирект на /catalog.html
+      if (type === 'buy') {
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        if (vol) params.set('vol', vol);
+        location.href = '/catalog.html' + (params.toString() ? '?' + params.toString() : '');
+        return;
+      }
+      // Иначе фильтруем in-place
       filterRequests();
-      // Скроллим к каталогу
       const grid = document.getElementById('reqsGrid');
       if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -919,30 +945,80 @@ document.addEventListener('DOMContentLoaded', () => {
   function getCurrentCity() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c && c.name && c.lat && c.lng) return c;
+      }
     } catch(e){}
     return DEFAULT_CITY;
   }
+
+  // Глобальный getter — admin.js читает отсюда координаты, НЕ полагаясь на race condition
+  window.RH_getCity = getCurrentCity;
+
   function setCurrentCity(city) {
+    // 1. Базовая валидация
+    if (!city || !city.name) return;
+    // Если у города нет координат — пытаемся найти в RH_CITIES по имени
+    if ((!city.lat || !city.lng) && window.RH_CITIES) {
+      const found = window.RH_CITIES.find(c => c.name === city.name);
+      if (found) { city.lat = found.lat; city.lng = found.lng; city.region = city.region || found.region; }
+    }
+    // Если всё ещё нет координат — fallback на НН (чтобы distance не считался от undefined)
+    if (!city.lat || !city.lng) {
+      console.warn('[setCurrentCity] no coords for', city.name, '— fallback to НН');
+      city.lat = 56.3269; city.lng = 44.0075;
+    }
+
+    // 2. Сохраняем в localStorage СИНХРОННО (это первичный источник истины)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(city)); } catch(e){}
-    // Update all region-chip buttons in the DOM
+
+    // 3. Глобальные переменные — для совместимости со старым кодом
+    window.__rh_user_city = city.name;
+    window.__rh_user_coords = { lat: city.lat, lng: city.lng };
+
+    // 4. Обновляем все region-chip в шапке
     document.querySelectorAll('.region-chip').forEach(chip => {
-      const text = chip.childNodes[2]; // after icon and space
-      const allText = chip.textContent;
-      // Rebuild safely
       chip.innerHTML = `<span class="ico"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 18s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="10" cy="8" r="2"/></svg></span> ${city.name} <span class="change">изменить</span>`;
     });
-    // Сохраняем в глобальные переменные чтобы admin.js syncCatalog мог использовать координаты
-    window.__rh_user_city = city.name || 'Нижний Новгород';
-    if (city.lat && city.lng) window.__rh_user_coords = { lat: city.lat, lng: city.lng };
+
+    // 5. Обновляем существующие карточки на странице (маршрут + distance)
+    //    Это работает даже если admin.js не успел перерисовать — для UX мгновенно меняется.
+    document.querySelectorAll('.distance-strip .route').forEach(routeEl => {
+      const card = routeEl.closest('[data-offer], [data-request]');
+      // Найдём «откуда» — это city.from на оффере (data-region attribute или старый текст)
+      const cityFrom = card?.dataset.region || routeEl.textContent.split('→')[0].trim() || '—';
+      routeEl.textContent = `${cityFrom} → ${city.name}`;
+    });
+
+    // 6. Если юзер залогинен — асинхронно обновим его профиль (чтобы при перезагрузке город остался)
+    if (window.RH_API && window.RH_API.getCurrentUser) {
+      (async () => {
+        try {
+          const u = await window.RH_API.getCurrentUser();
+          if (u && u.id && (u.city !== city.name)) {
+            await window.RH_API.updateProfile?.({ city: city.name, region: city.region, city_lat: city.lat, city_lng: city.lng }).catch(() => {});
+          }
+        } catch(_) {}
+      })();
+    }
+
+    // 7. Диспатч события — admin.js слушает чтобы перезагрузить карточки с новыми distance
     window.dispatchEvent(new CustomEvent('rh:city-changed', { detail: city }));
   }
 
-  // Initial setup
+  // Initial setup — выполняем сразу, не дожидаясь DOMContentLoaded
+  // (если DOM ещё не готов — region-chip ещё не существуют, обновим на DOMContentLoaded)
   const current = getCurrentCity();
-  document.addEventListener('DOMContentLoaded', () => {
+  // Уже на этапе парсинга устанавливаем глобальные переменные
+  window.__rh_user_city = current.name;
+  window.__rh_user_coords = { lat: current.lat, lng: current.lng };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setCurrentCity(current));
+  } else {
     setCurrentCity(current);
-  });
+  }
 
   // Handle clicks on region-chip → open city picker
   document.addEventListener('click', e => {
