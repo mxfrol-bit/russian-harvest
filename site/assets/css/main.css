@@ -291,6 +291,50 @@ input,select,textarea{font-family:inherit}
 .hero-ac-item.active{background:var(--emerald-soft); color:var(--emerald-600)}
 .hero-ac-item b{color:var(--emerald-600); font-weight:700}
 
+/* Custom select для «Объём партии» — заменяет native <select> чтобы dropdown
+   имел крупные тапабельные строки (44px+) и кастомную стилизацию. */
+.rh-select-btn{
+  flex:1; min-width:0; margin-top:3px;
+  background:transparent; border:none; outline:none;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-family:inherit; font-size:14.5px; font-weight:500; color:var(--ink);
+  cursor:pointer; padding:0; width:100%;
+}
+.rh-select-btn .rh-select-label{
+  flex:1; text-align:left; min-width:0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.rh-select-btn .rh-select-chev{
+  flex-shrink:0; opacity:.5; font-size:11px; color:var(--slate-500);
+  transition:transform .18s;
+}
+.rh-select-btn[aria-expanded="true"] .rh-select-chev{transform:rotate(180deg)}
+.rh-select-pop{
+  position:absolute; left:0; right:0; top:calc(100% + 4px);
+  background:var(--paper);
+  border-radius:var(--radius-md);
+  box-shadow:0 12px 32px rgba(26,36,16,.18), 0 0 0 1px rgba(0,0,0,.04);
+  padding:4px;
+  z-index:1000;
+  max-height:320px; overflow-y:auto;
+}
+.rh-select-item{
+  padding:13px 14px;            /* крупная тапабельная зона */
+  font-size:15px; font-weight:500;
+  color:var(--ink);
+  border-radius:8px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:background .12s;
+  user-select:none;
+}
+.rh-select-item:hover,
+.rh-select-item.active{background:var(--emerald-soft); color:var(--emerald-600)}
+.rh-select-item[aria-selected="true"]{font-weight:600; color:var(--emerald-600)}
+.rh-select-item[aria-selected="true"]::after{
+  content:"✓"; color:var(--emerald-600); font-weight:700;
+}
+
 .popular{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px}
 .popular .label{font-size:11.5px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
 .pq{padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12.5px;font-weight:500;color:rgba(255,255,255,.85);transition:all .15s}

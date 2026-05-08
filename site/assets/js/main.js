@@ -1538,3 +1538,139 @@ document.addEventListener('DOMContentLoaded', () => {
     wireAll();
   }
 })();
+
+/* ===== CUSTOM DROPDOWN для hero-search селектов «Объём партии» =====
+   Native <select> резиново-маленький в desktop browsers — попасть в опцию
+   «от 50 т» сложно. Делаем свой попап с большими тапабельными строками
+   (44px+ высота). Native <select> остаётся в DOM скрытый — value хранится
+   там, и существующие addEventListener('change', ...) продолжают работать. */
+(function(){
+  const TARGET_IDS = ['heroVolume', 'catalogVolume', 'saleVolume', 'heroType'];
+
+  function wireSelect(sel) {
+    if (!sel || sel.dataset.rhSelectWired) return;
+    sel.dataset.rhSelectWired = '1';
+
+    const field = sel.closest('.field') || sel.parentElement;
+    if (!field) return;
+    field.style.position = field.style.position || 'relative';
+
+    // Прячем native select но оставляем его в DOM для value/events.
+    sel.style.position = 'absolute';
+    sel.style.opacity = '0';
+    sel.style.pointerEvents = 'none';
+    sel.style.width = '1px';
+    sel.style.height = '1px';
+    sel.style.left = '-9999px';
+    sel.tabIndex = -1;
+
+    // Создаём display-кнопку.
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'rh-select-btn';
+    btn.setAttribute('aria-haspopup', 'listbox');
+    btn.setAttribute('aria-expanded', 'false');
+    field.appendChild(btn);
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'rh-select-label';
+    btn.appendChild(labelSpan);
+
+    const chev = document.createElement('span');
+    chev.className = 'rh-select-chev';
+    chev.textContent = '▾';
+    btn.appendChild(chev);
+
+    // Создаём попап со списком.
+    const pop = document.createElement('div');
+    pop.className = 'rh-select-pop';
+    pop.setAttribute('role', 'listbox');
+    pop.hidden = true;
+    field.appendChild(pop);
+
+    function refreshLabel() {
+      const opt = sel.options[sel.selectedIndex];
+      labelSpan.textContent = opt ? opt.textContent : '—';
+    }
+    refreshLabel();
+
+    function buildOptions() {
+      pop.innerHTML = Array.from(sel.options).map((opt, i) => {
+        const sel = opt.selected ? ' aria-selected="true"' : '';
+        const cls = opt.selected ? ' active' : '';
+        return `<div class="rh-select-item${cls}" role="option" data-i="${i}"${sel}>${opt.textContent}</div>`;
+      }).join('');
+    }
+
+    let activeIdx = sel.selectedIndex;
+
+    function open() {
+      buildOptions();
+      pop.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      activeIdx = sel.selectedIndex;
+      const items = pop.querySelectorAll('.rh-select-item');
+      if (items[activeIdx]) items[activeIdx].scrollIntoView({ block: 'nearest' });
+    }
+    function close() {
+      pop.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    }
+    function pick(idx) {
+      sel.selectedIndex = idx;
+      refreshLabel();
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      sel.dispatchEvent(new Event('input', { bubbles: true }));
+      close();
+    }
+
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      pop.hidden ? open() : close();
+    });
+
+    btn.addEventListener('keydown', e => {
+      const items = pop.querySelectorAll('.rh-select-item');
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (pop.hidden) open();
+        else if (e.key === 'Enter' && activeIdx >= 0) pick(activeIdx);
+      } else if (e.key === 'Escape') {
+        close();
+      } else if (!pop.hidden) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIdx = (activeIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+          items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+          items[activeIdx]?.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    });
+
+    pop.addEventListener('mousedown', e => {
+      const item = e.target.closest('.rh-select-item');
+      if (!item) return;
+      e.preventDefault();
+      pick(parseInt(item.dataset.i));
+    });
+
+    // Закрываем попап при клике снаружи (capture, чтобы успеть до form submit).
+    document.addEventListener('mousedown', e => {
+      if (pop.hidden) return;
+      if (!field.contains(e.target)) close();
+    });
+  }
+
+  function wireAll() {
+    TARGET_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.tagName === 'SELECT') wireSelect(el);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireAll);
+  } else {
+    wireAll();
+  }
+})();

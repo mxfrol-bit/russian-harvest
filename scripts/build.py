@@ -736,7 +736,7 @@ def build_index():
         </label>
         <label class="field select-field">
           <span class="k">Объём партии</span>
-          <select name="volume">
+          <select name="volume" id="heroVolume">
             <option value="">любой</option>
             <option value="20">от 20 т</option>
             <option value="50">от 50 т</option>
@@ -763,7 +763,7 @@ def build_index():
       <div class="hero-stats">
         <div class="hero-stat"><div class="n">450+</div><div class="l">активных поставщиков</div></div>
         <div class="hero-stat"><div class="n">24/7</div><div class="l">приём заявок</div></div>
-        <div class="hero-stat"><div class="n">3 часа</div><div class="l">средний отклик</div></div>
+        <div class="hero-stat"><div class="n">30 минут</div><div class="l">средний отклик</div></div>
       </div>
     </div>
 
@@ -835,7 +835,7 @@ def build_index():
 <section class="section" style="padding-top:0">
   <div class="reverse-card">
     <div>
-      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 3 часа</span>
+      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 30 минут</span>
       <h3>Не нашли подходящее предложение?</h3>
       <p class="lead">Создайте заявку и получите персональные предложения от фермеров и поставщиков по вашим параметрам. 86% заявок закрываются за сутки.</p>
     </div>
@@ -1193,7 +1193,7 @@ def build_catalog():
 <section class="section" style="padding-top:0">
   <div class="reverse-card">
     <div>
-      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 3 часа</span>
+      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 30 минут</span>
       <h3>Не нашли нужную партию?</h3>
       <p class="lead">Разместите обратную заявку — поставщики сами предложат условия по вашим параметрам.</p>
     </div>
@@ -1506,7 +1506,7 @@ def build_sale():
 <section class="section" style="padding-top:0">
   <div class="reverse-card">
     <div>
-      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 3 часа</span>
+      <span class="reverse-chip">{icon('clock')} Среднее время отклика — 30 минут</span>
       <h3>Не нашли подходящее предложение?</h3>
       <p class="lead">Создайте заявку и получите персональные предложения от фермеров и поставщиков по вашим параметрам. 86% заявок закрываются за сутки.</p>
     </div>
@@ -1564,7 +1564,7 @@ def build_about():
     <div class="hero-stats">
       <div class="hero-stat"><div class="num">450+</div><div class="lbl">проверенных поставщиков</div></div>
       <div class="hero-stat"><div class="num">9</div><div class="lbl">основных культур</div></div>
-      <div class="hero-stat"><div class="num">3 ч</div><div class="lbl">средний отклик</div></div>
+      <div class="hero-stat"><div class="num">30 мин</div><div class="lbl">средний отклик</div></div>
       <div class="hero-stat"><div class="num">24/7</div><div class="lbl">приём заявок</div></div>
     </div>
   </div>
@@ -2342,7 +2342,7 @@ def build_account():
       <div class="account-head">
         <div>
           <h1 id="accGreeting">Здравствуйте, Владимир 👋</h1>
-          <p id="accSubtitle">Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 2 часа 40 минут.</p>
+          <p id="accSubtitle">Вот что происходит по вашим сделкам сегодня. Среднее время отклика поставщиков — 30 минут.</p>
         </div>
         <a href="/catalog.html" class="btn btn-primary">{icon('search')} Найти поставщика</a>
       </div>

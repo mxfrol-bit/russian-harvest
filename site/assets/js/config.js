@@ -31,11 +31,30 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.6.11',
+  VERSION: '2.6.13',
   BUILD_DATE: '2026-05-08',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.6.13',
+      date: '2026-05-08',
+      summary: 'Среднее время отклика — 30 минут (везде)',
+      changes: [
+        '⏱ Все упоминания времени отклика на сайте обновлены с «3 часа» / «2 часа 40 минут» на «30 минут». Затронуты: hero-stats на /index.html (30 минут) и /about.html (30 мин), reverse-chip на /index.html, /catalog.html, /sale.html, подзаголовок аккаунта (accSubtitle), toast после оставленной заявки в admin.js.',
+      ]
+    },
+    {
+      version: '2.6.12',
+      date: '2026-05-08',
+      summary: 'Кастомный dropdown для «Объём партии» — крупные тапабельные строки',
+      changes: [
+        '🎯 Native <select> «Объём партии» в hero-форме был тяжело попадаемым (мелкие строки 18-20px). Заменён на кастомный dropdown с строками 44px+ (padding 13px 14px, font-size 15px). Работает на /index.html, /catalog.html, /sale.html.',
+        '⌨ Клавиатура: ↑↓ навигация, Enter подставляет, Esc закрывает, Space/ArrowDown открывает. ARIA-разметка корректная (role=listbox/option, aria-expanded).',
+        '🔗 Native <select> остаётся в DOM (скрыт через opacity:0 + position:absolute) — value хранится там, существующие listener\\\'ы на change/input продолжают работать. Hidden select переключается через sel.selectedIndex; событие change диспатчится синтетически.',
+        '🆔 Селекту «Объём партии» на главной странице добавлен id="heroVolume" (раньше не было) — теперь автокомплит и custom-dropdown подхватывают и его.',
+      ]
+    },
     {
       version: '2.6.11',
       date: '2026-05-08',
