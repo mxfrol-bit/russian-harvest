@@ -2595,48 +2595,48 @@
   /**
    * Записывает обращение пользователя (купить/откликнуться/предложить цену)
    * в admin_inbox для ручной обработки админом.
-   * Возвращает true если успешно (модалка-благодарность откроется).
+   * v2.6.4: использует RPC submit_purchase_lead (вместо прямого INSERT) —
+   *         RPC проверяет offer/request, нормализует payload и работает от anon.
    */
   async function sendToAdminInbox({ kind, offer = null, request = null, message = '', volume = null, user = null }) {
     const cfg = window.RH_CONFIG || {};
-    const phone = (cfg.SUPPORT_PHONE || '+7-930-012-97-97').replace(/[^\d+]/g, '');
 
-    // Пишем в БД через прямой fetch (минуем api.js)
     try {
-      const payload = {
-        kind,
-        user_id: user?.id || null,
-        user_name: user?.full_name || user?.company_name || null,
-        user_phone: user?.phone || null,
-        user_email: user?.email || null,
-        offer_id: offer?.id || null,
-        request_id: request?.id || null,
-        volume_tons: volume,
-        message: message || null,
-        payload: {
-          offer_title: offer?.title,
-          offer_price_kopecks: offer?.price_kopecks,
-          request_title: request?.title,
-          page: location.pathname,
-          ts: new Date().toISOString()
-        }
+      const body = {
+        p_kind: kind,
+        p_offer_id: offer?.id || null,
+        p_request_id: request?.id || null,
+        p_volume_tons: volume != null ? volume : (offer?.volume_tons ?? null),
+        p_message: message || null,
+        p_user_phone: user?.phone || null,
+        p_user_email: user?.email || null,
+        p_user_name: user?.full_name || user?.company_name || null,
       };
-      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/admin_inbox`, {
+      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/rpc/submit_purchase_lead`, {
         method: 'POST',
         headers: {
           'apikey': cfg.SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(body)
       });
-      if (!r.ok) console.warn('[admin_inbox]', r.status, await r.text());
+      if (!r.ok) {
+        const txt = await r.text();
+        console.warn('[submit_purchase_lead]', r.status, txt.slice(0, 240));
+      } else {
+        const result = await r.json().catch(() => null);
+        if (result && result.success === false) {
+          console.warn('[submit_purchase_lead] RPC reported failure:', result.message);
+        }
+      }
     } catch(e) {
-      console.warn('[admin_inbox] failed:', e.message);
+      console.warn('[submit_purchase_lead] failed:', e.message);
     }
 
-    // Показываем благодарность независимо от того, записалось ли в БД
+    // Показываем благодарность независимо от того, записалось ли в БД —
+    // юзеру важнее увидеть номер телефона/телеграм, чем код ошибки.
     showAdminContactModal(kind, offer || request);
   }
 
@@ -3717,9 +3717,11 @@
         data-delivery="${o.has_delivery ? '1' : '0'}"
         data-vat="${o.vat !== 'without_vat' ? '1' : '0'}"
         data-premium="${isPremium ? '1' : '0'}"
-        data-title="${escapeHtml(o.title)}"
-        data-list-title="${escapeHtml(o.title)}">
-        <!-- Ячейки для list-view (скрыты в grid через CSS) -->
+        data-title="${escapeHtml(o.title)}">
+        <!-- Ячейки для list-view (скрыты в grid через CSS).
+             v2.6.4: Заголовок — настоящий <span> (не ::before content), порядок
+             совпадает с grid-template-columns в .cards-grid.list-view .card -->
+        <span class="card-list-cell title">${escapeHtml(o.title)}</span>
         <span class="card-list-cell muted">${escapeHtml(o.crop?.name || cropFull || '—')}</span>
         <span class="card-list-cell price">${priceR} ₽/т</span>
         <span class="card-list-cell">${o.volume_tons || '—'} т</span>
@@ -3965,37 +3967,69 @@
     if (!buyCard && !qualityEl) return; // not on product page
 
     try {
-      // Find the offer for this page
+      // Find the offer for this page — берём ?id= из URL, fallback по h1
       const params = new URLSearchParams(location.search);
       let offerId = params.get('id');
-
-      // If numeric ID or no ID — search by title
       if (!offerId || !offerId.includes('-')) {
         const h1 = document.querySelector('h1');
         if (h1) {
           const title = h1.textContent.trim();
           if (title.length > 3 && !title.includes('Купить') && !title.includes('Покупайте')) {
-            const offers = await api.listOffers({ search: title, limit: 1 });
+            const offers = await api.listOffers({ search: title, limit: 1 }).catch(() => []);
             if (offers && offers.length) offerId = offers[0].id;
           }
         }
       }
-
       if (!offerId) return;
 
-      const offer = await api.getOffer(offerId);
-      if (!offer) return;
+      // v2.6.4: один RPC-вызов get_offer_full даёт оффер + продавца (handle) +
+      // культуру + полные ГОСТ-параметры + Haversine distance. Никаких чейнов,
+      // никаких race condition с api.js → кнопки получают data-offer-id СРАЗУ.
+      const cfg = window.RH_CONFIG || {};
+      const city = window.RH_getCity ? window.RH_getCity() : null;
+      const rpcBody = {
+        p_offer_id: offerId,
+        p_user_lat: city?.lat ?? null,
+        p_user_lng: city?.lng ?? null
+      };
+
+      let offer = null;
+      try {
+        const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/rpc/get_offer_full`, {
+          method: 'POST',
+          headers: {
+            'apikey': cfg.SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(rpcBody)
+        });
+        if (r.ok) offer = await r.json();
+      } catch(e) {
+        console.warn('[syncProduct] get_offer_full RPC failed, falling back to api.getOffer', e);
+      }
+
+      // Fallback на старый путь, если RPC по какой-то причине не вернул jsonb
+      if (!offer) {
+        offer = await api.getOffer(offerId).catch(() => null);
+        if (!offer) return;
+      }
+
+      // RPC возвращает плоский объект: оффер + nested crop/seller + quality_specs[] + distance_km.
+      // Никакой обёртки {offer:..., seller:...} нет — поле seller просто вложено.
+      const flat = offer;
 
       // Update title (page + h1)
       const titleEl = document.querySelector('h1');
-      if (titleEl && offer.title) titleEl.textContent = offer.title;
-      if (offer.title) document.title = `${offer.title} — Русский Урожай`;
+      if (titleEl && flat.title) titleEl.textContent = flat.title;
+      if (flat.title) document.title = `${flat.title} — Русский Урожай`;
 
       // Update price card
       if (buyCard) {
         const priceEl = buyCard.querySelector('.price');
-        if (priceEl) {
-          const price = (offer.price_kopecks/100).toLocaleString('ru-RU');
+        if (priceEl && flat.price_kopecks != null) {
+          const price = (flat.price_kopecks/100).toLocaleString('ru-RU');
           priceEl.innerHTML = `${price} <span class="unit">₽/т</span>`;
         }
         const vatEl = buyCard.querySelector('.vat');
@@ -4005,24 +4039,24 @@
             with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%',
             without_vat: 'без НДС'
           };
-          vatEl.textContent = vatMap[offer.vat] || 'с НДС';
+          vatEl.textContent = vatMap[flat.vat] || 'с НДС';
         }
-        // Wire real offer id into action buttons (replaces "demo" placeholder)
+        // КРИТИЧЕСКИ ВАЖНО: сразу пишем реальный UUID на кнопки.
+        // До этого они имели data-offer-id="demo" — клик не работал.
         buyCard.querySelectorAll('[data-action="buy"], [data-action="propose"]').forEach(b => {
-          b.dataset.offerId = offer.id;
+          b.dataset.offerId = flat.id;
         });
         // Update supplier rating and handle (anonymous)
         const supplierBlock = buyCard.querySelector('.supplier-block .info');
-        if (supplierBlock && offer.seller) {
+        if (supplierBlock && flat.seller) {
           const handleSpan = supplierBlock.querySelector('span:first-child');
           if (handleSpan) {
-            const rating = offer.seller.rating > 0 ? parseFloat(offer.seller.rating).toFixed(1) : '—';
+            const rating = flat.seller.rating > 0 ? parseFloat(flat.seller.rating).toFixed(1) : '—';
             handleSpan.innerHTML = `<span style="color:var(--brand)">★</span>${rating}`;
-            // Append handle as a separate item if there's room
-            const handleItem = document.createElement('span');
-            handleItem.style.cssText = 'color:var(--slate-500);font-family:"JetBrains Mono",monospace;font-size:11.5px;margin-left:8px';
-            handleItem.textContent = offer.seller.handle || '';
-            if (offer.seller.handle && !supplierBlock.querySelector('.handle-tag')) {
+            if (flat.seller.handle && !supplierBlock.querySelector('.handle-tag')) {
+              const handleItem = document.createElement('span');
+              handleItem.style.cssText = 'color:var(--slate-500);font-family:"JetBrains Mono",monospace;font-size:11.5px;margin-left:8px';
+              handleItem.textContent = flat.seller.handle;
               handleItem.className = 'handle-tag';
               handleSpan.after(handleItem);
             }
@@ -4030,16 +4064,30 @@
         }
       }
 
-      // Show quality if the seller filled it in
+      // Show quality. Источники:
+      //   1) flat.quality_specs (новый формат: массив {param_key, value, unit, example, ...})
+      //   2) flat.quality (legacy jsonb {ключ:значение}) — если RPC не отдал specs
       if (qualityEl && qualityList) {
-        const quality = offer.quality || {};
-        const entries = Object.entries(quality);
-        if (entries.length > 0) {
-          qualityList.innerHTML = entries.map(([k, v]) =>
+        let rows = '';
+        if (Array.isArray(flat.quality_specs) && flat.quality_specs.length) {
+          // Показываем только параметры, которые продавец заполнил (value != null/'')
+          rows = flat.quality_specs
+            .filter(s => s && s.value != null && s.value !== '')
+            .map(s => {
+              // value уже может содержать unit ("5 %") — не клеим повторно
+              const v = String(s.value);
+              return `<div class="row"><span class="k">${escapeHtml(s.param_key || '')}</span><span class="v">${escapeHtml(v)}</span></div>`;
+            }).join('');
+        } else {
+          const entries = Object.entries(flat.quality || {});
+          rows = entries.map(([k, v]) =>
             `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v))}</span></div>`
           ).join('');
+        }
+        if (rows) {
+          qualityList.innerHTML = rows;
           qualityEl.style.display = '';
-          if (offer.has_lab_analysis) {
+          if (flat.has_lab_analysis) {
             const h3 = qualityEl.querySelector('h3');
             if (h3) h3.innerHTML = '✅ Показатели качества (лабораторный анализ)';
           }

@@ -31,11 +31,23 @@ window.RH_CONFIG = {
     b2b_negotiation: true,
   },
 
-  VERSION: '2.6.3',
+  VERSION: '2.6.4',
   BUILD_DATE: '2026-05-08',
 
   // Журнал релизов — показывается в админ-панели «Версия платформы»
   CHANGELOG: [
+    {
+      version: '2.6.4',
+      date: '2026-05-08',
+      summary: 'Кнопки покупки + list-view + только НО + фотофоны hero',
+      changes: [
+        '🔘 product.html: кнопки «Купить» и «Сделать ценовое предложение» теперь работают. syncProduct() переписан на RPC get_offer_full — один POST даёт оффер + продавца (правильный handle) + ГОСТ-параметры + Haversine distance, и СРАЗУ записывает реальный UUID в data-offer-id (раньше оставался "demo" и клик-handler не находил оффер).',
+        '🐛 list-view вёрстка: убран ::before content для заголовка, теперь заголовок — настоящая <span class="card-list-cell title"> ячейка как все остальные. Карточка собирается через flex+border-bottom (без grid-template на обёртке), грид с 7 колонками только внутри строки. Никаких «Пшеница 3 класса» вылетающих над таблицей.',
+        '💬 Чаты выключены окончательно: sendToAdminInbox теперь ходит через RPC submit_purchase_lead (вместо прямого INSERT в admin_inbox). RPC валидирует offer/request, нормализует payload, работает от anon. handlePurchase / handleProposal / handleRespond уже проверяют FEATURES.escrow_enabled и .realtime_chat — никаких чат-модалок.',
+        '🏙 cities.js: удалён хардкод 150 городов России (Москва, СПб, Краснодар и т.д.). Старт — 10 городов НО, дальше асинхронный fetch view rh_cities (47 городов НО включая Ворсму, Ильиногорск). Picker слушает rh:cities-loaded — перерисовывается когда БД догрузила.',
+        '🌾 hero-фотофоны: 4 картинки (силосы+пшеница / зелёное поле / комбайн / силосы+грузовик) с overlay rgba(20,40,15, .45→.78). /index.html — bg1 (ферма), /catalog.html — bg2 (поле, data-bg="field"), /sale.html — bg3 (уборка, harvest), /about.html — bg4 (компания, company). Mobile-варианты 720×1280 через @media (max-width:768px). Webp + jpg-fallback. Старая remote-картинка russian-harvest.ru/img/main.jpg больше не дёргается.',
+      ]
+    },
     {
       version: '2.6.3',
       date: '2026-05-08',

@@ -1088,6 +1088,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       renderResults(window.RH_CITIES_SEARCH('', 12));
 
+      // Если БД догрузила полный список НО уже после открытия picker — перерисуем
+      window.addEventListener('rh:cities-loaded', () => {
+        renderResults(window.RH_CITIES_SEARCH(search.value, 12));
+      });
+
       // Geolocation
       modal.querySelector('#cpGeoBtn').addEventListener('click', () => {
         const status = modal.querySelector('#cpGeoStatus');

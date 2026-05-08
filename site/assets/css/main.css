@@ -205,8 +205,15 @@ input,select,textarea{font-family:inherit}
 .hero::before{
   content:"";position:absolute;inset:0;z-index:0;
   background:
-    linear-gradient(135deg, rgba(26,36,16,.92) 0%, rgba(36,48,18,.88) 45%, rgba(50,69,24,.90) 100%),
-    url('https://russian-harvest.ru/img/main.jpg') center/cover no-repeat;
+    linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+    url('/assets/img/hero/hero-bg-1-desktop-1920x1080.webp') center/cover no-repeat;
+}
+@media (max-width: 768px){
+  .hero::before{
+    background:
+      linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+      url('/assets/img/hero/hero-bg-1-mobile-720x1280.webp') center/cover no-repeat;
+  }
 }
 .hero::after{
   content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
@@ -301,6 +308,43 @@ input,select,textarea{font-family:inherit}
   color:#fff;position:relative;overflow:hidden;
 }
 .page-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 100%, rgba(97,139,39,.14), transparent 40%),radial-gradient(circle at 90% 0%, rgba(151,197,36,.16), transparent 45%);pointer-events:none}
+
+/* v2.6.4: фотографические фоны hero с overlay средней силы (rgba(20,40,15, .45 → .78)).
+   Картинка ставится как фон страницы (не ::before), чтобы radial-glow ::before
+   ложился поверх и сохранял брендовый стиль. Mobile: вертикальные 720×1280. */
+.page-hero[data-bg]{background-size:cover;background-position:center;background-repeat:no-repeat}
+.page-hero[data-bg="field"]{
+  background-image:
+    linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+    url('/assets/img/hero/hero-bg-2-desktop-1920x1080.webp');
+}
+.page-hero[data-bg="harvest"]{
+  background-image:
+    linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+    url('/assets/img/hero/hero-bg-3-desktop-1920x1080.webp');
+}
+.page-hero[data-bg="company"]{
+  background-image:
+    linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+    url('/assets/img/hero/hero-bg-4-desktop-1920x1080.webp');
+}
+@media (max-width: 768px){
+  .page-hero[data-bg="field"]{
+    background-image:
+      linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+      url('/assets/img/hero/hero-bg-2-mobile-720x1280.webp');
+  }
+  .page-hero[data-bg="harvest"]{
+    background-image:
+      linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+      url('/assets/img/hero/hero-bg-3-mobile-720x1280.webp');
+  }
+  .page-hero[data-bg="company"]{
+    background-image:
+      linear-gradient(180deg, rgba(20,40,15,.45) 0%, rgba(20,40,15,.65) 50%, rgba(20,40,15,.78) 100%),
+      url('/assets/img/hero/hero-bg-4-mobile-720x1280.webp');
+  }
+}
 .page-hero-inner{position:relative;z-index:1;max-width:var(--container);margin:0 auto;padding:52px 28px 44px}
 .page-hero h1{font-size:clamp(32px,4vw,44px);font-weight:700;letter-spacing:-0.03em;color:#fff;max-width:820px}
 .page-hero p{margin-top:16px;font-size:17px;color:rgba(226,232,240,.85);max-width:640px}
@@ -1401,32 +1445,49 @@ input,select,textarea{font-family:inherit}
 
 /* ===============================================
    LIST VIEW — компактный табличный формат (как в Excel)
+   v2.6.4: переписан на честный grid с заголовком как первой ячейкой
+           (без ::before content, который ломал вёрстку при динамическом
+           рендере и делал заголовок неуправляемым из JS).
    =============================================== */
-/* По умолчанию (grid-режим) — list-cells СКРЫТЫ, иначе они появляются как "столбик" внутри карточки */
+/* По умолчанию (grid-режим) — list-cells СКРЫТЫ, иначе они появляются как «столбик» внутри карточки */
 .card-list-cell{display:none}
 
 .cards-grid.list-view{
-  grid-template-columns:1fr !important;
-  gap:6px;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  border:1px solid var(--slate-100);
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--paper);
 }
 .cards-grid.list-view > .card-featured{grid-column:span 1 !important;}
 
-/* Карточка сворачивается в одну горизонтальную строку */
+/* Карточка сворачивается в одну горизонтальную строку.
+   7 колонок: Название (2.6fr) | Культура (1.4fr) | Цена (110px) | Объём (90px) | Регион (1.2fr) | Дистанция (90px) | Купить (110px) */
 .cards-grid.list-view .card{
   display:grid;
-  grid-template-columns: 2.4fr 1.1fr 0.9fr 0.9fr 1.4fr 1fr 1.1fr;
+  grid-template-columns: minmax(220px, 2.6fr) 1.4fr 110px 90px 1.2fr 90px 110px;
   align-items:center;
-  padding:10px 14px;gap:12px;
-  border:1px solid var(--slate-100);box-shadow:none;
-  border-radius:10px;min-height:auto;
-  transition:border-color .12s, background .12s;
+  padding:12px 18px;
+  gap:14px;
+  border:none;
+  border-bottom:1px solid var(--slate-100);
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  min-height:auto;
+  transition:background .12s;
 }
+.cards-grid.list-view .card:last-child{border-bottom:none}
 .cards-grid.list-view .card:hover{
-  border-color:var(--emerald);background:var(--slate-50);
-  transform:none;box-shadow:none;
+  background:var(--slate-50);
+  transform:none;
+  box-shadow:none;
+  border-color:transparent;
 }
 
-/* Скрываем тяжёлые блоки в list-view */
+/* Скрываем тяжёлые блоки в list-view — заголовок, мета, картинку */
 .cards-grid.list-view .card-head,
 .cards-grid.list-view .card-meta,
 .cards-grid.list-view .distance-strip,
@@ -1457,17 +1518,21 @@ input,select,textarea{font-family:inherit}
 }
 
 /* В list-view показываем .card-list-cell ячейки */
-.cards-grid.list-view .card-list-cell{display:inline-block}
-
-/* Заголовок берётся из data-list-title через ::before */
-.cards-grid.list-view .card::before{
-  content: attr(data-list-title);
-  font-weight:700;font-size:14.5px;color:var(--ink);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em;
-}
 .cards-grid.list-view .card-list-cell{
-  font-size:13px;color:var(--slate-700);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:block;
+  font-size:13px;
+  color:var(--slate-700);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Заголовок — первая ячейка (а не ::before content) */
+.cards-grid.list-view .card-list-cell.title{
+  font-weight:700;
+  font-size:14.5px;
+  color:var(--ink);
+  letter-spacing:-0.01em;
 }
 .cards-grid.list-view .card-list-cell.muted{color:var(--slate-500);font-size:12.5px}
 .cards-grid.list-view .card-list-cell.price{font-weight:700;color:var(--emerald-600);font-variant-numeric:tabular-nums}
@@ -1481,7 +1546,7 @@ input,select,textarea{font-family:inherit}
 
 @media (max-width:920px){
   .cards-grid.list-view .card{
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.6fr 1fr 110px;
     gap:6px 10px;padding:10px 12px;
   }
   .cards-grid.list-view .card-list-cell.muted:not(.price):not(.cta){display:none}
