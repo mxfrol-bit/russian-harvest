@@ -131,6 +131,23 @@
   }
 
   // ============================================================
+  // GETFIELD — устойчивое чтение ключей JSON с/без пробелов
+  // ============================================================
+  // 1С экспортирует JSON с НЕСТАБИЛЬНЫМИ именами ключей. В одних
+  // файлах "АдресВыгрузки", в других "Адрес выгрузки" (с пробелом).
+  // То же со "СрокПоставки"/"Срок поставки", "ТипСделки"/"Тип сделки".
+  // Эта функция ищет значение по всем вариантам ключей.
+  //
+  // Пример: getField(file, 'АдресВыгрузки', 'Адрес выгрузки')
+  function getField(obj, ...keys) {
+    if (!obj) return null;
+    for (const k of keys) {
+      if (k in obj && obj[k] != null && obj[k] !== '') return obj[k];
+    }
+    return null;
+  }
+
+  // ============================================================
   // ПАРСЕР АДРЕСА → {region, city}
   // ============================================================
   // Адреса в 1С приходят в двух форматах:
@@ -298,19 +315,22 @@
    * @returns {Object}      — черновик с полями offers + meta + флаги
    */
   function buildOfferDraft(row, file) {
-    const cropMap = mapCrop(file.Номенклатура);
-    const address = parseAddress(row.АдресЗагрузки);
-    const quality = parseQualityString(row.КачественныеПоказатели);
+    // v2.6.26: getField — поддержка обоих форматов ключей 1С (с пробелами и без)
+    const nomen = getField(file, 'Номенклатура', 'Номенклатура ');
+    const cropMap = mapCrop(nomen);
+    const address = parseAddress(getField(row, 'АдресЗагрузки', 'Адрес загрузки'));
+    const qualityRaw = getField(row, 'КачественныеПоказатели', 'Качественные показатели');
+    const quality = parseQualityString(qualityRaw);
 
     // Цена 36 500 → 36500 рублей → 3650000 копеек
-    const priceRub = parseNum(row.Цена) || 0;
+    const priceRub = parseNum(getField(row, 'Цена')) || 0;
     const priceKopecks = Math.round(priceRub * 100);
 
-    const volumeTons = parseNum(row.Объем) || 0;
+    const volumeTons = parseNum(getField(row, 'Объем', 'Объём')) || 0;
 
     // external_id для идемпотентности
-    const fileNumber = String(file.Номер || '').trim() || 'unknown';
-    const rowNumber = String(row.НомерСтроки || '').trim() || '0';
+    const fileNumber = String(getField(file, 'Номер') || '').trim() || 'unknown';
+    const rowNumber = String(getField(row, 'НомерСтроки', 'Номер строки') || '').trim() || '0';
     const externalId = `${EXTERNAL_PREFIX}_${fileNumber}_${rowNumber}`;
 
     // Дата активности — 30 дней с момента публикации
@@ -319,13 +339,16 @@
     // Заголовок: используем нормализованное название культуры
     const title = cropMap.normalized_name;
 
+    const contractor = getField(row, 'Контрагент');
+    const managerFio = getField(row, 'ФИО', 'ФИО менеджера');
+
     const draft = {
       // Обязательные поля offers
       seller_id: SYSTEM_SELLER_ID,
       crop_id: cropMap.crop_id,
       title: title,
       price_kopecks: priceKopecks,
-      vat: 'with_vat_10',           // По дефолту с НДС 10% (зерно)
+      vat: 'with_vat_10',
       volume_tons: volumeTons,
       region: address.region,
       city: address.city,
@@ -340,20 +363,20 @@
       external_id: externalId,
       external_source: '1c',
       meta: {
-        contractor_name: row.Контрагент || null,
-        manager_fio: row.ФИО || null,
-        buyer_company: file.Покупатель || null,
+        contractor_name: contractor || null,
+        manager_fio: managerFio || null,
+        buyer_company: getField(file, 'Покупатель') || null,
         request_number: fileNumber,
         row_number: rowNumber,
         raw_address: address.raw,
-        raw_quality: row.КачественныеПоказатели || null,
-        raw_nomen: file.Номенклатура || null,
+        raw_quality: qualityRaw || null,
+        raw_nomen: nomen || null,
         imported_at: new Date().toISOString(),
       },
 
       // Служебные (не идут в БД, только для UI)
       _matched_crop: cropMap.matched,
-      _supplier_label: row.Контрагент || `Поставщик #${rowNumber}`,
+      _supplier_label: contractor || `Поставщик #${rowNumber}`,
     };
 
     return draft;
@@ -386,36 +409,40 @@
    * needed_by — пытаемся распарсить «СрокПоставки» из 1С, иначе NULL.
    */
   function buildBuyerRequestDraft(file) {
-    const cropMap = mapCrop(file.Номенклатура);
-    const totalVolume = parseNum(file.Объём || file.Объем) || 0;
-    const totalSum = parseNum(file.Сумма) || 0;
+    // v2.6.26: используем getField чтобы поддержать обе версии ключей 1С
+    // (с пробелами и без). В свежих экспортах 1С — с пробелами.
+    const nomen = getField(file, 'Номенклатура', 'Номенклатура ');
+    const cropMap = mapCrop(nomen);
+    const totalVolume = parseNum(getField(file, 'Объём', 'Объем')) || 0;
+    const totalSum = parseNum(getField(file, 'Сумма')) || 0;
 
-    // Адрес выгрузки — может быть в корне файла, может быть в Закупка[0]
-    const deliveryAddr = file.АдресВыгрузки
-      || (file.Закупка && file.Закупка[0] && file.Закупка[0].АдресВыгрузки)
+    // Адрес выгрузки — может быть в корне файла, может быть в Закупка[0].
+    // Ищем по обоим вариантам ключей.
+    const deliveryAddr = getField(file, 'АдресВыгрузки', 'Адрес выгрузки')
+      || (file.Закупка && file.Закупка[0] && getField(file.Закупка[0], 'АдресВыгрузки', 'Адрес выгрузки'))
       || null;
     const deliveryParsed = parseAddress(deliveryAddr || '');
 
-    const fileNumber = String(file.Номер || '').trim() || 'unknown';
+    const fileNumber = String(getField(file, 'Номер') || '').trim() || 'unknown';
     const externalId = `${EXTERNAL_PREFIX}_req_${fileNumber}`;
 
     // Цена-таргет: если есть Сумма и Объём — рассчитаем удельную цену
     let targetPriceKopecks = null;
     if (totalSum > 0 && totalVolume > 0) {
       const perTon = totalSum / totalVolume;
-      // Защита от дичи: если результат < 100 ₽ или > 200_000 ₽ за тонну —
-      // значит сумма не равна цене (может быть «сумма» в смысле объёма)
+      // Защита от дичи: если результат < 100 ₽ или > 200_000 ₽ за тонну
       if (perTon >= 100 && perTon <= 200000) {
         targetPriceKopecks = Math.round(perTon * 100);
       }
     }
 
-    // Срок поставки — пытаемся распарсить дату из СрокПоставки 1С
+    // Срок поставки — пытаемся распарсить дату.
+    // Особый случай 1С: "01.01.0001 0:00:00" = «не задан» в 1С, игнорируем.
     let neededBy = null;
-    const srok = file.СрокПоставки;
-    if (srok && typeof srok === 'string') {
+    const srok = getField(file, 'СрокПоставки', 'Срок поставки');
+    if (srok && typeof srok === 'string' && !srok.startsWith('01.01.0001')) {
       const m = srok.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/);
-      if (m) {
+      if (m && m[3] !== '0001') {
         const dd = m[1].padStart(2, '0');
         const mm = m[2].padStart(2, '0');
         neededBy = `${m[3]}-${mm}-${dd}`;
@@ -423,30 +450,29 @@
     }
 
     return {
-      // Обязательные поля под РЕАЛЬНУЮ схему
       buyer_id: SYSTEM_BUYER_ID,
       title: 'Закупка: ' + cropMap.normalized_name,
       volume_tons: totalVolume,
       delivery_region: deliveryParsed.region !== '—' ? deliveryParsed.region : 'Россия',
       status: 'open',
-      // Опциональные
       crop_id: cropMap.crop_id,
       delivery_city: deliveryParsed.city,
       needed_by: neededBy,
       target_price_kopecks: targetPriceKopecks,
       vat: 'with_vat_10',
-      // Новые поля (миграция v2.6.25)
       external_id: externalId,
       external_source: '1c',
       meta: {
-        buyer_company: file.Покупатель || null,
+        buyer_company: getField(file, 'Покупатель') || null,
         request_number: fileNumber,
-        date_1c: file.Дата || null,
+        date_1c: getField(file, 'Дата') || null,
         total_sum: totalSum,
-        raw_nomen: file.Номенклатура || null,
+        raw_nomen: nomen || null,
         raw_delivery_addr: deliveryParsed.raw,
         srok_postavki_raw: srok || null,
         suppliers_count: (file.Закупка || []).length,
+        deal_type: getField(file, 'ТипСделки', 'Тип сделки') || null,
+        source_margin: getField(file, 'ИсточникМаржинальности', 'Источник маржинальности') || null,
         imported_at: new Date().toISOString(),
       },
       _matched_crop: cropMap.matched,
