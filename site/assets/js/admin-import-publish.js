@@ -429,23 +429,21 @@
   }
 
   // ============================================================
-  // ПУБЛИКАЦИЯ В БД ЧЕРЕЗ Supabase REST
+  // ПУБЛИКАЦИЯ В БД ЧЕРЕЗ api.import1c
   // ============================================================
   /**
    * Делает UPSERT в offers по external_id.
    * @param {Array} drafts — массив черновиков (от buildOfferDraft)
    * @param {Array<boolean>} selected — массив того же размера, true = публиковать
-   * @returns {Promise<{inserted: number, updated: number, errors: Array}>}
+   * @returns {Promise<{inserted: number, errors: Array, offer_ids: Array}>}
    */
   async function publishOffers(drafts, selected) {
-    const cfg = window.RH_CONFIG || {};
-    if (!cfg.SUPABASE_URL) throw new Error('SUPABASE_URL не задан');
-
-    const sb = await window.RH_API._supabasePromise || window.RH_API.supabase;
-    if (!sb) throw new Error('Supabase client не инициализирован');
+    if (!window.RH_API || !window.RH_API.import1c || !window.RH_API.import1c.publishOffers) {
+      throw new Error('API метод publishOffers не доступен. Обновите страницу.');
+    }
 
     const toPublish = drafts.filter((d, i) => selected[i]);
-    if (toPublish.length === 0) return { inserted: 0, updated: 0, errors: [] };
+    if (toPublish.length === 0) return { inserted: 0, errors: [], offer_ids: [] };
 
     // Чистим служебные поля (_*) — в БД они не нужны
     const payload = toPublish.map(d => {
@@ -456,49 +454,21 @@
       return clean;
     });
 
-    // UPSERT по external_id
-    const { data, error } = await sb
-      .from('offers')
-      .upsert(payload, { onConflict: 'external_id', ignoreDuplicates: false })
-      .select('id, external_id');
-
-    if (error) {
-      console.error('[Publish] UPSERT failed:', error);
-      throw new Error('Ошибка публикации: ' + error.message);
-    }
-
-    return {
-      inserted: data ? data.length : 0,
-      updated: 0,  // PostgREST не отличает INSERT от UPDATE при UPSERT
-      errors: [],
-      offer_ids: (data || []).map(d => d.id),
-    };
+    return await window.RH_API.import1c.publishOffers(payload);
   }
 
   /**
    * Создаёт buyer_request (1 на файл).
-   * Если таблица buyer_requests имеет другую структуру — упадёт с ясной ошибкой.
+   * Если таблица buyer_requests имеет другую структуру — вернёт {id:null, error}.
    */
   async function publishBuyerRequest(draft) {
-    const sb = window.RH_API.supabase || (await window.RH_API._supabasePromise);
-    if (!sb) throw new Error('Supabase client не инициализирован');
-
-    // Чистим служебные
+    if (!window.RH_API || !window.RH_API.import1c || !window.RH_API.import1c.publishBuyerRequest) {
+      return { id: null, error: 'API метод publishBuyerRequest не доступен' };
+    }
+    // Чистим служебные _* поля
     const clean = { ...draft };
     Object.keys(clean).forEach(k => { if (k.startsWith('_')) delete clean[k]; });
-
-    // Пробуем UPSERT по external_id
-    const { data, error } = await sb
-      .from('buyer_requests')
-      .upsert(clean, { onConflict: 'external_id', ignoreDuplicates: false })
-      .select('id');
-
-    if (error) {
-      console.warn('[Publish] buyer_requests UPSERT failed:', error);
-      // Если таблица не имеет нужных колонок — не блокируем оффер
-      return { id: null, error: error.message };
-    }
-    return { id: data && data[0] ? data[0].id : null };
+    return await window.RH_API.import1c.publishBuyerRequest(clean);
   }
 
   // ============================================================

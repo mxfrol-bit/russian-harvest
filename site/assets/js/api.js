@@ -1448,6 +1448,56 @@
       }
       return resp.json();
     },
+
+    // ============================================================
+    // v2.6.24: Публикация офферов из распарсенных черновиков
+    // ============================================================
+    /**
+     * UPSERT массив offers по external_id.
+     * Эти методы вызываются из window.RH_Import1C_Publish, ему нужен
+     * доступ к supabase-клиенту — поэтому методы живут здесь (в api.js),
+     * где ensureSupabase() уже доступна через замыкание.
+     *
+     * @param {Array<Object>} payload — массив объектов offers (без служебных _* полей)
+     * @returns {Promise<{inserted: number, offer_ids: Array<string>}>}
+     */
+    async publishOffers(payload) {
+      if (!Array.isArray(payload) || payload.length === 0) {
+        return { inserted: 0, offer_ids: [] };
+      }
+      const sb = await ensureSupabase();
+      const { data, error } = await sb
+        .from('offers')
+        .upsert(payload, { onConflict: 'external_id', ignoreDuplicates: false })
+        .select('id, external_id');
+      if (error) {
+        console.error('[api.publishOffers] UPSERT failed:', error);
+        throw new Error(error.message || 'UPSERT failed');
+      }
+      return {
+        inserted: data ? data.length : 0,
+        offer_ids: (data || []).map(d => d.id),
+      };
+    },
+
+    /**
+     * UPSERT 1 запись в buyer_requests по external_id.
+     * Если таблица buyer_requests имеет другую структуру (нет колонок которые
+     * мы заполняем) — вернёт {id:null, error:string}, не упадёт, не блокирует offers.
+     */
+    async publishBuyerRequest(draft) {
+      if (!draft) return { id: null };
+      const sb = await ensureSupabase();
+      const { data, error } = await sb
+        .from('buyer_requests')
+        .upsert(draft, { onConflict: 'external_id', ignoreDuplicates: false })
+        .select('id');
+      if (error) {
+        console.warn('[api.publishBuyerRequest] failed:', error);
+        return { id: null, error: error.message };
+      }
+      return { id: data && data[0] ? data[0].id : null };
+    },
   };
 
   // Expose globally
