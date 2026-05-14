@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Импорт из 1С — Админка · Русский Урожай</title>
+<meta name="robots" content="noindex,nofollow" />
+<meta name="theme-color" content="#3D5C19" />
+<link rel="icon" type="image/svg+xml" href="/assets/img/logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css?v=1778700000">
+<link rel="stylesheet" href="/assets/css/admin-import.css?v=1778700000">
+</head>
+<body class="admin-import-page">
+
+<header class="ai-header">
+  <div class="ai-header-inner">
+    <a class="ai-brand" href="/account.html" title="Вернуться в кабинет">
+      <img src="/assets/img/logo.svg" alt="Русский Урожай" />
+    </a>
+    <div class="ai-title">
+      <span class="ai-crumb">
+        <a href="/account.html">Админка</a>
+        <span class="ai-crumb-sep">›</span>
+        <span>Импорт из 1С</span>
+      </span>
+      <h1>Импорт из 1С</h1>
+    </div>
+    <div class="ai-header-right">
+      <span class="ai-role-chip">👑 Администратор</span>
+      <a class="btn btn-outline btn-sm" href="/account.html">← В кабинет</a>
+    </div>
+  </div>
+</header>
+
+<main class="ai-main">
+
+  <!-- AUTH GATE — пока не загрузим юзера, страница скрыта -->
+  <div class="ai-auth-gate" id="aiAuthGate">
+    <div class="ai-auth-card">
+      <div class="ai-auth-icon">🔐</div>
+      <h2>Проверяем доступ…</h2>
+      <p>Этот раздел доступен только администраторам платформы.</p>
+    </div>
+  </div>
+
+  <!-- DENIED — показывается если не админ -->
+  <div class="ai-denied" id="aiDenied" style="display:none">
+    <div class="ai-auth-card">
+      <div class="ai-auth-icon">🚫</div>
+      <h2>Доступ запрещён</h2>
+      <p>Этот раздел доступен только администраторам. Если вы должны иметь доступ — обратитесь к руководителю проекта.</p>
+      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center">
+        <a class="btn btn-outline" href="/account.html">В кабинет</a>
+        <a class="btn btn-primary" href="/index.html">На главную</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE — две колонки: список файлов + превью -->
+  <div class="ai-workspace" id="aiWorkspace" style="display:none">
+
+    <!-- ЛЕВАЯ КОЛОНКА: список файлов -->
+    <aside class="ai-files">
+      <div class="ai-files-head">
+        <div class="ai-files-tabs" role="tablist">
+          <button class="ai-tab is-active" data-filter="all" type="button">Все <span class="ai-tab-count" id="aiCountAll">0</span></button>
+          <button class="ai-tab" data-filter="new" type="button">Новые <span class="ai-tab-count" id="aiCountNew">0</span></button>
+          <button class="ai-tab" data-filter="saved" type="button">В работе <span class="ai-tab-count" id="aiCountSaved">0</span></button>
+          <button class="ai-tab" data-filter="done" type="button">Готово <span class="ai-tab-count" id="aiCountDone">0</span></button>
+        </div>
+        <div class="ai-files-search">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m17 17-3.5-3.5"/></svg>
+          <input type="text" id="aiSearch" placeholder="Поиск по имени файла…" />
+        </div>
+        <button class="ai-refresh-btn" id="aiRefresh" type="button" title="Обновить список">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10a7 7 0 0 1 12.6-4.2L17 4M17 4v4h-4M17 10a7 7 0 0 1-12.6 4.2L3 16M3 16v-4h4"/></svg>
+          Обновить
+        </button>
+      </div>
+      <div class="ai-files-list" id="aiFilesList">
+        <div class="ai-loading">
+          <div class="ai-spinner"></div>
+          <span>Загрузка списка файлов…</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ПРАВАЯ КОЛОНКА: превью -->
+    <section class="ai-preview" id="aiPreview">
+      <div class="ai-empty">
+        <div class="ai-empty-ic">📂</div>
+        <h2>Выберите файл слева</h2>
+        <p>Список содержит все JSON-выгрузки от 1С CRM. Кликните на файл — здесь появятся карточки поставщиков с полной информацией.</p>
+        <ul class="ai-empty-hints">
+          <li><b>🟢 Новый</b> — файл прилетел, не обработан</li>
+          <li><b>🟡 В работе</b> — данные сохранены в буфер</li>
+          <li><b>✅ Готово</b> — заявка обработана и закрыта</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Глобальный toast для уведомлений -->
+<div class="ai-toast" id="aiToast"></div>
+
+<script src="/assets/js/config.js?v=1778700000"></script>
+<script src="/assets/js/api.js?v=1778700000"></script>
+<script src="/assets/js/admin-import-1c.js?v=1778700000"></script>
+</body>
+</html>

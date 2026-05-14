@@ -364,7 +364,6 @@
       // Если выбрали родительскую культуру — раскрыть её подкатегории автоматически
       const sub = document.querySelector(`.filter-subitems[data-subitems="${inp.value}"]`);
       if (sub && inp.checked) {
-        sub.removeAttribute('hidden');
         sub.classList.add('expanded');
         const tog = document.querySelector(`.crop-toggle[data-toggle="${inp.value}"]`);
         if (tog) tog.setAttribute('aria-expanded', 'true');
@@ -372,16 +371,24 @@
     });
   });
 
+  // === Раскрытие подкатегорий культур (v2.6.15: hidden-атрибут убран на старте) ===
+  // Раньше логика опиралась на [hidden] + CSS display:flex !important + класс .expanded.
+  // Браузерный дефолт [hidden]{display:none} в некоторых рендер-цепочках всё-таки выигрывал
+  // (особенно когда родитель .filters-aside сам имеет display:none на мобиле), и подкатегории
+  // не разворачивались. Теперь снимаем hidden один раз при инициализации — далее CSS
+  // управляет видимостью ИСКЛЮЧИТЕЛЬНО через класс .expanded.
+  document.querySelectorAll('.filter-subitems[hidden]').forEach(s => s.removeAttribute('hidden'));
+
   // Кнопки-стрелки раскрытия подкатегорий (независимо от чекбокса)
   document.querySelectorAll('.crop-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.dataset.toggle;
       const sub = document.querySelector(`.filter-subitems[data-subitems="${id}"]`);
       if (!sub) return;
       const expanded = sub.classList.toggle('expanded');
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      if (expanded) sub.removeAttribute('hidden');
-      // не убираем атрибут hidden чтобы display:flex от .filter-subitems[hidden] продолжал держать структуру для анимации
     });
   });
   // Region checkboxes

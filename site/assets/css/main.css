@@ -611,15 +611,17 @@ input,select,textarea{font-family:inherit}
 .card-featured .supplier-stat .id{color:rgba(255,255,255,.5)}
 
 .card-foot{
-  padding:14px 20px 20px;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 20px;
+  margin-top:auto;  /* v2.6.16: выталкивает foot к низу при разной высоте контента — кнопки выравниваются по одной линии */
+  display:flex;align-items:center;justify-content:flex-end;
   gap:10px;flex-wrap:wrap;
 }
 .delivery-tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--slate-500);font-weight:500;white-space:nowrap}
 .delivery-tag .ic{color:var(--slate-400);flex-shrink:0}
 .card-featured .delivery-tag{color:rgba(226,232,240,.7)}
 .card-featured .delivery-tag .ic{color:#C7E588}
-.card-foot .cta{background:linear-gradient(135deg,#4A2E1C 0%,#6B3F22 50%,#3E2715 100%);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap;box-shadow:0 4px 12px rgba(74,46,28,.25)}
-.card-foot .cta:hover{background:linear-gradient(135deg,#5A3924 0%,#7D4A2A 50%,#4E311B 100%);transform:translateY(-1px);box-shadow:0 8px 20px rgba(74,46,28,.4)}
+.card-foot .cta{background:linear-gradient(135deg,#4D3F18 0%,#6B5728 50%,#2E2510 100%);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap;box-shadow:0 4px 12px rgba(77,63,24,.28)}
+.card-foot .cta:hover{background:linear-gradient(135deg,#5C4D20 0%,#7E6830 50%,#3D3115 100%);transform:translateY(-1px);box-shadow:0 8px 20px rgba(77,63,24,.42)}
 .card-featured .card-foot .cta{background:linear-gradient(135deg,#7BA81C 0%,#97C524 50%,#5F8F18 100%);box-shadow:0 4px 12px rgba(151,197,36,.3)}
 .card-featured .card-foot .cta:hover{background:linear-gradient(135deg,#85B321 0%,#A8D62E 50%,#6B9F1B 100%);box-shadow:0 8px 20px rgba(151,197,36,.45)}
 
@@ -1428,22 +1430,26 @@ input,select,textarea{font-family:inherit}
 .crop-row .filter-check{flex:1}
 .crop-toggle{
   background:transparent;border:none;cursor:pointer;
-  width:26px;height:26px;border-radius:6px;
-  font-size:12px;color:var(--slate-400);
+  width:32px;height:32px;border-radius:8px;
+  font-size:14px;color:var(--slate-400);
   display:flex;align-items:center;justify-content:center;
   transition:background .15s,color .15s,transform .25s ease;
   flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  position:relative;z-index:2;
+  touch-action:manipulation;
 }
 .crop-toggle:hover{background:var(--slate-50);color:var(--slate-700)}
+.crop-toggle:active{background:var(--slate-100)}
 .crop-toggle[aria-expanded="true"]{transform:rotate(180deg);color:var(--emerald)}
 .filter-subitems{
   display:flex;flex-direction:column;gap:2px;
   padding-left:22px;margin:0;
   max-height:0;overflow:hidden;opacity:0;
-  transition:max-height .3s ease, opacity .25s ease, margin .25s ease;
+  transition:max-height .3s ease, opacity .25s ease, margin .25s ease, padding .25s ease;
 }
-.filter-subitems[hidden]{display:flex !important;}  /* keep flex for animation, hidden via max-height */
-.filter-subitems.expanded{max-height:400px;opacity:1;margin:2px 0 6px}
+.filter-subitems.expanded{max-height:600px;opacity:1;margin:2px 0 6px}
 .filter-subitems .filter-check{font-size:13px;color:var(--slate-600);padding:5px 8px}
 
 .filter-range{display:flex;gap:8px;margin-top:4px}
@@ -1677,15 +1683,15 @@ input,select,textarea{font-family:inherit}
 .cards-grid.list-view .card-list-cell.cta{text-align:right}
 .cards-grid.list-view .card-list-cell.cta a{
   display:inline-block;padding:6px 14px;border-radius:8px;
-  background:linear-gradient(135deg,#4A2E1C 0%,#6B3F22 50%,#3E2715 100%);
+  background:linear-gradient(135deg,#4D3F18 0%,#6B5728 50%,#2E2510 100%);
   color:#fff;font-size:12.5px;font-weight:600;
   text-decoration:none;transition:all .15s;
-  box-shadow:0 3px 8px rgba(74,46,28,.22);
+  box-shadow:0 3px 8px rgba(77,63,24,.25);
 }
 .cards-grid.list-view .card-list-cell.cta a:hover{
-  background:linear-gradient(135deg,#5A3924 0%,#7D4A2A 50%,#4E311B 100%);
+  background:linear-gradient(135deg,#5C4D20 0%,#7E6830 50%,#3D3115 100%);
   transform:translateY(-1px);
-  box-shadow:0 5px 14px rgba(74,46,28,.35);
+  box-shadow:0 5px 14px rgba(77,63,24,.4);
 }
 
 @media (max-width:920px){
@@ -2150,10 +2156,7 @@ body[data-feature-delivery="off"] [data-feature="delivery"]{
   display: none !important;
 }
 
-/* После удаления delivery-tag нужно центрировать кнопку «Купить» в card-foot */
-.card-foot {
-  justify-content: flex-end;
-}
+/* v2.6.16: правило justify-content:flex-end перенесено в основное определение .card-foot выше */
 
 /* ===============================================
    ВРЕМЕННО: скрыть расчёт доставки на product page
