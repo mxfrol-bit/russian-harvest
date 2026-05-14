@@ -4387,45 +4387,64 @@
       if (crumb && productTitle) crumb.textContent = productTitle;
 
       // Subtitle: «<культура> · урожай <год> · ID оффера <короткий код>»
-      const subtitleEl = document.getElementById('productSubtitle');
+      // v2.6.23: defense-in-depth — если на хостинге залит product.html
+      // без id-атрибутов (mismatch с моей сборкой), ищем элементы по
+      // тексту-метке в .product-attrs и заполняем их.
+      const findAttrCell = (labelText) => {
+        const cells = document.querySelectorAll('.product-attrs .cell');
+        for (const c of cells) {
+          const k = c.querySelector('.k');
+          if (k && k.textContent.trim().toLowerCase() === labelText.toLowerCase()) {
+            return c.querySelector('.v');
+          }
+        }
+        return null;
+      };
+      const offerCode = 'L-' + String(flat.id || '').replace(/-/g, '').slice(-5).toUpperCase();
       const offerCodeEl = document.getElementById('productOfferCode');
-      if (offerCodeEl) {
-        offerCodeEl.textContent = 'L-' + String(flat.id || '').replace(/-/g, '').slice(-5).toUpperCase();
-      }
+      if (offerCodeEl) offerCodeEl.textContent = offerCode;
+
+      // Subtitle: обновляем содержимое чистым HTML с правильным offer code
+      const subtitleEl = document.getElementById('productSubtitle')
+                       || document.querySelector('.product-main .subtitle');
       if (subtitleEl) {
         const cropName = flat.crop?.name || '';
         const year = flat.harvest_year || '';
-        const offerCode = offerCodeEl ? offerCodeEl.outerHTML : '';
         const parts = [];
         if (cropName) parts.push(escapeHtml(cropName));
         if (year) parts.push('урожай ' + escapeHtml(String(year)));
-        parts.push('ID оффера ' + offerCode);
+        parts.push('ID оффера <span class="mono">' + escapeHtml(offerCode) + '</span>');
         subtitleEl.innerHTML = parts.join(' · ');
       }
 
-      // Attrs: объём, мин.партия, год, регион, дистанция, активно до
-      const volumeEl = document.getElementById('productVolume');
+      // Attrs: объём, мин.партия, год, регион, дистанция, активно до.
+      // Каждый элемент берём по id ИЛИ fallback по тексту .k метки.
+      const volumeEl = document.getElementById('productVolume') || findAttrCell('Объём партии');
       if (volumeEl && flat.volume_tons != null) volumeEl.textContent = flat.volume_tons + ' тонн';
-      const minLotEl = document.getElementById('productMinLot');
+
+      const minLotEl = document.getElementById('productMinLot') || findAttrCell('Мин. партия');
       if (minLotEl) {
         if (flat.min_volume_tons) minLotEl.textContent = flat.min_volume_tons + ' тонн';
         else minLotEl.textContent = '—';
       }
-      const yearEl = document.getElementById('productHarvestYear');
+
+      const yearEl = document.getElementById('productHarvestYear') || findAttrCell('Год урожая');
       if (yearEl) yearEl.textContent = flat.harvest_year || '—';
-      const regionEl = document.getElementById('productRegion');
+
+      const regionEl = document.getElementById('productRegion') || findAttrCell('Регион отгрузки');
       if (regionEl) {
-        // «Воротынец, Нижегородская область» или просто регион
         const city = flat.city || '';
         const region = flat.region || '';
         regionEl.textContent = (city && region) ? `${city}, ${region}` : (region || city || '—');
       }
-      const distEl = document.getElementById('productDistance');
+
+      const distEl = document.getElementById('productDistance') || findAttrCell('Расстояние до вас');
       if (distEl) {
         if (flat.distance_km != null) distEl.textContent = String(flat.distance_km).replace('.', ',');
         else distEl.textContent = '—';
       }
-      const activeEl = document.getElementById('productActiveUntil');
+
+      const activeEl = document.getElementById('productActiveUntil') || findAttrCell('Активно до');
       if (activeEl) {
         if (flat.expires_at) {
           activeEl.textContent = new Date(flat.expires_at).toLocaleDateString('ru-RU');
