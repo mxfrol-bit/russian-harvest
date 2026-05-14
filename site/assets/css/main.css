@@ -270,13 +270,18 @@ input,select,textarea{font-family:inherit}
 .hero-search-submit:hover{background:var(--emerald-600);transform:translateY(-1px)}
 
 /* Hero-search autocomplete dropdown — подсказки культур пока юзер печатает */
+/* v2.6.24 fix: backdrop-filter на .hero-stat создаёт stacking context, нужен
+   position:relative на .field + высокий z-index на .hero-search чтобы поднять
+   весь блок поиска поверх statisitics-карточек снизу */
+.hero-search{position:relative; z-index:20}
+.hero-search .field{position:relative}
 .hero-ac{
   position:absolute; left:0; right:0; top:calc(100% + 4px);
   background:var(--paper);
   border-radius:var(--radius-md);
   box-shadow:0 12px 32px rgba(26,36,16,.16), 0 0 0 1px rgba(0,0,0,.04);
   padding:6px;
-  z-index:1000;
+  z-index:30;
   max-height:280px; overflow-y:auto;
 }
 .hero-ac-item{
@@ -315,7 +320,7 @@ input,select,textarea{font-family:inherit}
   border-radius:var(--radius-md);
   box-shadow:0 12px 32px rgba(26,36,16,.18), 0 0 0 1px rgba(0,0,0,.04);
   padding:4px;
-  z-index:1000;
+  z-index:30;
   max-height:320px; overflow-y:auto;
 }
 .rh-select-item{
@@ -340,7 +345,7 @@ input,select,textarea{font-family:inherit}
 .pq{padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:12.5px;font-weight:500;color:rgba(255,255,255,.85);transition:all .15s}
 .pq:hover{background:rgba(255,255,255,.12);color:#fff}
 
-.hero-stats{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px}
+.hero-stats{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;position:relative;z-index:1}
 .hero-stat{padding:22px;border-radius:var(--radius-lg);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(12px)}
 .hero-stat .n{font-size:30px;font-weight:700;color:#fff;letter-spacing:-0.025em;line-height:1}
 .hero-stat .l{margin-top:8px;font-size:13px;color:rgba(255,255,255,.65);font-weight:500}
