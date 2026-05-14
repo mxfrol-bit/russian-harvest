@@ -3504,154 +3504,209 @@
   }
 
   // ============================================================
-  // v2.6.19: Очистка заголовков и нормализация показателей качества
+  // SANITIZERS — чистка данных от 1С перед показом
   // ============================================================
+  // Поставщики кладут в title хвосты с компаниями/адресами/районами.
+  // На публичной карточке клиент не должен видеть "ООО Заречье, Рязанская обл." —
+  // только сам товар. Чистка строго клиентская, БД не правится.
+  function sanitizeOfferTitle(s) {
+    if (!s) return '';
+    let t = String(s).trim();
+    // 1. Срез по тире/дефису с пробелами (em-dash, en-dash, hyphen)
+    t = t.split(/\s+[—–-]\s+/)[0];
+    // 2. Срез скобок с юр.формами / адресами
+    t = t.replace(/\s*\((?:ООО|ИП|СПК|АО|ОАО|ЗАО|КФХ|ТД|ФХ|ОП|НПО)[^)]*\)/gi, '');
+    t = t.replace(/\s*\([^)]*(?:обл\.|область|район|р-н|край|респ\.|респ )[^)]*\)/gi, '');
+    // 3. Триггеры юр.форм и адресов: "ООО ...", "ИП Иванов ...", ", Рязанская обл.", ", Тульский р-н"
+    t = t.replace(/[\s,]+(?:ООО|ИП|СПК|АО|ОАО|ЗАО|КФХ|ТД|ФХ|ОП|НПО)\s.+$/i, '');
+    t = t.replace(/[\s,]+(?:[А-ЯЁA-Z][а-яёa-z]+(?:ская|ский|ское|ской)?\s+(?:обл\.?|область|край|респ\.?|респ\s)).*$/i, '');
+    // \b на кириллице в JS не работает — заменили на (?=\s|$|,)
+    t = t.replace(/[\s,]+(?:[А-ЯЁA-Z][а-яёa-z]+\s+)?(?:р-н|район)(?=\s|$|,).*$/i, '');
+    t = t.replace(/[\s,]+(?:с\.|с\s|д\.|д\s|пос\.|пос\s|г\.|г\s|пгт\.|пгт\s)\s*\S.*$/i, '');
+    return t.trim().replace(/[\s,]+$/, '');
+  }
 
-  /**
-   * Чистит заголовок offer'а от хвостов поставщиков.
-   * Из 1С приходят строки вида:
-   *   "Горох кормовой — Вадский район"
-   *   "Пшеница продовольственная — ИП Иванов"
-   *   "Соевые бобы (СПК Заря)"
-   *   "Ячмень кормовой ГОСТ - ООО Заречье, Рязанская обл."
-   * На публичной карточке имя поставщика и место — лишнее (для этого есть sellerSid + region).
-   *
-   * Правила:
-   *  1. Всё после " — " (em dash), " - " (hyphen+spaces) или " — " — отрезаем
-   *  2. Скобочные выражения "(...)" в конце — отрезаем если внутри есть ООО/ИП/СПК/АО/КФХ/ТД и т.д.
-   *  3. Триггерные слова в любой части строки — "ООО", "ИП", "СПК", "АО", "ЗАО", "КФХ", "ТД",
-   *     "ПАО", "ОАО", "район", "обл.", "область" — режут хвост от того места где встретились.
-   *  4. Двойные/множественные пробелы → одинарные, trim.
-   */
-  function sanitizeOfferTitle(raw) {
-    if (!raw) return 'Без названия';
-    let s = String(raw);
+  // Русские лейблы для технических ключей quality jsonb (case-insensitive lookup ниже).
+  // Ключи здесь — всегда lowercase. Включает транслитерации, которые льёт 1С.
+  const Q_LABELS = {
+    // Соответствие
+    gost: 'Соответствие ГОСТ',
+    iso: 'Соответствие ISO',
+    // Клейковина
+    gluten: 'Клейковина',
+    gluten_pct: 'Клейковина, %',
+    klejkovina: 'Клейковина',
+    klejkovina_pct: 'Клейковина, %',
+    klejk: 'Клейковина',
+    klejk_pct: 'Клейковина, %',
+    // Белок
+    protein: 'Белок',
+    protein_pct: 'Белок, %',
+    belok: 'Белок',
+    belok_pct: 'Белок, %',
+    // Влажность
+    moisture: 'Влажность',
+    moisture_pct: 'Влажность, %',
+    moisture_content: 'Влажность',
+    vlaga: 'Влажность',
+    vlaga_pct: 'Влажность, %',
+    vlazhnost: 'Влажность',
+    vlazhnost_pct: 'Влажность, %',
+    // Масличность
+    oil: 'Масличность',
+    oil_pct: 'Масличность, %',
+    oil_content: 'Масличность',
+    maslichnost: 'Масличность',
+    maslichnost_pct: 'Масличность, %',
+    // Число падения
+    falling_number: 'Число падения',
+    falling_num: 'Число падения',
+    chp: 'Число падения',
+    chislo_padeniya: 'Число падения',
+    // АСВ (абсолютно сухое вещество / сырая клейковина — оставляем как «АСВ»)
+    asv: 'АСВ',
+    asv_pct: 'АСВ, %',
+    // Натура
+    nature: 'Натура',
+    natura: 'Натура',
+    natura_gl: 'Натура, г/л',
+    weight_per_litre: 'Натура, г/л',
+    // Зольность
+    ash: 'Зольность',
+    ash_pct: 'Зольность, %',
+    ash_content: 'Зольность',
+    zolnost: 'Зольность',
+    zolnost_pct: 'Зольность, %',
+    // Примеси
+    impurity: 'Сорная примесь',
+    impurity_pct: 'Сорная примесь, %',
+    weed_impurity: 'Сорная примесь',
+    weed_pct: 'Сорная примесь, %',
+    sornaya_primes: 'Сорная примесь',
+    grain_impurity: 'Зерновая примесь',
+    grain_impurity_pct: 'Зерновая примесь, %',
+    zernovaya_primes: 'Зерновая примесь',
+    primesi: 'Примеси',
+    // Повреждения
+    damaged: 'Повреждённые зёрна',
+    damaged_pct: 'Повреждённые зёрна, %',
+    broken: 'Битые зёрна',
+    broken_pct: 'Битые зёрна, %',
+    // Прочие показатели
+    class: 'Класс',
+    klass: 'Класс',
+    grade: 'Класс',
+    variety: 'Сорт',
+    sort: 'Сорт',
+    crop_year: 'Год урожая',
+    harvest_year: 'Год урожая',
+    starch: 'Крахмал',
+    starch_pct: 'Крахмал, %',
+    krahmal: 'Крахмал',
+    fat: 'Жирность',
+    fat_pct: 'Жирность, %',
+    fiber: 'Клетчатка',
+    fiber_pct: 'Клетчатка, %',
+    sediment: 'Седиментация',
+    color: 'Цвет',
+    smell: 'Запах',
+    extractivity: 'Экстрактивность',
+    germination: 'Всхожесть',
+    germination_pct: 'Всхожесть, %',
+    type: 'Тип',
+    gmo: 'ГМО',
+    pesticides: 'Пестициды',
+    radiation: 'Радионуклиды',
+    // Прорастаемость
+    prorost: 'Проросшие зёрна',
+    prorost_pct: 'Проросшие зёрна, %'
+  };
 
-    // 1. Срез по тире/дефисам с пробелами
-    s = s.split(/\s+[—–-]\s+/)[0];
+  // Case-insensitive lookup: 1С может прислать "Klejkovina_pct" вместо "klejkovina_pct"
+  function qLabelFor(key) {
+    if (!key) return '';
+    const lk = String(key).toLowerCase();
+    if (Q_LABELS[lk]) return Q_LABELS[lk];
+    // Если ключ выглядит как технический (латиница + _), декорируем первой заглавной
+    if (/^[a-zа-я_]+$/i.test(key)) return key.charAt(0).toUpperCase() + key.slice(1);
+    return key;
+  }
 
-    // 2. Срез скобок если внутри юр. формы
-    s = s.replace(/\s*\((?:[^()]*?(?:ООО|ОАО|ПАО|ЗАО|АО|ИП|КФХ|СПК|ТД|ФХ)[^()]*)\)\s*$/i, '');
-    // Также срезаем любые скобки в конце (часто там лишние пометки 1С)
-    s = s.replace(/\s*\([^()]*\)\s*$/g, '');
-
-    // 3. Триггерные подстроки → режем от них до конца
-    const triggers = [
-      /\s+ООО\b.*$/i,
-      /\s+ОАО\b.*$/i,
-      /\s+ПАО\b.*$/i,
-      /\s+ЗАО\b.*$/i,
-      /\s+АО\b.*$/i,
-      /\s+ИП\s+\p{Lu}.*$/u,            // ИП с большой буквы фамилии
-      /\s+КФХ\b.*$/i,
-      /\s+СПК\b.*$/i,
-      /\s+ТД\b.*$/i,
-      /\s+ФХ\b.*$/i,
-      /,\s*[А-ЯЁ][а-яё]+\s+(?:обл|область|край|респ|район|р-н)\.?.*$/u,
-    ];
-    triggers.forEach(re => { s = s.replace(re, ''); });
-
-    // 4. Нормализация пробелов
-    s = s.replace(/\s+/g, ' ').trim();
-
-    // 5. Хвостовая пунктуация
-    s = s.replace(/[\s,;:—–-]+$/, '');
-
-    // Защита: если случайно срезали всё — вернём исходник
-    if (!s || s.length < 3) return String(raw).trim() || 'Без названия';
+  // Если ключ заканчивается на _pct и в значении нет «%», дописываем единицу.
+  // Это спасает случай, когда лейбл уже несёт «, %» — браузер не покажет дубль.
+  function qFormatValue(key, value) {
+    if (value == null) return '';
+    const s = String(value).trim();
+    if (!s) return '';
+    const lk = String(key || '').toLowerCase();
+    // лейбл «Клейковина, %» уже содержит %, поэтому в value % не добавляем
     return s;
   }
 
-  /**
-   * Словарь технических ключей quality → человеческие лейблы.
-   * Если ключ пришёл из 1С и не в словаре — отображаем как есть с capitalize первой буквы.
-   */
-  const Q_LABELS = {
-    // Базовые показатели
-    protein: 'Протеин',
-    gluten: 'Клейковина',
-    moisture: 'Влажность',
-    impurity: 'Сорная примесь',
-    nature: 'Натура',
-    falling_number: 'Число падения',
-    oil: 'Масличность',
-    oil_content: 'Масличность',
-    acid: 'Кислотное число',
-    acid_value: 'Кислотное число',
-    erucic: 'Эруковая кислота',
-    glucosinolates: 'Глюкозинолаты',
-    ash: 'Зольность',
-    starch: 'Крахмал',
-    fiber: 'Клетчатка',
-    fat: 'Жир',
-    damaged: 'Повреждённое зерно',
-    broken: 'Битое зерно',
-    grade: 'Класс',
-    class: 'Класс',
-    weight_per_litre: 'Натура',
-    test_weight: 'Натура',
-    // Стандарт
-    gost: 'ГОСТ',
-    standard: 'Стандарт',
-    // raw / notes — операционные пометки 1С, переводим если надо
-    raw: 'Качество',
-    notes: 'Примечания',
-    comment: 'Комментарий',
-    comments: 'Комментарий',
-  };
+  // Операционная каша от менеджеров 1С, которая не относится к качеству
+  const Q_NOISE_PATTERNS = [
+    /весь\s*объ[её]м/i,
+    /готов[ао]?\s*продать/i,
+    /продаётся/i,
+    /продается/i,
+    /available/i,
+    /на\s*склад/i,
+    /отгруз/i,
+    /ждёт.*цен/i,
+    /ждет.*цен/i,
+    /нужна\s*цен/i,
+    /не\s*помнит/i,
+    /говорит/i,
+    /хорошо/i,
+    /^\s*-?\s*$/,
+    /^нет$/i,
+    /^none$/i,
+    /^null$/i,
+    /^—+$/
+  ];
 
-  /**
-   * Нормализует объект quality перед отображением.
-   *  - Маппит ключи через Q_LABELS, неизвестные оставляет как есть с capitalize.
-   *  - Удаляет МУСОРНЫЕ записи: операционные пометки 1С типа
-   *    "весь объем готов продать", "продаётся", "available" — это не качество,
-   *    это статус-сообщения для менеджера.
-   *  - Булевы true/false превращает в "Да"/"Нет" (для пары gost:true → "ГОСТ: Да").
-   *  - Пустые/нулевые значения пропускает.
-   *  - Если значение это явно ключ-флаг (gost:true), показываем без "Да": "ГОСТ" в значении.
-   *
-   * @returns Array<[label, value]>
-   */
-  function sanitizeQuality(quality) {
-    if (!quality || typeof quality !== 'object') return [];
-    const TRASH_RE = /(весь\s+объ[её]м|готов[ао]?\s+продать|продается|продаётся|available|на\s+склад)/i;
-    const result = [];
+  function isNoise(v) {
+    if (v == null || v === '') return true;
+    const s = String(v).trim();
+    if (!s) return true;
+    return Q_NOISE_PATTERNS.some(re => re.test(s));
+  }
 
-    for (const [rawKey, rawVal] of Object.entries(quality)) {
-      // Скип явно пустого
-      if (rawVal == null || rawVal === '' || rawVal === false) continue;
-      // Скип служебных ключей
-      if (['_internal', 'source_row', 'source_supplier'].includes(rawKey)) continue;
+  // Ключи raw/notes — всегда свободный текст менеджера. Структурированные данные
+  // лежат в *_pct полях рядом. Никогда не рендерим raw/notes в публичной карточке.
+  const Q_ALWAYS_DROP = new Set(['raw', 'notes', 'comment', 'comments', 'note', 'manager_note', 'kommentarij']);
 
-      let key = String(rawKey).trim().toLowerCase();
-      let val = rawVal;
-
-      // Нормализация значения
-      if (val === true) {
-        // gost:true → показать "ГОСТ", значение "✓"
-        if (key === 'gost' || key === 'standard') {
-          result.push(['Соответствие ГОСТ', 'Да']);
-          continue;
-        }
-        val = 'Да';
+  // Приводим quality jsonb к виду [{label, value}], отфильтровывая мусор
+  // и схлопывая дубли. Дедуп по паре (label+value) — чтобы две истинно разные
+  // характеристики со значением «Да» (например, ГОСТ и Лаб.анализ) обе сохранились,
+  // а два gost-флага не повторились.
+  function sanitizeQuality(q) {
+    if (!q || typeof q !== 'object') return [];
+    const out = [];
+    const seenPairs = new Set();
+    for (const [k, raw] of Object.entries(q)) {
+      if (raw == null) continue;
+      const lk = String(k).toLowerCase();
+      if (Q_ALWAYS_DROP.has(lk)) continue;
+      let value;
+      if (typeof raw === 'boolean') {
+        value = raw ? 'Да' : 'Нет';
+      } else if (typeof raw === 'number') {
+        value = String(raw);
       } else {
-        val = String(val).trim();
-        if (!val || val === '0' || val === '—') continue;
-        // Мусор от 1С
-        if (TRASH_RE.test(val)) continue;
-        // Если значение "гост" текстом — показываем как метку
-        if (/^гост\s*$/i.test(val) && (key === 'gost' || key === 'raw' || key === 'standard')) {
-          result.push(['Соответствие ГОСТ', 'Да']);
-          continue;
-        }
+        const s = String(raw).trim();
+        if (isNoise(s)) continue;
+        value = s;
       }
-
-      // Подбираем лейбл
-      const label = Q_LABELS[key] || (key.charAt(0).toUpperCase() + key.slice(1));
-      result.push([label, val]);
+      value = qFormatValue(k, value);
+      if (!value) continue;
+      const label = qLabelFor(k);
+      const pair = label.toLowerCase() + '::' + value.toLowerCase();
+      if (seenPairs.has(pair)) continue;
+      seenPairs.add(pair);
+      out.push({ label, value });
     }
-
-    return result;
+    return out;
   }
 
   // ============================================================
@@ -3882,8 +3937,12 @@
     // Fallback to text-based estimate when offer has no city_id linked yet.
     const distance = (o.distance_km != null) ? o.distance_km : estimateDistance(o.region);
     const cityFrom = o.city || o.region || '—';
-    // Anonymized seller handle from profiles_public
+    // Anonymized seller handle from profiles_public — нужен ниже для возможных шильдиков
     const sellerSid = o.seller?.handle || ('A-' + (o.seller?.id || o.id || '').slice(-4).toUpperCase());
+    // Уникальный номер ЛОТА — на основе UUID оффера, не селлера.
+    // Все офферы из 1С-импорта идут под одним системным селлером, поэтому
+    // sellerSid у них совпадает и шильдик "Лот" выглядит одинаковым на всех карточках.
+    const lotSid = 'L-' + String(o.id || '').replace(/-/g, '').slice(-5).toUpperCase();
 
     // VIP / premium classes
     const isPremium = o.is_premium && (!o.premium_until || new Date(o.premium_until) > new Date());
@@ -3905,19 +3964,14 @@
       activeUntil = d.toLocaleDateString('ru-RU');
     }
 
-    // Quality params
-    // v2.6.19: маппинг технических ключей на русские лейблы +
-    // фильтрация мусорных значений (булевы строки, фразы "весь объем готов продать"
-    // от поставщиков 1С — они не относятся к качеству, это операционные пометки).
-    const qEntries = sanitizeQuality(o.quality || {});
-    const qRows = qEntries.map(([k, v]) => `
-      <div class="q-row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>
+    // Quality params — чистим мусор и переводим ключи
+    const qClean = sanitizeQuality(o.quality);
+    const qRows = qClean.map(({ label, value }) => `
+      <div class="q-row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(value)}</span></div>
     `).join('');
-    const qWord = qEntries.length === 1 ? 'параметр' : (qEntries.length < 5 ? 'параметра' : 'параметров');
+    const qWord = qClean.length === 1 ? 'параметр' : (qClean.length < 5 ? 'параметра' : 'параметров');
 
-    // v2.6.19: чистка заголовка от хвостов с названиями компаний/мест поставщиков.
-    // Из 1С прилетают строки вида «Горох кормовой — Вадский район», «Пшеница продовольственная — ИП Иванов».
-    // На публичной карточке всё после тире/двойного пробела — режем (вёртстку sellers'ов уже даёт sellerSid).
+    // Чистим название от хвостов с компаниями/адресами
     const cleanTitle = sanitizeOfferTitle(o.title);
 
     return `
@@ -3959,13 +4013,13 @@
             <div class="cell"><div class="k">Активно до</div><div class="v">${activeUntil}</div></div>
           </div>
         </div>
-        ${qEntries.length > 0 ? `
+        ${qClean.length > 0 ? `
           <button class="q-toggle" data-q="${o.id}" type="button" aria-expanded="false">
             <span class="lbl">
               <span class="lbl-ic">ⓘ</span>
               Показатели качества
             </span>
-            <span class="right"><span class="count">${qEntries.length} ${qWord}</span><span class="chev">▼</span></span>
+            <span class="right"><span class="count">${qClean.length} ${qWord}</span><span class="chev">▼</span></span>
           </button>
           <div class="q-body" data-q="${o.id}" hidden><div class="q-body-inner">${qRows}</div></div>
         ` : ''}
@@ -3983,7 +4037,7 @@
           <div class="supplier-stat">
             <span data-feature="escrow">Эскроу-защита</span>
             <span class="dot" data-feature="escrow"></span>
-            <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(sellerSid)}</span>
+            <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(lotSid)}</span>
           </div>
         </div>
         <div class="card-foot">
@@ -4265,11 +4319,80 @@
       // Никакой обёртки {offer:..., seller:...} нет — поле seller просто вложено.
       const flat = offer;
 
-      // Update title (page + h1) — v2.6.19: чистим хвосты поставщиков
+      // Update title (page + h1) — чистим хвосты от 1С
+      const productTitle = sanitizeOfferTitle(flat.title);
       const titleEl = document.querySelector('h1');
-      const cleanTitle = sanitizeOfferTitle(flat.title);
-      if (titleEl && flat.title) titleEl.textContent = cleanTitle;
-      if (flat.title) document.title = `${cleanTitle} — Русский Урожай`;
+      if (titleEl && productTitle) titleEl.textContent = productTitle;
+      if (productTitle) document.title = `${productTitle} — Русский Урожай`;
+
+      // Breadcrumb «Главная / Купить / <чистое название>»
+      const crumb = document.getElementById('productCrumb');
+      if (crumb && productTitle) crumb.textContent = productTitle;
+
+      // Subtitle: «<культура> · урожай <год> · ID оффера <короткий код>»
+      const subtitleEl = document.getElementById('productSubtitle');
+      const offerCodeEl = document.getElementById('productOfferCode');
+      if (offerCodeEl) {
+        offerCodeEl.textContent = 'L-' + String(flat.id || '').replace(/-/g, '').slice(-5).toUpperCase();
+      }
+      if (subtitleEl) {
+        const cropName = flat.crop?.name || '';
+        const year = flat.harvest_year || '';
+        const offerCode = offerCodeEl ? offerCodeEl.outerHTML : '';
+        const parts = [];
+        if (cropName) parts.push(escapeHtml(cropName));
+        if (year) parts.push('урожай ' + escapeHtml(String(year)));
+        parts.push('ID оффера ' + offerCode);
+        subtitleEl.innerHTML = parts.join(' · ');
+      }
+
+      // Attrs: объём, мин.партия, год, регион, дистанция, активно до
+      const volumeEl = document.getElementById('productVolume');
+      if (volumeEl && flat.volume_tons != null) volumeEl.textContent = flat.volume_tons + ' тонн';
+      const minLotEl = document.getElementById('productMinLot');
+      if (minLotEl) {
+        if (flat.min_volume_tons) minLotEl.textContent = flat.min_volume_tons + ' тонн';
+        else minLotEl.textContent = '—';
+      }
+      const yearEl = document.getElementById('productHarvestYear');
+      if (yearEl) yearEl.textContent = flat.harvest_year || '—';
+      const regionEl = document.getElementById('productRegion');
+      if (regionEl) {
+        // «Воротынец, Нижегородская область» или просто регион
+        const city = flat.city || '';
+        const region = flat.region || '';
+        regionEl.textContent = (city && region) ? `${city}, ${region}` : (region || city || '—');
+      }
+      const distEl = document.getElementById('productDistance');
+      if (distEl) {
+        if (flat.distance_km != null) distEl.textContent = String(flat.distance_km).replace('.', ',');
+        else distEl.textContent = '—';
+      }
+      const activeEl = document.getElementById('productActiveUntil');
+      if (activeEl) {
+        if (flat.expires_at) {
+          activeEl.textContent = new Date(flat.expires_at).toLocaleDateString('ru-RU');
+        } else if (flat.created_at) {
+          const d = new Date(flat.created_at); d.setDate(d.getDate() + 30);
+          activeEl.textContent = d.toLocaleDateString('ru-RU');
+        } else {
+          activeEl.textContent = '—';
+        }
+      }
+
+      // Mobile sticky bottom bar — цена и НДС
+      const mPrice = document.getElementById('mobilePrice');
+      if (mPrice && flat.price_kopecks != null) {
+        mPrice.textContent = (flat.price_kopecks/100).toLocaleString('ru-RU') + ' ₽/т';
+      }
+      const mVat = document.getElementById('mobileVat');
+      if (mVat) {
+        const vatMap = {
+          with_vat_5:'с НДС 5%', with_vat_7:'с НДС 7%', with_vat_10:'с НДС 10%',
+          with_vat_20:'с НДС 20%', with_vat_22:'с НДС 22%', without_vat:'без НДС'
+        };
+        mVat.textContent = vatMap[flat.vat] || 'с НДС';
+      }
 
       // Update price card
       if (buyCard) {
@@ -4313,26 +4436,29 @@
       // Show quality. Источники:
       //   1) flat.quality_specs (новый формат: массив {param_key, value, unit, example, ...})
       //   2) flat.quality (legacy jsonb {ключ:значение}) — если RPC не отдал specs
-      // v2.6.19: мусорные пометки 1С ("весь объем готов продать") фильтруются,
-      // технические ключи (raw, gost, notes) маппятся в русские лейблы.
       if (qualityEl && qualityList) {
         let rows = '';
         if (Array.isArray(flat.quality_specs) && flat.quality_specs.length) {
-          // Показываем только параметры, которые продавец заполнил (value != null/'')
+          // Фильтр: только заполненные значения (RPC может вернуть пустой шаблон по культуре с value:null)
+          const seenPairs = new Set();
           rows = flat.quality_specs
-            .filter(s => s && s.value != null && s.value !== '')
+            .filter(s => s && s.value != null && s.value !== '' && !isNoise(s.value))
+            .filter(s => !Q_ALWAYS_DROP.has(String(s.param_key || '').toLowerCase()))
             .map(s => {
-              // value уже может содержать unit ("5 %") — не клеим повторно
-              const v = String(s.value);
-              // Если param_key — технический английский, маппим
-              const key = (s.param_key || '').toString().trim().toLowerCase();
-              const label = Q_LABELS[key] || s.param_key || '';
+              const key = s.param_key || '';
+              const label = qLabelFor(key);
+              const v = qFormatValue(key, s.value);
+              const pair = label.toLowerCase() + '::' + v.toLowerCase();
+              if (!v || seenPairs.has(pair)) return '';
+              seenPairs.add(pair);
               return `<div class="row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(v)}</span></div>`;
-            }).join('');
-        } else {
-          const cleanEntries = sanitizeQuality(flat.quality || {});
-          rows = cleanEntries.map(([k, v]) =>
-            `<div class="row"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(String(v))}</span></div>`
+            }).filter(Boolean).join('');
+        }
+        // Fallback на legacy quality jsonb если specs пуст или дал пустой результат
+        if (!rows && flat.quality) {
+          const clean = sanitizeQuality(flat.quality);
+          rows = clean.map(({ label, value }) =>
+            `<div class="row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(value)}</span></div>`
           ).join('');
         }
         if (rows) {
@@ -4343,7 +4469,7 @@
             if (h3) h3.innerHTML = '✅ Показатели качества (лабораторный анализ)';
           }
         } else {
-          // Все значения оказались мусором — скрываем блок целиком
+          // если после чистки не осталось ничего полезного — прячем блок
           qualityEl.style.display = 'none';
         }
       }

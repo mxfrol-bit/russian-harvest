@@ -934,15 +934,11 @@ def crop_filter_tree():
     def parent_with_subs(parent_key, parent_label, subs):
         """Родитель + кнопка toggle + collapsible <div> со списком sub-чекбоксов."""
         sub_rows = '\n              '.join(row(k, l) for k, l in subs)
-        # v2.6.15: атрибут hidden убран — конфликтовал с CSS-классом .expanded
-        # на мобиле (когда родитель .filters-aside сам имеет display:none, браузерный
-        # дефолт [hidden]{display:none} мешал последующему развёртыванию). Видимостью
-        # теперь управляет ИСКЛЮЧИТЕЛЬНО класс .expanded в CSS (max-height transition).
         return f'''<div class="crop-row" data-parent="{parent_key}">
               <label class="filter-check filter-check-parent"><input type="checkbox" data-filter="crop" value="{parent_key}"><span>{parent_label}</span><span class="count">0</span></label>
               <button class="crop-toggle" type="button" data-toggle="{parent_key}" aria-expanded="false" aria-label="Развернуть подкатегории">▾</button>
             </div>
-            <div class="filter-subitems" data-subitems="{parent_key}">
+            <div class="filter-subitems" data-subitems="{parent_key}" hidden>
               {sub_rows}
             </div>'''
 

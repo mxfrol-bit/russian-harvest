@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/main.css?v=1778700000">
-<link rel="stylesheet" href="/assets/css/support-chat.css?v=1778700000">
+<link rel="stylesheet" href="/assets/css/main.css?v=1778749066">
+<link rel="stylesheet" href="/assets/css/support-chat.css?v=1778520600">
 </head>
 <body>
 
@@ -92,7 +92,7 @@
       <span class="sep">/</span>
       <a href="/catalog.html">Купить</a>
       <span class="sep">/</span>
-      <span>Пшеница 3 класс</span>
+      <span id="productCrumb">Пшеница 3 класс</span>
     </div>
   </div>
 </section>
@@ -102,15 +102,15 @@
 
     <div class="product-main">
       <h1>Пшеница 3 класс</h1>
-      <p class="subtitle">Продовольственная · урожай 2025 · ID оффера <span class="mono">ОФ-4721/25</span></p>
+      <p class="subtitle" id="productSubtitle">Продовольственная · урожай 2025 · ID оффера <span class="mono" id="productOfferCode">ОФ-4721/25</span></p>
 
       <div class="product-attrs">
-        <div class="cell"><div class="k">Объём партии</div><div class="v">120 тонн</div></div>
-        <div class="cell"><div class="k">Мин. партия</div><div class="v">20 тонн</div></div>
-        <div class="cell"><div class="k">Год урожая</div><div class="v">2025</div></div>
-        <div class="cell"><div class="k">Регион отгрузки</div><div class="v">Балаково, Саратовская обл.</div></div>
-        <div class="cell"><div class="k">Расстояние до вас</div><div class="v mono">539,4</div></div>
-        <div class="cell"><div class="k">Активно до</div><div class="v">24.04.2026</div></div>
+        <div class="cell"><div class="k">Объём партии</div><div class="v" id="productVolume">120 тонн</div></div>
+        <div class="cell"><div class="k">Мин. партия</div><div class="v" id="productMinLot">20 тонн</div></div>
+        <div class="cell"><div class="k">Год урожая</div><div class="v" id="productHarvestYear">2025</div></div>
+        <div class="cell"><div class="k">Регион отгрузки</div><div class="v" id="productRegion">Балаково, Саратовская обл.</div></div>
+        <div class="cell"><div class="k">Расстояние до вас</div><div class="v mono" id="productDistance">539,4</div></div>
+        <div class="cell"><div class="k">Активно до</div><div class="v" id="productActiveUntil">24.04.2026</div></div>
       </div>
 
       <!-- Quality section — loaded dynamically from DB offer -->
@@ -169,8 +169,8 @@
 <!-- Mobile sticky bottom -->
 <div class="mobile-bottom-bar">
   <div style="flex:1">
-    <div style="font-size:12px;color:var(--slate-500);font-weight:600">14,200 ₽/т</div>
-    <div style="font-size:11px;color:var(--slate-400)">с НДС</div>
+    <div style="font-size:12px;color:var(--slate-500);font-weight:600" id="mobilePrice">14,200 ₽/т</div>
+    <div style="font-size:11px;color:var(--slate-400)" id="mobileVat">с НДС</div>
   </div>
   <a class="btn btn-outline btn-sm" href="#">Чат</a>
   <a class="btn btn-primary btn-sm" href="#">Купить</a>
@@ -421,12 +421,12 @@
   </div>
 </div>
 
-<script src="/assets/js/config.js?v=1778700000"></script>
-<script src="/assets/js/cities.js?v=1778700000"></script>
-<script src="/assets/js/api.js?v=1778700000"></script>
-<script src="/assets/js/main.js?v=1778700000"></script>
-<script src="/assets/js/admin.js?v=1778700000"></script>
-<script src="/assets/js/tour.js?v=1778700000"></script>
-<script src="/assets/js/support-chat.js?v=1778700000" defer></script>
+<script src="/assets/js/config.js?v=1778749066"></script>
+<script src="/assets/js/cities.js?v=1778749066"></script>
+<script src="/assets/js/api.js?v=1778749066"></script>
+<script src="/assets/js/main.js?v=1778749066"></script>
+<script src="/assets/js/admin.js?v=1778749066"></script>
+<script src="/assets/js/tour.js?v=1778749066"></script>
+<script src="/assets/js/support-chat.js?v=1778520600" defer></script>
 </body>
 </html>
