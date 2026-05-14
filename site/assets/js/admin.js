@@ -3709,6 +3709,61 @@
     return out;
   }
 
+  /**
+   * v2.6.22: ЕДИНЫЙ РЕНДЕРЕР качества. До этого каталог рендерил из o.quality (jsonb),
+   * а страница продукта — из flat.quality_specs (массив normalized). Это давало РАЗНЫЙ
+   * вид одного и того же оффера: в карточке одни параметры, после клика — другие.
+   *
+   * Теперь единая функция собирает данные из ОБОИХ источников, прогоняет через
+   * один и тот же sanitize-движок (qLabelFor + qFormatValue + isNoise + Q_ALWAYS_DROP)
+   * и возвращает уже отдедуплицированный массив [{label, value}].
+   *
+   * Приоритеты при коллизии (один параметр в обоих источниках):
+   *   quality_specs (нормализованная таблица) > quality jsonb (legacy)
+   * — quality_specs обычно заполняется явно менеджером или RPC, jsonb приходит
+   *   сырым из 1С и нужен только если specs пустой.
+   *
+   * @param {Object} offer  — оффер с полями quality (jsonb) и/или quality_specs (array)
+   * @returns {Array<{label, value}>}
+   */
+  function renderQualityRows(offer) {
+    if (!offer) return [];
+    const out = [];
+    const seenPairs = new Set();
+    const seenLabels = new Set();   // для приоритета specs над jsonb
+
+    // 1) Сначала specs (выше приоритет)
+    if (Array.isArray(offer.quality_specs)) {
+      for (const s of offer.quality_specs) {
+        if (!s || s.value == null || s.value === '') continue;
+        const key = String(s.param_key || '').toLowerCase();
+        if (!key || Q_ALWAYS_DROP.has(key)) continue;
+        if (isNoise(s.value)) continue;
+        const label = qLabelFor(s.param_key);
+        const value = qFormatValue(s.param_key, s.value);
+        if (!value) continue;
+        const pair = label.toLowerCase() + '::' + value.toLowerCase();
+        if (seenPairs.has(pair)) continue;
+        seenPairs.add(pair);
+        seenLabels.add(label.toLowerCase());
+        out.push({ label, value });
+      }
+    }
+
+    // 2) Затем quality jsonb — только те ключи, чьи лейблы ещё не показаны
+    const fromJsonb = sanitizeQuality(offer.quality);
+    for (const row of fromJsonb) {
+      const lblLow = row.label.toLowerCase();
+      if (seenLabels.has(lblLow)) continue;   // specs победил — не дублируем
+      const pair = lblLow + '::' + row.value.toLowerCase();
+      if (seenPairs.has(pair)) continue;
+      seenPairs.add(pair);
+      out.push(row);
+    }
+
+    return out;
+  }
+
   // ============================================================
   // DIAGNOSTIC HELPERS
   // ============================================================
@@ -3964,8 +4019,10 @@
       activeUntil = d.toLocaleDateString('ru-RU');
     }
 
-    // Quality params — чистим мусор и переводим ключи
-    const qClean = sanitizeQuality(o.quality);
+    // v2.6.22: единый источник истины — renderQualityRows() обрабатывает
+    // и quality jsonb, и quality_specs (если RPC отдаст). Тот же путь
+    // используется на странице продукта — карточка и продукт показывают одно.
+    const qClean = renderQualityRows(o);
     const qRows = qClean.map(({ label, value }) => `
       <div class="q-row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(value)}</span></div>
     `).join('');
@@ -4433,34 +4490,15 @@
         }
       }
 
-      // Show quality. Источники:
-      //   1) flat.quality_specs (новый формат: массив {param_key, value, unit, example, ...})
-      //   2) flat.quality (legacy jsonb {ключ:значение}) — если RPC не отдал specs
+      // Show quality. v2.6.22: единый renderQualityRows(flat) обрабатывает
+      // обоих источников (quality_specs массив + quality jsonb) — тот же путь
+      // что и в каталоге. Раньше каталог рендерил из quality jsonb, а продукт
+      // из quality_specs — это давало РАЗНЫЙ вид одного оффера.
       if (qualityEl && qualityList) {
-        let rows = '';
-        if (Array.isArray(flat.quality_specs) && flat.quality_specs.length) {
-          // Фильтр: только заполненные значения (RPC может вернуть пустой шаблон по культуре с value:null)
-          const seenPairs = new Set();
-          rows = flat.quality_specs
-            .filter(s => s && s.value != null && s.value !== '' && !isNoise(s.value))
-            .filter(s => !Q_ALWAYS_DROP.has(String(s.param_key || '').toLowerCase()))
-            .map(s => {
-              const key = s.param_key || '';
-              const label = qLabelFor(key);
-              const v = qFormatValue(key, s.value);
-              const pair = label.toLowerCase() + '::' + v.toLowerCase();
-              if (!v || seenPairs.has(pair)) return '';
-              seenPairs.add(pair);
-              return `<div class="row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(v)}</span></div>`;
-            }).filter(Boolean).join('');
-        }
-        // Fallback на legacy quality jsonb если specs пуст или дал пустой результат
-        if (!rows && flat.quality) {
-          const clean = sanitizeQuality(flat.quality);
-          rows = clean.map(({ label, value }) =>
-            `<div class="row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(value)}</span></div>`
-          ).join('');
-        }
+        const clean = renderQualityRows(flat);
+        const rows = clean.map(({ label, value }) =>
+          `<div class="row"><span class="k">${escapeHtml(label)}</span><span class="v">${escapeHtml(value)}</span></div>`
+        ).join('');
         if (rows) {
           qualityList.innerHTML = rows;
           qualityEl.style.display = '';

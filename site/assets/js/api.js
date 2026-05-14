@@ -1355,6 +1355,101 @@
     return error?.message || 'Не удалось выполнить действие';
   }
 
+  // ============================================================
+  // ADMIN: 1C IMPORT (v2.6.22)
+  // bucket "uploads" + table "uploads" + table "needs"
+  // Доступ — только role='admin' через RLS-политики в Supabase
+  // (см. docs/migrations/2026-05-12_v2_6_17_admin_uploads_rls.sql)
+  // ============================================================
+  api.import1c = {
+    /**
+     * Список файлов JSON от 1С из таблицы uploads.
+     * @param {Object} opts { status?: 'new'|'saved'|'done'|'published', search?: string, limit?: number }
+     */
+    async listFiles(opts = {}) {
+      const sb = await ensureSupabase();
+      let q = sb.from('uploads').select('*').order('uploaded_at', { ascending: false }).limit(opts.limit || 200);
+      if (opts.status && opts.status !== 'all') q = q.eq('status', opts.status);
+      if (opts.search) q = q.ilike('filename', `%${opts.search}%`);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data || [];
+    },
+
+    /**
+     * Сводка по статусам — для счётчиков в табах.
+     */
+    async statusCounts() {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.from('uploads').select('status');
+      if (error) throw error;
+      const counts = { all: data.length, new: 0, saved: 0, done: 0, published: 0 };
+      data.forEach(r => {
+        if (counts[r.status] !== undefined) counts[r.status]++;
+      });
+      return counts;
+    },
+
+    /**
+     * Скачать содержимое JSON-файла из bucket "uploads" и распарсить.
+     * @param {string} filename
+     */
+    async downloadJson(filename) {
+      const sb = await ensureSupabase();
+      const { data, error } = await sb.storage.from('uploads').download(filename);
+      if (error) throw error;
+      const text = await data.text();
+      // 1С пишет с BOM (utf-8-sig) — убираем
+      const cleaned = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {
+        throw new Error('Файл не является валидным JSON: ' + e.message);
+      }
+    },
+
+    /**
+     * Изменить статус файла (например, archived).
+     */
+    async setStatus(filename, status) {
+      const sb = await ensureSupabase();
+      const { error } = await sb.from('uploads').update({ status }).eq('filename', filename);
+      if (error) throw error;
+    },
+
+    /**
+     * AI-анализ файла через Supabase Edge Function.
+     * Безопасно: ключ Railway-сервиса хранится в Supabase secrets, не виден в браузере.
+     * Edge Function проверяет JWT админа двойной валидацией (auth.uid +
+     * profiles.role='admin'), затем форвардит запрос на /analyze/{filename}
+     * Railway-сервиса.
+     */
+    async aiAnalyze(filename) {
+      const session = await getCurrentSession();
+      if (!session) throw new Error('Сессия не активна — войдите заново');
+
+      const cfg = window.RH_CONFIG || {};
+      const url = `${cfg.SUPABASE_URL}/functions/v1/import-1c-analyze`;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'apikey': cfg.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ filename }),
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        if (resp.status === 404) {
+          throw new Error('Edge Function "import-1c-analyze" не задеплоена в Supabase. См. docs/edge-functions/README.md');
+        }
+        throw new Error(`Edge Function вернул ${resp.status}: ${text.slice(0, 200)}`);
+      }
+      return resp.json();
+    },
+  };
+
   // Expose globally
   window.RH_API = api;
 
