@@ -27,9 +27,14 @@
   // ============================================================
 
   // UUID системного продавца «Импорт из 1С».
-  // Создан UPDATE-ом в Supabase (см. историю v2.6.24).
+  // Создан INSERT-ом в Supabase (см. историю v2.6.24).
   // ВНИМАНИЕ: если поменяете системный профиль — обновить здесь!
   const SYSTEM_SELLER_ID = '30f6fd5d-6235-4596-9c52-b00f40c8bc21';
+
+  // UUID системного покупателя «Импорт из 1С (покупатель)» (v2.6.25).
+  // Используется для buyer_requests где buyer_id обязателен (NOT NULL).
+  // Реальный buyer (ООО Клеман, ЭЛИНАР-БРОЙЛЕР и т.д.) хранится в meta.buyer_company.
+  const SYSTEM_BUYER_ID = 'd3f38864-5ae3-429a-ae7c-3962fdec9a43';
 
   // Префикс external_id для идемпотентности.
   // Формат: 1c_<НомерЗаявки>_<НомерСтроки>
@@ -359,7 +364,26 @@
   // ============================================================
   /**
    * Из файла potrebnost формирует 1 запись для buyer_requests.
-   * Покупатель анонимизируется (контрагент в meta, видим только админу).
+   *
+   * РЕАЛЬНАЯ СХЕМА buyer_requests (v2.6.25, после миграции):
+   *   buyer_id          uuid NOT NULL          — системный, реальный в meta
+   *   crop_id           text nullable
+   *   title             text NOT NULL
+   *   description       text nullable
+   *   target_price_kopecks bigint nullable
+   *   vat               vat_type default 'with_vat_10'
+   *   volume_tons       numeric NOT NULL
+   *   delivery_region   text NOT NULL          — !!! не region, а delivery_region
+   *   delivery_city     text nullable          — !!! не city
+   *   needed_by         date nullable
+   *   status            request_status default 'open' (!) — не 'active'
+   *   external_id       text unique            — добавлено миграцией v2.6.25
+   *   external_source   text                   — добавлено миграцией v2.6.25
+   *   meta              jsonb default '{}'     — добавлено миграцией v2.6.25
+   *
+   * Покупатель анонимизируется: buyer_id всегда системный, реальный
+   * (ООО Клеман, ЭЛИНАР-БРОЙЛЕР) хранится в meta.buyer_company.
+   * needed_by — пытаемся распарсить «СрокПоставки» из 1С, иначе NULL.
    */
   function buildBuyerRequestDraft(file) {
     const cropMap = mapCrop(file.Номенклатура);
@@ -375,14 +399,43 @@
     const fileNumber = String(file.Номер || '').trim() || 'unknown';
     const externalId = `${EXTERNAL_PREFIX}_req_${fileNumber}`;
 
+    // Цена-таргет: если есть Сумма и Объём — рассчитаем удельную цену
+    let targetPriceKopecks = null;
+    if (totalSum > 0 && totalVolume > 0) {
+      const perTon = totalSum / totalVolume;
+      // Защита от дичи: если результат < 100 ₽ или > 200_000 ₽ за тонну —
+      // значит сумма не равна цене (может быть «сумма» в смысле объёма)
+      if (perTon >= 100 && perTon <= 200000) {
+        targetPriceKopecks = Math.round(perTon * 100);
+      }
+    }
+
+    // Срок поставки — пытаемся распарсить дату из СрокПоставки 1С
+    let neededBy = null;
+    const srok = file.СрокПоставки;
+    if (srok && typeof srok === 'string') {
+      const m = srok.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/);
+      if (m) {
+        const dd = m[1].padStart(2, '0');
+        const mm = m[2].padStart(2, '0');
+        neededBy = `${m[3]}-${mm}-${dd}`;
+      }
+    }
+
     return {
-      crop_id: cropMap.crop_id,
+      // Обязательные поля под РЕАЛЬНУЮ схему
+      buyer_id: SYSTEM_BUYER_ID,
       title: 'Закупка: ' + cropMap.normalized_name,
       volume_tons: totalVolume,
-      region: deliveryParsed.region,
-      city: deliveryParsed.city,
-      delivery_address: deliveryParsed.raw,
-      status: 'active',
+      delivery_region: deliveryParsed.region !== '—' ? deliveryParsed.region : 'Россия',
+      status: 'open',
+      // Опциональные
+      crop_id: cropMap.crop_id,
+      delivery_city: deliveryParsed.city,
+      needed_by: neededBy,
+      target_price_kopecks: targetPriceKopecks,
+      vat: 'with_vat_10',
+      // Новые поля (миграция v2.6.25)
       external_id: externalId,
       external_source: '1c',
       meta: {
@@ -391,6 +444,8 @@
         date_1c: file.Дата || null,
         total_sum: totalSum,
         raw_nomen: file.Номенклатура || null,
+        raw_delivery_addr: deliveryParsed.raw,
+        srok_postavki_raw: srok || null,
         suppliers_count: (file.Закупка || []).length,
         imported_at: new Date().toISOString(),
       },
