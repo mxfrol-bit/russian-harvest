@@ -33,6 +33,7 @@
     currentFilter: 'all',  // all|new|saved|done
     searchQuery: '',
     counts: { all: 0, new: 0, saved: 0, done: 0, published: 0 },
+    currentParsed: null,   // распарсенный JSON текущего открытого файла (для publishOffers)
   };
 
   // ========================================================
@@ -242,6 +243,8 @@
     try {
       const data = await window.RH_API.import1c.downloadJson(filename);
       const type = detectFileType(data, filename);
+      // Сохраняем для последующей публикации
+      state.currentParsed = { ...data, _type: type, _filename: filename };
       switch (type) {
         case 'orders':     renderOrders(filename, data); break;
         case 'potrebnost': renderPotrebnost(filename, data); break;
@@ -278,6 +281,7 @@
   function renderFileActions(filename, currentStatus) {
     const cfg = window.RH_CONFIG || {};
     const hasAI = !!(cfg.SUPABASE_URL);  // AI идёт через Edge Function — нужен Supabase URL
+    const hasPublish = !!window.RH_Import1C_Publish && state.currentParsed && state.currentParsed._type === 'potrebnost';
     return `
       <div class="ai-file-actions" data-filename="${escapeHtml(filename)}">
         <div class="ai-file-actions-group">
@@ -290,6 +294,11 @@
           `).join('')}
         </div>
         <div class="ai-file-actions-group">
+          ${hasPublish ? `
+            <button class="ai-btn ai-btn-publish ai-btn-sm" data-action="publish" type="button" title="Опубликовать в каталог Купить + создать заявку в Продать">
+              🚀 Опубликовать в каталог
+            </button>
+          ` : ''}
           ${hasAI ? `
             <button class="ai-btn ai-btn-primary ai-btn-sm" data-action="ai-analyze" type="button" title="Анализ файла через AI и отправка в Telegram-бот">
               🤖 AI-анализ → Telegram
@@ -391,6 +400,204 @@
         }
       });
     }
+
+    // v2.6.24: Опубликовать в каталог
+    const pubBtn = root.querySelector('[data-action="publish"]');
+    if (pubBtn) {
+      pubBtn.addEventListener('click', () => {
+        openPublishDialog(filename);
+      });
+    }
+  }
+
+  // ============================================================
+  // v2.6.24: ДИАЛОГ ПУБЛИКАЦИИ
+  // ============================================================
+  /**
+   * Открывает модалку с превью офферов и кнопкой подтверждения.
+   * Использует window.RH_Import1C_Publish для построения черновиков.
+   */
+  function openPublishDialog(filename) {
+    if (!window.RH_Import1C_Publish) {
+      toast('Модуль публикации не загружен', 'error');
+      return;
+    }
+    if (!state.currentParsed || state.currentParsed._type !== 'potrebnost') {
+      toast('Публикация работает только для potrebnost-файлов', 'error');
+      return;
+    }
+
+    const file = state.currentParsed;
+    const result = window.RH_Import1C_Publish.buildDrafts(file);
+
+    // Создаём модалку
+    const modal = document.createElement('div');
+    modal.className = 'ai-publish-modal';
+    modal.innerHTML = `
+      <div class="ai-publish-backdrop"></div>
+      <div class="ai-publish-panel">
+        <div class="ai-publish-head">
+          <div>
+            <h2>🚀 Публикация в каталог</h2>
+            <p class="ai-publish-summary">
+              Файл №${escapeHtml(String(result.summary.file_number || '—'))} ·
+              Покупатель: <b>${escapeHtml(result.summary.buyer || '—')}</b> ·
+              Культура: <b>${escapeHtml(result.summary.nomen || '—')}</b><br>
+              Будет опубликовано: <b>${result.summary.publishable} из ${result.summary.offers_count}</b> офферов,
+              общий объём ~ ${Math.round(result.summary.total_volume)} т
+            </p>
+          </div>
+          <button class="ai-publish-close" type="button" aria-label="Закрыть">✕</button>
+        </div>
+
+        <div class="ai-publish-body">
+          ${result.offers.length === 0 ? `
+            <div class="ai-empty" style="padding:40px 20px;text-align:center">
+              <div class="ai-empty-ic">📭</div>
+              <h3>Поставщиков нет</h3>
+              <p>В файле массив «Закупка» пустой. Публикация офферов невозможна.<br>
+              Но заявка покупателя в разделе «Продать» будет создана.</p>
+            </div>
+          ` : `
+            <div class="ai-publish-controls">
+              <label class="ai-publish-checkall">
+                <input type="checkbox" id="aiPubCheckAll" checked />
+                <span>Выбрать все (${result.offers.length})</span>
+              </label>
+              <span class="ai-publish-hint">Снимите галочки с тех поставщиков, которых не хотите публиковать</span>
+            </div>
+            <div class="ai-publish-drafts" id="aiPubDrafts">
+              ${result.offers.map((d, i) => renderDraftCard(d, i)).join('')}
+            </div>
+          `}
+
+          <div class="ai-publish-extra">
+            <label class="ai-publish-checkall">
+              <input type="checkbox" id="aiPubBuyerReq" checked />
+              <span>📋 Также создать заявку-потребность в разделе «Продать»</span>
+            </label>
+            <span class="ai-publish-hint">Покупатель будет анонимизирован (видно только админам)</span>
+          </div>
+        </div>
+
+        <div class="ai-publish-foot">
+          <button class="ai-btn ai-btn-outline" data-action="cancel" type="button">Отмена</button>
+          <button class="ai-btn ai-btn-publish" data-action="confirm" type="button">
+            ✓ Подтвердить публикацию
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+
+    // Биндинги
+    const close = () => {
+      modal.classList.remove('is-open');
+      setTimeout(() => modal.remove(), 200);
+    };
+    modal.querySelector('.ai-publish-backdrop').addEventListener('click', close);
+    modal.querySelector('.ai-publish-close').addEventListener('click', close);
+    modal.querySelector('[data-action="cancel"]').addEventListener('click', close);
+
+    // Checkbox «выбрать все»
+    const checkAll = modal.querySelector('#aiPubCheckAll');
+    if (checkAll) {
+      checkAll.addEventListener('change', () => {
+        modal.querySelectorAll('.ai-pub-draft-check').forEach(cb => {
+          // ВНИМАНИЕ: не включаем те у которых есть errors — там disabled
+          if (!cb.disabled) cb.checked = checkAll.checked;
+        });
+      });
+    }
+
+    // Confirm
+    modal.querySelector('[data-action="confirm"]').addEventListener('click', async () => {
+      const btn = modal.querySelector('[data-action="confirm"]');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="ai-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></span> Публикуем…';
+
+      try {
+        // Собираем чекбоксы офферов
+        const selected = result.offers.map((d, i) => {
+          const cb = modal.querySelector(`.ai-pub-draft-check[data-idx="${i}"]`);
+          return !!(cb && cb.checked && !cb.disabled);
+        });
+
+        const offerResult = await window.RH_Import1C_Publish.publishOffers(result.offers, selected);
+        let buyerReqResult = null;
+        const buyerCb = modal.querySelector('#aiPubBuyerReq');
+        if (buyerCb && buyerCb.checked) {
+          buyerReqResult = await window.RH_Import1C_Publish.publishBuyerRequest(result.buyer_request);
+        }
+
+        close();
+        const msg = `Опубликовано: ${offerResult.inserted} офферов` +
+          (buyerReqResult && buyerReqResult.id ? ' + 1 заявка в Продать' : '') +
+          (buyerReqResult && buyerReqResult.error ? ` (заявка не создана: ${buyerReqResult.error})` : '');
+        toast(msg, 'success');
+
+        // Меняем статус файла на «done»
+        try {
+          await window.RH_API.import1c.setStatus(filename, 'done');
+          await refreshAll();
+          selectFile(filename);
+        } catch(_) {}
+      } catch (err) {
+        console.error('[Publish] failed:', err);
+        toast('Ошибка публикации: ' + (err.message || String(err)), 'error');
+        btn.disabled = false;
+        btn.innerHTML = '✓ Подтвердить публикацию';
+      }
+    });
+  }
+
+  /**
+   * Рендерит карточку черновика оффера с чекбоксом и предупреждениями.
+   */
+  function renderDraftCard(draft, idx) {
+    const errors = draft._anomalies.filter(a => a.level === 'error');
+    const warnings = draft._anomalies.filter(a => a.level === 'warning');
+    const infos = draft._anomalies.filter(a => a.level === 'info');
+    const hasErrors = errors.length > 0;
+
+    const priceR = draft.price_kopecks
+      ? (draft.price_kopecks / 100).toLocaleString('ru-RU')
+      : '—';
+
+    const qualityRows = Object.entries(draft.quality || {}).map(([k, v]) => `
+      <span class="ai-pub-q-chip">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>
+    `).join('');
+
+    return `
+      <div class="ai-pub-draft ${hasErrors ? 'has-errors' : ''}">
+        <div class="ai-pub-draft-check-wrap">
+          <input type="checkbox" class="ai-pub-draft-check" data-idx="${idx}"
+                 ${hasErrors ? 'disabled' : 'checked'} />
+        </div>
+        <div class="ai-pub-draft-body">
+          <div class="ai-pub-draft-head">
+            <h4>${escapeHtml(draft.title)}</h4>
+            <div class="ai-pub-draft-price">${priceR} <small>₽/т</small></div>
+          </div>
+          <div class="ai-pub-draft-meta">
+            <span><b>Поставщик:</b> ${escapeHtml(draft._supplier_label)}</span>
+            <span><b>Объём:</b> ${draft.volume_tons || '—'} т</span>
+            <span><b>Регион:</b> ${escapeHtml(draft.region || '—')}${draft.city ? ', ' + escapeHtml(draft.city) : ''}</span>
+            <span class="ai-pub-draft-crop"><b>crop_id:</b> <code>${escapeHtml(draft.crop_id)}</code></span>
+          </div>
+          ${qualityRows ? `<div class="ai-pub-draft-quality">${qualityRows}</div>` : ''}
+          ${[...errors, ...warnings, ...infos].length ? `
+            <div class="ai-pub-draft-flags">
+              ${errors.map(f => `<span class="ai-pub-flag ai-pub-flag-error">🛑 ${escapeHtml(f.text)}</span>`).join('')}
+              ${warnings.map(f => `<span class="ai-pub-flag ai-pub-flag-warning">⚠️ ${escapeHtml(f.text)}</span>`).join('')}
+              ${infos.map(f => `<span class="ai-pub-flag ai-pub-flag-info">ℹ️ ${escapeHtml(f.text)}</span>`).join('')}
+            </div>
+          ` : ''}
+          <div class="ai-pub-draft-external"><b>external_id:</b> <code>${escapeHtml(draft.external_id)}</code></div>
+        </div>
+      </div>
+    `;
   }
 
   function statusEmoji(s) {
