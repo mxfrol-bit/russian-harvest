@@ -3990,7 +3990,7 @@
     const vatLabel = ({with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%', with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%', with_vat_22: 'с НДС 22%', without_vat: 'без НДС'})[o.vat] || 'с НДС';
     // Real Haversine distance from user's city (computed server-side via offers_with_distance RPC)
     // Fallback to text-based estimate when offer has no city_id linked yet.
-    const distance = (o.distance_km != null) ? o.distance_km : estimateDistance(o.region);
+    const distance = (o.distance_km != null) ? o.distance_km : estimateDistance(o);
     const cityFrom = o.city || o.region || '—';
     // Anonymized seller handle from profiles_public — нужен ниже для возможных шильдиков
     const sellerSid = o.seller?.handle || ('A-' + (o.seller?.id || o.id || '').slice(-4).toUpperCase());
@@ -4105,6 +4105,9 @@
   }
 
   // Quick distance estimate from region name (matches the static catalog ordering)
+  // Захардкоженные дистанции от Заволжья (legacy fallback v2.6.x).
+  // Используется только если оффер в БД БЕЗ warehouse_lat/lng,
+  // или RH_GEO не смог отрезолвить регион.
   const REGION_DISTANCES = {
     'Нижний Новгород': 18, 'Кстово': 24, 'Богородск': 45, 'Балахна': 39, 'Дзержинск': 38,
     'Семёнов': 71, 'Павлово': 79, 'Лысково': 92, 'Арзамас': 112, 'Муром': 137,
@@ -4113,8 +4116,47 @@
     'Пенза': 340, 'Тамбов': 378, 'Ульяновск': 402, 'Казань': 407, 'Саранск': 413,
     'Тула': 428, 'Балаково': 539, 'Воронеж': 580, 'Самара': 612, 'Липецк': 634, 'Саратов': 689
   };
-  function estimateDistance(region) {
-    return REGION_DISTANCES[region] || 250;
+
+  // v2.6.27: координаты пользователя по умолчанию — Заволжье (Нижегородская обл.)
+  // TODO: брать из выбранного юзером региона в виджете «Заволжье / изменить»
+  const USER_COORDS = { lat: 56.6398, lng: 43.3848 };
+
+  /**
+   * Считает дистанцию от пользователя до точки.
+   * Каскад: warehouse_lat/lng → RH_GEO по region/city → legacy словарь → 250 по дефолту.
+   *
+   * @param {Object} item — может быть offer {warehouse_lat, warehouse_lng, region, city}
+   *                        или request {delivery_lat, delivery_lng, delivery_region, delivery_city}
+   * @returns {number} км
+   */
+  function estimateDistance(item) {
+    // Если строка — старый вызов с одним region. Просто словарь.
+    if (typeof item === 'string') return REGION_DISTANCES[item] || 250;
+    if (!item) return 250;
+
+    // 1. Самый точный — точки из БД
+    const lat = item.warehouse_lat || item.delivery_lat;
+    const lng = item.warehouse_lng || item.delivery_lng;
+    if (lat != null && lng != null && window.RH_GEO) {
+      return window.RH_GEO.distance(USER_COORDS.lat, USER_COORDS.lng, Number(lat), Number(lng));
+    }
+
+    // 2. Через справочник regions/cities из города или региона
+    const region = item.region || item.delivery_region;
+    const city   = item.city   || item.delivery_city;
+    if (window.RH_GEO && (region || city)) {
+      const geo = window.RH_GEO.resolve({ region, city });
+      if (geo) {
+        return window.RH_GEO.distance(USER_COORDS.lat, USER_COORDS.lng, geo.lat, geo.lng);
+      }
+    }
+
+    // 3. Legacy словарь
+    if (city && REGION_DISTANCES[city]) return REGION_DISTANCES[city];
+    if (region && REGION_DISTANCES[region]) return REGION_DISTANCES[region];
+
+    // 4. Дефолт
+    return 250;
   }
 
   // SALE page: replace #requestsGrid contents
@@ -4229,7 +4271,7 @@
     const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
     const region = r.delivery_city || r.delivery_region || '—';
     const cityFrom = window.__rh_user_city || 'Нижний Новгород';
-    const distance = (r.distance_km != null) ? r.distance_km : estimateDistance(r.delivery_city || r.delivery_region);
+    const distance = (r.distance_km != null) ? r.distance_km : estimateDistance(r);
     const neededBy = r.needed_by ? new Date(r.needed_by).toLocaleDateString('ru-RU') : '—';
     const title = r.title || r.crop?.name || 'Заявка';
 

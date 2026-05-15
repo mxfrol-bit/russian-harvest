@@ -342,6 +342,17 @@
     const contractor = getField(row, 'Контрагент');
     const managerFio = getField(row, 'ФИО', 'ФИО менеджера');
 
+    // v2.6.27: геокодирование адреса загрузки → warehouse_lat/lng
+    let warehouseLat = null, warehouseLng = null, geoSource = null;
+    if (window.RH_GEO) {
+      const geo = window.RH_GEO.resolve({ region: address.region, city: address.city });
+      if (geo) {
+        warehouseLat = geo.lat;
+        warehouseLng = geo.lng;
+        geoSource = geo.source; // 'city' | 'region'
+      }
+    }
+
     const draft = {
       // Обязательные поля offers
       seller_id: SYSTEM_SELLER_ID,
@@ -358,6 +369,9 @@
       status: 'active',
       harvest_year: 2025,
       expires_at: expiresAt,
+      // v2.6.27: координаты для расчёта дистанции
+      warehouse_lat: warehouseLat,
+      warehouse_lng: warehouseLng,
 
       // Новые поля v2.6.22+
       external_id: externalId,
@@ -371,6 +385,7 @@
         raw_address: address.raw,
         raw_quality: qualityRaw || null,
         raw_nomen: nomen || null,
+        geo_source: geoSource,         // 'city'/'region' — для отладки и будущей точности
         imported_at: new Date().toISOString(),
       },
 
@@ -460,6 +475,17 @@
       needed_by: neededBy,
       target_price_kopecks: targetPriceKopecks,
       vat: 'with_vat_10',
+      // v2.6.27: координаты места выгрузки для расчёта дистанции
+      delivery_lat: (function() {
+        if (!window.RH_GEO) return null;
+        const g = window.RH_GEO.resolve({ region: deliveryParsed.region, city: deliveryParsed.city });
+        return g ? g.lat : null;
+      })(),
+      delivery_lng: (function() {
+        if (!window.RH_GEO) return null;
+        const g = window.RH_GEO.resolve({ region: deliveryParsed.region, city: deliveryParsed.city });
+        return g ? g.lng : null;
+      })(),
       external_id: externalId,
       external_source: '1c',
       meta: {
