@@ -2784,7 +2784,7 @@
           </div>
           <div id="buyError" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
           <p style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:14px">
-            После создания сделки средства резервируются на эскроу-счёте платформы и переводятся продавцу только после подтверждения приёмки товара.
+            После создания заявки менеджер платформы свяжется с вами для согласования деталей сделки.
           </p>
         </form>
         <div style="padding:18px 28px;border-top:1px solid var(--slate-100);display:flex;gap:10px;justify-content:flex-end">
@@ -2883,7 +2883,7 @@
             <textarea name="message" rows="4" required placeholder="Готов взять ${Math.min(50, offer.volume_tons)} т по ${Math.round(offer.price_kopecks/100*0.95)} ₽/т, оплата по факту, самовывоз. Готовы обсудить?" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
           </div>
           <div style="font-size:12px;color:var(--slate-500);line-height:1.5;background:var(--emerald-soft);padding:10px 14px;border-radius:8px">
-            💬 Откроется чат с продавцом. Реквизиты компании скрыты до оформления сделки через эскроу.
+            💬 Откроется чат с продавцом. Контакты раскрываются после подтверждения отклика.
           </div>
           <div id="proposeError" style="color:var(--red);font-size:13px;display:none;margin-top:10px"></div>
         </form>
@@ -3012,7 +3012,7 @@
             <textarea name="message" rows="3" required placeholder="Качество — 3 класс, ИДК 78, влажность 12%. Готов отгрузить в течение 5 дней. Самовывоз или доставка." style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical"></textarea>
           </div>
           <div style="font-size:12px;color:var(--slate-500);line-height:1.5;background:var(--emerald-soft);padding:10px 14px;border-radius:8px">
-            💬 Откроется чат с покупателем. Реквизиты компании скрыты до оформления сделки через эскроу.
+            💬 Откроется чат с покупателем. Контакты раскрываются после подтверждения отклика.
           </div>
           <div id="respondError" style="color:var(--red);font-size:13px;display:none;margin-top:10px"></div>
         </form>
@@ -3066,7 +3066,7 @@
 
   const DEAL_STATUS_LABELS = {
     pending:   { label: 'Ожидает оплаты', cls: 'pending', icon: '⏳' },
-    paid:      { label: 'Оплачено · в эскроу', cls: 'active', icon: '💰' },
+    paid:      { label: 'Оплачено', cls: 'active', icon: '💰' },
     shipping:  { label: 'В пути', cls: 'active', icon: '🚚' },
     delivered: { label: 'Доставлено', cls: 'active', icon: '📦' },
     completed: { label: 'Завершена', cls: 'done', icon: '✅' },

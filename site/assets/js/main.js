@@ -245,10 +245,15 @@
   });
 
   // ---- Onboarding role choice routing ----
+  // v2.6.29: роль в localStorage (постоянно), не sessionStorage.
+  // Сброс — только через ЛК. Скрываем нерелевантный пункт меню.
   document.querySelectorAll('.onb-choice').forEach(btn => {
     btn.addEventListener('click', () => {
       const role = btn.dataset.role;
-      try { sessionStorage.setItem('rh_role', role); sessionStorage.setItem('rh_seen', '1'); } catch(e){}
+      try {
+        localStorage.setItem('rh_role', role);
+        localStorage.setItem('rh_seen', '1');
+      } catch(e){}
       window.location = role === 'seller' ? '/sale.html' : '/catalog.html';
     });
   });
@@ -256,15 +261,33 @@
   // ---- Skip = remember and close ----
   document.querySelectorAll('.onb-skip').forEach(btn => {
     btn.addEventListener('click', () => {
-      try { sessionStorage.setItem('rh_seen', '1'); } catch(e){}
+      try { localStorage.setItem('rh_seen', '1'); } catch(e){}
     });
   });
+
+  // ---- Применение роли: скрытие нерелевантного пункта меню ----
+  // Покупатель видит «Купить», продавец — «Продать». Работает на всех
+  // страницах через data-nav-role атрибуты (см. build.py header()).
+  function applyRoleToNav() {
+    let role = null;
+    try { role = localStorage.getItem('rh_role'); } catch(e){}
+    if (role !== 'buyer' && role !== 'seller') return; // роль не выбрана — показываем оба
+    document.querySelectorAll('[data-nav-role]').forEach(el => {
+      const want = el.getAttribute('data-nav-role');
+      el.style.display = (want === role) ? '' : 'none';
+    });
+    // Редирект если открыл «чужой» каталог
+    var p = location.pathname.replace(/\/+$/, '') || '/';
+    if (role === 'buyer' && /\/sale\.html$/.test(p)) location.replace('/catalog.html');
+    if (role === 'seller' && /\/catalog\.html$/.test(p)) location.replace('/sale.html');
+  }
+  applyRoleToNav();
 
   // ---- First-visit auto-open onboarding on index only ----
   const isHome = /\/(index\.html)?$/.test(location.pathname);
   if (isHome) {
     let seen = false;
-    try { seen = sessionStorage.getItem('rh_seen') === '1'; } catch(e){}
+    try { seen = localStorage.getItem('rh_seen') === '1'; } catch(e){}
     if (!seen && document.getElementById('onbModal')) {
       setTimeout(() => openModal('onb'), 600);
     }

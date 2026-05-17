@@ -72,7 +72,14 @@ def header(active=''):
     """Returns the header HTML. active = catalog|sale|about|how|contacts|prices"""
     def nav_item(href, label, key):
         cls = 'active' if active == key else ''
-        return f'<a href="{href}" class="{cls}">{label}</a>'
+        # v2.6.29: data-nav-role помечает пункты для адаптации по роли.
+        # main.js скрывает нерелевантный пункт (покупатель не видит «Продать»).
+        role_attr = ''
+        if key == 'catalog':
+            role_attr = ' data-nav-role="buyer"'
+        elif key == 'sale':
+            role_attr = ' data-nav-role="seller"'
+        return f'<a href="{href}" class="{cls}"{role_attr}>{label}</a>'
 
     return f'''<div class="ticker"><div class="ticker-track" id="tickerTrack"></div></div>
 
@@ -122,8 +129,8 @@ def header(active=''):
   </div>
   <div class="drawer-body">
     <nav class="drawer-nav">
-      <a href="/catalog.html" class="{'active' if active=='catalog' else ''}">Купить</a>
-      <a href="/sale.html" class="{'active' if active=='sale' else ''}">Продать</a>
+      <a href="/catalog.html" class="{'active' if active=='catalog' else ''}" data-nav-role="buyer">Купить</a>
+      <a href="/sale.html" class="{'active' if active=='sale' else ''}" data-nav-role="seller">Продать</a>
       <a href="/auction.html" class="{'active' if active=='auction' else ''}" data-feature="auctions" style="display:none">Аукцион</a>
       <a href="/prices.html" class="{'active' if active=='prices' else ''}" data-feature="prices" style="display:none">Биржа цен</a>
       <a href="/about.html" class="{'active' if active=='about' else ''}">О компании</a>
@@ -437,6 +444,7 @@ def page(title, body, active='', description=None):
 
 <script src="/assets/js/config.js?v={BUILD_ID}"></script>
 <script src="/assets/js/cities.js?v={BUILD_ID}"></script>
+<script src="/assets/js/geo-regions.js?v={BUILD_ID}"></script>
 <script src="/assets/js/api.js?v={BUILD_ID}"></script>
 <script src="/assets/js/main.js?v={BUILD_ID}"></script>
 <script src="/assets/js/admin.js?v={BUILD_ID}"></script>
@@ -542,9 +550,9 @@ def offer_card(data, featured=False):
   <div class="q-body" data-q="{data['id']}"><div class="q-body-inner">{quality_rows}</div></div>
   {distance_strip(data)}
   <div class="supplier-strip">
-    <span class="supplier-verify"><span class="bc">{icon('verify')}</span>Проверено платформой</span>
+    <span class="supplier-verify"><span class="bc">{icon('verify')}</span>Поставщик проверен</span>
     <div class="supplier-stat">
-      <span>Безопасная сделка</span>
+      <span>ИНН проверен</span>
       <span class="dot"></span>
       <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот {seller_handle}</span>
     </div>
@@ -654,7 +662,7 @@ def request_card(data):
   </div>
 
   <div class="req-foot">
-    <span class="req-buyer">{icon('verify')} Проверено платформой</span>
+    <span class="req-buyer">{icon('verify')} Покупатель проверен</span>
     <button class="cta" data-action="respond" data-request-id="{data['id']}" {'' if not data.get('archive') else 'disabled'}>{cta} {icon('arrow-sm') if not data.get('archive') else ''}</button>
   </div>
 </article>'''
@@ -787,7 +795,7 @@ def build_index():
             <div class="h">{icon('check-big')} Ключевые преимущества</div>
             <div class="row">{icon('check')}Прозрачные показатели качества</div>
             <div class="row">{icon('check')}Доступна логистика через платформу</div>
-            <div class="row">{icon('check')}Гарантия безопасной сделки</div>
+            <div class="row">{icon('check')}Проверенные поставщики</div>
           </div>
           <a class="cta" href="/catalog.html" id="focusCta">Открыть предложение {icon('arrow-sm')}</a>
         </div>
@@ -1026,7 +1034,7 @@ def build_catalog():
       <span>Купить</span>
     </div>
     <h1>Купить урожай напрямую у фермеров — без посредников и переплат</h1>
-    <p>Прямые сделки между фермерами и покупателями. Безопасная оплата через платформу.</p>
+    <p>Прямые сделки между фермерами и покупателями. Проверенные поставщики.</p>
 
     <!-- Поиск по офферам — стиль как на главной -->
     <form class="hero-search" id="catalogHeroSearch" autocomplete="off">
@@ -1207,7 +1215,7 @@ def build_catalog():
   </div>
 </section>'''
     return page('Купить · Каталог', body, active='catalog',
-                description='Каталог предложений от фермеров: пшеница, ячмень, кукуруза, подсолнечник, рапс. Прямые сделки без посредников с гарантией безопасности.')
+                description='Каталог предложений от фермеров: пшеница, ячмень, кукуруза, подсолнечник, рапс. Прямые сделки без посредников.')
 
 
 def build_product():
@@ -1278,10 +1286,10 @@ def build_product():
           <div style="font-size:11.5px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.1em">Гарантия платформы</div>
           <span class="supplier-verify verify" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;align-self:flex-start">
             <span class="bc" style="width:20px;height:20px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--brand)">{icon('verify')}</span>
-            Проверено платформой
+            Поставщик проверен
           </span>
           <div class="info">
-            <span>Безопасная сделка</span>
+            <span>ИНН проверен</span>
             <span style="color:var(--slate-300)">·</span>
             <span>Модерация товара</span>
           </div>
@@ -1544,7 +1552,7 @@ def build_sale():
   </div>
 </section>'''
     return page('Продать · Заявки покупателей', body, active='sale',
-                description='Актуальные заявки покупателей на сельхозпродукцию. Откликайтесь напрямую и продавайте без посредников через безопасную сделку.')
+                description='Актуальные заявки покупателей на сельхозпродукцию. Откликайтесь напрямую и продавайте без посредников.')
 
 
 
@@ -1767,7 +1775,7 @@ def build_how():
         <ul>
           <li>Оставьте заявку или свяжитесь с продавцом через чат платформы</li>
           <li>Согласуйте условия сделки: объём, цену, сроки</li>
-          <li>Используйте безопасную сделку через платформу</li>
+          
           <li>Получите товар и подтвердите выполнение</li>
         </ul>
       </div>
@@ -1776,7 +1784,7 @@ def build_how():
         <h4>Гарантии и безопасность</h4>
         <ul>
           <li>Все продавцы проходят проверку платформы</li>
-          <li>Возможность оплаты через эскроу</li>
+          
           <li>Поддержка на всех этапах сделки</li>
         </ul>
       </div>
