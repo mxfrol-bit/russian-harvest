@@ -148,6 +148,74 @@
   }
 
   // ============================================================
+  // ГЕОКОДИНГ ЧЕРЕЗ NOMINATIM (OSM) — браузерный, v2.6.28
+  // ============================================================
+  // Nominatim бесплатный, без ключа. Лимит 1 запрос/сек (обязателен
+  // throttle). Требует уникальный User-Agent (браузер шлёт свой — ок).
+  // Кеш в памяти на сессию чтобы не долбить одинаковые адреса.
+  const _geoCache = new Map();
+
+  function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  /**
+   * Геокодирует адрес через Nominatim. Возвращает {lat, lng} или null.
+   * Кеширует результат по нормализованному адресу.
+   */
+  async function geocodeNominatim(address) {
+    if (!address || address.length < 5) return null;
+    const key = address.toLowerCase().trim();
+    if (_geoCache.has(key)) return _geoCache.get(key);
+
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ru&accept-language=ru&q='
+                + encodeURIComponent(address);
+      const resp = await fetch(url, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!resp.ok) {
+        _geoCache.set(key, null);
+        return null;
+      }
+      const data = await resp.json();
+      if (Array.isArray(data) && data.length > 0 && data[0].lat && data[0].lon) {
+        const result = {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+          source: 'nominatim',
+        };
+        _geoCache.set(key, result);
+        return result;
+      }
+      _geoCache.set(key, null);
+      return null;
+    } catch (e) {
+      console.warn('[geocodeNominatim] failed for:', address, e);
+      _geoCache.set(key, null);
+      return null;
+    }
+  }
+
+  /**
+   * Геокодирует с каскадом: Nominatim → справочник RH_GEO → null.
+   * Использовать при публикации для обогащения координат.
+   */
+  async function geocodeCascade(rawAddress, region, city) {
+    // 1. Nominatim по полному адресу (самый точный)
+    if (rawAddress) {
+      const nom = await geocodeNominatim(rawAddress);
+      if (nom) return nom;
+      // throttle Nominatim — 1 req/sec
+      await _sleep(1100);
+    }
+    // 2. Справочник RH_GEO (центр региона/города)
+    if (window.RH_GEO) {
+      const geo = window.RH_GEO.resolve({ region, city });
+      if (geo) return { lat: geo.lat, lng: geo.lng, source: geo.source };
+    }
+    return null;
+  }
+
+  // ============================================================
   // ПАРСЕР АДРЕСА → {region, city}
   // ============================================================
   // Адреса в 1С приходят в двух форматах:
@@ -535,6 +603,52 @@
     };
   }
 
+  /**
+   * v2.6.28: Обогащает черновики офферов и заявки точными координатами
+   * через Nominatim. Вызывается перед публикацией. Прогресс через callback.
+   *
+   * @param {Object} drafts — результат buildDrafts()
+   * @param {Function} onProgress — (current, total, label) для UI
+   */
+  async function enrichWithGeocoding(drafts, onProgress) {
+    const offers = drafts.offers || [];
+    const total = offers.length + (drafts.buyer_request ? 1 : 0);
+    let done = 0;
+
+    // Офферы — геокодим адрес загрузки
+    for (const o of offers) {
+      const rawAddr = o.meta && o.meta.raw_address;
+      if (rawAddr) {
+        const geo = await geocodeCascade(rawAddr, o.region, o.city);
+        if (geo) {
+          o.warehouse_lat = geo.lat;
+          o.warehouse_lng = geo.lng;
+          if (o.meta) o.meta.geo_source = geo.source;
+        }
+      }
+      done++;
+      if (onProgress) onProgress(done, total, o._supplier_label || o.title);
+    }
+
+    // Заявка — геокодим адрес выгрузки
+    if (drafts.buyer_request) {
+      const br = drafts.buyer_request;
+      const rawAddr = br.meta && br.meta.raw_delivery_addr;
+      if (rawAddr) {
+        const geo = await geocodeCascade(rawAddr, br.delivery_region, br.delivery_city);
+        if (geo) {
+          br.delivery_lat = geo.lat;
+          br.delivery_lng = geo.lng;
+          if (br.meta) br.meta.geo_source = geo.source;
+        }
+      }
+      done++;
+      if (onProgress) onProgress(done, total, br.title);
+    }
+
+    return drafts;
+  }
+
   // ============================================================
   // ПУБЛИКАЦИЯ В БД ЧЕРЕЗ api.import1c
   // ============================================================
@@ -587,6 +701,9 @@
     buildBuyerRequestDraft,
     publishOffers,
     publishBuyerRequest,
+    enrichWithGeocoding,
+    geocodeNominatim,
+    geocodeCascade,
     // Утилиты для UI
     parseNum,
     parseAddress,
@@ -594,5 +711,5 @@
     mapCrop,
   };
 
-  console.log('[Import1C-Publish] loaded v2.6.24');
+  console.log('[Import1C-Publish] loaded v2.6.28');
 })();

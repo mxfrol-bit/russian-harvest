@@ -2354,3 +2354,86 @@ body[data-feature-delivery="off"] [data-feature="delivery"]{
   font-size: 11px;
   margin-bottom: 6px;
 }
+
+/* ============================================================
+   v2.6.28: МОДАЛКА ВЫБОРА РОЛИ (покупатель / продавец)
+   ============================================================ */
+.rh-role-modal{
+  position:fixed;inset:0;z-index:9999;
+  opacity:0;pointer-events:none;transition:opacity .25s ease;
+}
+.rh-role-modal.is-open{opacity:1;pointer-events:auto}
+.rh-role-backdrop{
+  position:absolute;inset:0;
+  background:rgba(15,24,8,.78);
+  backdrop-filter:blur(6px);
+}
+.rh-role-panel{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.96);
+  transition:transform .25s ease;
+  width:min(720px,calc(100vw - 32px));
+  background:var(--paper,#fff);
+  border-radius:24px;
+  box-shadow:0 40px 100px rgba(0,0,0,.45);
+  padding:44px 40px 32px;
+  max-height:92vh;overflow-y:auto;
+}
+.rh-role-modal.is-open .rh-role-panel{transform:translate(-50%,-50%) scale(1)}
+.rh-role-head{text-align:center;margin-bottom:32px}
+.rh-role-logo{display:flex;justify-content:center;margin-bottom:16px}
+.rh-role-head h2{
+  font-size:26px;font-weight:800;color:var(--ink,#1a2410);
+  margin:0 0 8px;line-height:1.2;
+}
+.rh-role-head p{font-size:15px;color:var(--slate-500,#6b7280);margin:0}
+.rh-role-options{
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;
+}
+.rh-role-card{
+  display:flex;flex-direction:column;align-items:flex-start;
+  text-align:left;gap:10px;
+  padding:28px 24px;
+  background:#FAFCF7;
+  border:2px solid #E5E9DC;
+  border-radius:18px;
+  cursor:pointer;
+  transition:all .18s ease;
+  font-family:inherit;
+}
+.rh-role-card:hover{
+  border-color:#618B27;
+  background:#F4F8EC;
+  transform:translateY(-3px);
+  box-shadow:0 16px 36px rgba(61,92,25,.16);
+}
+.rh-role-icon{font-size:42px;line-height:1}
+.rh-role-card h3{
+  font-size:19px;font-weight:800;color:var(--ink,#1a2410);margin:0;
+}
+.rh-role-card p{
+  font-size:13.5px;color:var(--slate-600,#4b5563);
+  margin:0;line-height:1.5;flex:1;
+}
+.rh-role-cta{
+  font-size:14px;font-weight:700;color:#618B27;
+  margin-top:6px;
+}
+.rh-role-foot{
+  text-align:center;font-size:12.5px;
+  color:var(--slate-400,#9ca3af);
+  margin:24px 0 0;
+}
+@media (max-width:640px){
+  .rh-role-panel{padding:32px 22px 24px;width:calc(100vw - 24px)}
+  .rh-role-options{grid-template-columns:1fr;gap:14px}
+  .rh-role-head h2{font-size:22px}
+  .rh-role-card{padding:22px 20px}
+}
+
+/* v2.6.28: валидация ИНН — подсветка полей */
+input.inn-valid{border-color:#618B27 !important;background:#F4F8EC}
+input.inn-invalid{border-color:#DC2626 !important;background:#FEF2F2}
+.inn-msg{font-size:12px;margin-top:4px;line-height:1.4}
+.inn-msg-ok{color:#3D5C19}
+.inn-msg-err{color:#B91C1C}

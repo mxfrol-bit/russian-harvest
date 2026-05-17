@@ -524,6 +524,23 @@
           return !!(cb && cb.checked && !cb.disabled);
         });
 
+        // v2.6.28: геокодинг через Nominatim перед публикацией.
+        // Это занимает ~1 сек на адрес (throttle Nominatim), поэтому
+        // показываем прогресс. Геокодим только выбранные офферы.
+        if (window.RH_Import1C_Publish.enrichWithGeocoding) {
+          const toGeo = {
+            offers: result.offers.filter((d, i) => selected[i]),
+            buyer_request: (modal.querySelector('#aiPubBuyerReq') || {}).checked ? result.buyer_request : null,
+          };
+          const totalGeo = toGeo.offers.length + (toGeo.buyer_request ? 1 : 0);
+          if (totalGeo > 0) {
+            await window.RH_Import1C_Publish.enrichWithGeocoding(toGeo, (cur, tot, label) => {
+              btn.innerHTML = `<span class="ai-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></span> Геокодинг ${cur}/${tot}…`;
+            });
+          }
+        }
+
+        btn.innerHTML = '<span class="ai-spinner" style="width:14px;height:14px;display:inline-block;vertical-align:middle"></span> Публикуем…';
         const offerResult = await window.RH_Import1C_Publish.publishOffers(result.offers, selected);
         let buyerReqResult = null;
         const buyerCb = modal.querySelector('#aiPubBuyerReq');

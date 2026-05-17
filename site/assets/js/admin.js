@@ -3991,7 +3991,8 @@
     // Real Haversine distance from user's city (computed server-side via offers_with_distance RPC)
     // Fallback to text-based estimate when offer has no city_id linked yet.
     const distance = (o.distance_km != null) ? o.distance_km : estimateDistance(o);
-    const cityFrom = o.city || o.region || '—';
+    // v2.6.28: собственник попросил скрыть город — показываем ТОЛЬКО регион
+    const cityFrom = o.region || '—';
     // Anonymized seller handle from profiles_public — нужен ниже для возможных шильдиков
     const sellerSid = o.seller?.handle || ('A-' + (o.seller?.id || o.id || '').slice(-4).toUpperCase());
     // Уникальный номер ЛОТА — на основе UUID оффера, не селлера.
@@ -4090,10 +4091,8 @@
           </div>
         </div>
         <div class="supplier-strip">
-          <span class="supplier-verify"><span class="bc">✓</span>Проверено платформой</span>
+          <span class="supplier-verify"><span class="bc">✓</span>Поставщик проверен</span>
           <div class="supplier-stat">
-            <span data-feature="escrow">Эскроу-защита</span>
-            <span class="dot" data-feature="escrow"></span>
             <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(lotSid)}</span>
           </div>
         </div>
@@ -4269,7 +4268,8 @@
     const priceUnit = r.target_price_kopecks ? ' ₽/т' : '';
     const vatLabel = ({with_vat_5:'с НДС 5%',with_vat_7:'с НДС 7%',with_vat_10:'с НДС 10%',with_vat_20:'с НДС 20%',with_vat_22:'с НДС 22%',without_vat:'без НДС'})[r.vat] || 'с НДС';
     const buyerSid = r.buyer?.handle || ('B-' + (r.buyer_id || r.id || '').slice(-4).toUpperCase());
-    const region = r.delivery_city || r.delivery_region || '—';
+    // v2.6.28: собственник попросил скрыть город — только регион доставки
+    const region = r.delivery_region || '—';
     const cityFrom = window.__rh_user_city || 'Нижний Новгород';
     const distance = (r.distance_km != null) ? r.distance_km : estimateDistance(r);
     const neededBy = r.needed_by ? new Date(r.needed_by).toLocaleDateString('ru-RU') : '—';
@@ -4323,10 +4323,8 @@
           </div>
         </div>
         <div class="supplier-strip">
-          <span class="supplier-verify"><span class="bc">✓</span>Проверено платформой</span>
+          <span class="supplier-verify"><span class="bc">✓</span>Покупатель проверен</span>
           <div class="supplier-stat">
-            <span data-feature="escrow">Эскроу-защита</span>
-            <span class="dot" data-feature="escrow"></span>
             <span class="id mono" style="font-family:'JetBrains Mono',monospace">Покупатель ${escapeHtml(buyerSid)}</span>
           </div>
         </div>
