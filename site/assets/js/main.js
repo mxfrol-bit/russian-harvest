@@ -1876,45 +1876,94 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  async function submitDraft(d) {
-    // Требуется RH_API (Supabase). Если нет — не падаем.
-    if (!window.RH_API) {
-      alert('Сервис временно недоступен. Попробуйте позже.');
-      return false;
-    }
-    const user = await window.RH_API.currentUser().catch(() => null);
-
-    // Не залогинен → сохраняем черновик + открываем вход
-    if (!user) {
-      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch(e){}
-      const bd = document.getElementById('loginBackdrop');
-      const lm = document.getElementById('loginModal');
-      if (bd && lm) {
-        bd.classList.add('on'); lm.classList.add('on');
-      } else {
-        location.href = '/account.html';
+  function showQuickModal(title, text, isError) {
+    // Аккуратная модалка вместо браузерного alert
+    const old = document.getElementById('rhQuickModal');
+    if (old) old.remove();
+    const m = document.createElement('div');
+    m.id = 'rhQuickModal';
+    m.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(15,24,8,.6);backdrop-filter:blur(3px);z-index:9998"></div>
+      <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:20px;max-width:400px;width:calc(100vw - 40px);padding:32px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.35)">
+        <div style="font-size:42px;margin-bottom:12px">${isError ? '🔐' : '✓'}</div>
+        <h3 style="font-size:19px;font-weight:800;color:#1a2410;margin:0 0 8px">${title}</h3>
+        <p style="color:#6b7280;font-size:14px;line-height:1.55;margin:0 0 22px">${text}</p>
+        <button id="rhQuickModalOk" style="width:100%;background:#3D5C19;color:#fff;border:none;padding:13px;border-radius:13px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">${isError ? 'Войти / Регистрация' : 'Хорошо'}</button>
+      </div>
+    `;
+    document.body.appendChild(m);
+    document.getElementById('rhQuickModalOk').addEventListener('click', () => {
+      m.remove();
+      if (isError) {
+        const bd = document.getElementById('loginBackdrop');
+        const lm = document.getElementById('loginModal');
+        if (bd && lm) {
+          bd.classList.add('on'); lm.classList.add('on');
+          document.body.style.overflow = 'hidden';
+          // По умолчанию вкладка Регистрация
+          const tab = document.querySelector('.login-tab[data-tab="signup"]');
+          if (tab) tab.click();
+        } else {
+          location.href = '/account.html';
+        }
       }
+    });
+  }
+
+  async function submitDraft(d) {
+    if (!window.RH_API) {
+      showQuickModal('Сервис недоступен', 'Попробуйте позже.', false);
       return false;
     }
 
-    // Залогинен → создаём запись через RH_API
+    // v2.6.40 FIX: проверяем РЕАЛЬНУЮ сессию (не кешируемый currentUser).
+    // Баг: getCurrentProfile() отдавал старый cachedUser даже после
+    // протухания сессии → код лез создавать запись → Supabase «Не
+    // авторизован» → уродливый alert. Теперь сначала isLoggedIn()
+    // (дёргает getSession() напрямую), и только при живой сессии — создаём.
+    let logged = false;
     try {
+      logged = (typeof window.RH_API.isLoggedIn === 'function')
+        ? await window.RH_API.isLoggedIn()
+        : !!(await window.RH_API.currentUser().catch(() => null));
+    } catch(_) { logged = false; }
+
+    // Сохраняем введённое ВСЕГДА (чтобы не потерять после регистрации)
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch(e){}
+
+    if (!logged) {
+      // Не залогинен → красивая модалка → клик → форма входа/регистрации.
+      // Черновик уже сохранён, после регистрации досоздастся (init()).
+      showQuickModal(
+        'Нужна регистрация',
+        'Чтобы отправить заявку, войдите или зарегистрируйтесь. Введённые данные мы сохранили — после входа заявка создастся автоматически.',
+        true
+      );
+      return false;
+    }
+
+    // Залогинен → создаём запись
+    try {
+      const user = await window.RH_API.currentUser().catch(() => null);
       if (typeof window.RH_API.createQuickEntry === 'function') {
         await window.RH_API.createQuickEntry(d);
-      } else {
-        // Фоллбэк: пишем в admin_inbox если спец-метода нет
-        if (typeof window.RH_API.sendInbox === 'function') {
-          await window.RH_API.sendInbox({ kind: 'quick_request', payload: d, user });
-        }
+      } else if (typeof window.RH_API.sendInbox === 'function') {
+        await window.RH_API.sendInbox({ kind: 'quick_request', payload: d, user });
       }
       try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
       const what = d.mode === 'offer' ? 'Предложение' : 'Заявка';
-      alert(what + ' создана. Менеджер свяжется с вами. Перенаправляем в личный кабинет…');
-      location.href = '/account.html';
+      showQuickModal(what + ' создана', 'Менеджер свяжется с вами. Открываем личный кабинет…', false);
+      setTimeout(() => { location.href = '/account.html'; }, 1500);
       return true;
     } catch (err) {
       console.error('[quickRequest] failed:', err);
-      alert('Не удалось создать: ' + (err.message || 'ошибка'));
+      // Если упало на авторизации — предложим войти, не теряя черновик
+      const msg = String(err && err.message || '');
+      if (/auth|авториз|jwt|session|401/i.test(msg)) {
+        showQuickModal('Нужна регистрация', 'Сессия истекла. Войдите заново — данные сохранены.', true);
+      } else {
+        showQuickModal('Не удалось создать', msg || 'Попробуйте позже.', false);
+      }
       return false;
     }
   }
@@ -1926,7 +1975,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const d = collectForm();
       if (!d.crop || !d.region || !d.volume) {
-        alert('Заполните продукт, регион и объём.');
+        showQuickModal('Заполните форму', 'Укажите продукт, регион и объём партии.', false);
         return;
       }
       await submitDraft(d);
@@ -1937,9 +1986,15 @@ document.addEventListener('DOMContentLoaded', () => {
       let draft = null;
       try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e){}
       if (!draft || !window.RH_API) return;
-      const user = await window.RH_API.currentUser().catch(() => null);
-      if (user) {
-        // Был незавершённый черновик и юзер теперь залогинен
+      // Реальная сессия (не кеш) — иначе submitDraft опять упрётся
+      let logged = false;
+      try {
+        logged = (typeof window.RH_API.isLoggedIn === 'function')
+          ? await window.RH_API.isLoggedIn()
+          : !!(await window.RH_API.currentUser().catch(() => null));
+      } catch(_) {}
+      if (logged) {
+        // Был незавершённый черновик и юзер теперь реально залогинен
         await submitDraft(draft);
       }
     })();
