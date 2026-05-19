@@ -2481,6 +2481,14 @@
         return;
       }
 
+      // v2.6.33: Рассчитать логистику → заявка админу в ЛК
+      const calcBtn = e.target.closest('[data-action="calc-logistics"]');
+      if (calcBtn) {
+        e.preventDefault();
+        await handleCalcLogistics(calcBtn);
+        return;
+      }
+
       // Карточка оффера в каталоге → /product.html?id=...
       // (уже работает через <a href>, но запасной handler если кликнули по карточке без id)
     });
@@ -2923,6 +2931,41 @@
         submit.textContent = 'Открыть чат с продавцом';
       }
     });
+  }
+
+  // v2.6.33: «Рассчитать логистику» → заявка админу в ЛК.
+  // Незалогинен → требуем вход (как у отклика). Залогинен →
+  // пишем в admin_inbox, показываем подтверждение.
+  async function handleCalcLogistics(btn) {
+    const user = await api.currentUser().catch(() => null);
+    if (!user) {
+      await requireLogin('заказать расчёт логистики');
+      return;
+    }
+    const offerId = btn.dataset.offerId;
+    const offerTitle = btn.dataset.offerTitle || 'Товар';
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = 'Отправляем…';
+    try {
+      await sendToAdminInbox({
+        kind: 'calc_logistics',
+        offer: { id: offerId, title: offerTitle },
+        user,
+      });
+      // Подтверждение пользователю
+      if (typeof showToast === 'function') {
+        showToast('Заявка на расчёт логистики отправлена — наши логисты свяжутся с вами', 'success');
+      } else {
+        alert('Заявка на расчёт логистики отправлена. Наши логисты свяжутся с вами.');
+      }
+      btn.textContent = '✓ Заявка отправлена';
+    } catch (err) {
+      console.error('[calc-logistics]', err);
+      btn.disabled = false;
+      btn.textContent = orig;
+      alert('Не удалось отправить заявку. Попробуйте позже.');
+    }
   }
 
   async function handleRespond(btn) {
@@ -4070,13 +4113,13 @@
               <span class="small">${vatLabel}</span>
             </div>
           </div>
+          <div class="card-meta" style="margin-bottom:8px">
+            <div class="cell"><div class="k">Активно до</div><div class="v" style="color:var(--brand,#3D5C19);font-weight:700">${activeUntil}</div></div>
+          </div>
           <div class="card-meta">
             <div class="cell"><div class="k">Объём</div><div class="v">${o.volume_tons} т</div></div>
             <div class="cell"><div class="k">Урожай</div><div class="v">${o.harvest_year || '2025'}</div></div>
             <div class="cell"><div class="k">Регион</div><div class="v">${escapeHtml(o.region)}</div></div>
-          </div>
-          <div class="card-meta" style="margin-top:8px">
-            <div class="cell"><div class="k">Активно до</div><div class="v">${activeUntil}</div></div>
           </div>
         </div>
         ${qClean.length > 0 ? `
@@ -4104,8 +4147,9 @@
             <span class="id mono" style="font-family:'JetBrains Mono',monospace">Лот ${escapeHtml(lotSid)}</span>
           </div>
         </div>
-        <div class="card-foot">
-          <a class="cta" href="/product.html?id=${o.id}">Купить →</a>
+        <div class="card-foot" style="display:flex;flex-direction:column;gap:8px">
+          <a class="cta" href="/product.html?id=${o.id}" style="width:100%;text-align:center;justify-content:center">Купить →</a>
+          <button class="cta-secondary" type="button" data-action="calc-logistics" data-offer-id="${o.id}" data-offer-title="${escapeHtml(cleanTitle)}" style="width:100%;text-align:center;justify-content:center;background:transparent;border:1px solid var(--line,#E5E9DC);color:var(--ink,#1a2410);padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit">Рассчитать логистику</button>
         </div>
       </article>
     `;
@@ -4315,10 +4359,12 @@
               <span class="small">${r.target_price_kopecks ? vatLabel : ' '}</span>
             </div>
           </div>
+          <div class="card-meta" style="margin-bottom:8px">
+            <div class="cell"><div class="k">Поставка до</div><div class="v" style="color:var(--brand,#3D5C19);font-weight:700">${neededBy}</div></div>
+          </div>
           <div class="card-meta">
             <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons || '—'} т</div></div>
             <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(region)}</div></div>
-            <div class="cell"><div class="k">Поставка до</div><div class="v">${neededBy}</div></div>
           </div>
         </div>
         <div class="distance-strip">
@@ -4598,7 +4644,13 @@
         wrap.style.display = 'none';
         return;
       }
-      const o = offers[0];
+      // v2.6.33: «Сегодня в фокусе» = САМОЕ ДЕШЁВОЕ предложение
+      // (минимальная цена за тонну среди активных офферов с ценой > 0)
+      const withPrice = offers.filter(x => x.price_kopecks && x.price_kopecks > 0);
+      const pool = withPrice.length ? withPrice : offers;
+      const o = pool.reduce((min, x) =>
+        (x.price_kopecks && x.price_kopecks < min.price_kopecks) ? x : min
+      , pool[0]);
       const priceR = (o.price_kopecks/100).toLocaleString('ru-RU');
       document.getElementById('focusTitle').textContent  = sanitizeOfferTitle(o.title);
       document.getElementById('focusPrice').textContent  = priceR + ' ₽/т';

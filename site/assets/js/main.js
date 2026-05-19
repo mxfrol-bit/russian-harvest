@@ -225,6 +225,15 @@
       const c = el.dataset.close;
       if (c) closeModal(c);
       openModal(k);
+      // v2.6.33: кнопка «Зарегистрироваться» (data-auth-tab="signup")
+      // открывает login-модалку сразу на вкладке регистрации
+      const wantTab = el.dataset.authTab;
+      if (k === 'login' && wantTab) {
+        setTimeout(() => {
+          const tabBtn = document.querySelector('.login-tab[data-tab="' + wantTab + '"]');
+          if (tabBtn) tabBtn.click();
+        }, 50);
+      }
     });
   });
   // Close triggers (X buttons and backdrop-clicks)
@@ -645,6 +654,21 @@
     const hint = document.getElementById('signupHint');
     const submit = document.getElementById('signupSubmit');
     const roleInput = signupForm.querySelector('input[name="role"]');
+
+    // v2.6.33: чекбокс согласия разблокирует кнопку «Создать аккаунт»
+    const agree = document.getElementById('signupAgree');
+    if (agree && submit) {
+      const syncAgree = () => { submit.disabled = !agree.checked; };
+      agree.addEventListener('change', syncAgree);
+      syncAgree();
+    }
+
+    // v2.6.33: live-валидация ИНН по контрольной сумме (RH_INN)
+    const innInput = document.getElementById('signupInn');
+    const innMsg = document.getElementById('signupInnMsg');
+    if (innInput && window.RH_INN) {
+      window.RH_INN.attachToInput(innInput, { messageEl: innMsg });
+    }
 
     // Sync segmented role buttons to hidden input
     signupForm.querySelectorAll('.seg-btn').forEach(btn => {
