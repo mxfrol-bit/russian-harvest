@@ -4210,7 +4210,7 @@
           </div>
         </div>
         <div class="card-foot" style="display:flex;flex-direction:column;gap:8px">
-          <a href="/product.html?id=${o.id}" style="width:100%;text-align:center;justify-content:center;display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--ink,#1a2410);color:var(--ink,#1a2410);padding:13px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;transition:all .15s">Купить →</a>
+          <a href="/product.html?id=${o.id}" style="width:100%;text-align:center;justify-content:center;display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--brand,#3D5C19);color:var(--brand,#3D5C19);padding:13px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;transition:all .15s">Купить →</a>
           <button class="cta-secondary" type="button" data-action="calc-logistics" data-offer-id="${o.id}" data-offer-title="${escapeHtml(cleanTitle)}" style="width:100%;text-align:center;justify-content:center;background:transparent;border:1px solid var(--line,#E5E9DC);color:var(--slate-600,#475569);padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit">Рассчитать логистику</button>
         </div>
       </article>
@@ -4442,8 +4442,9 @@
             <span class="id mono" style="font-family:'JetBrains Mono',monospace">Покупатель ${escapeHtml(buyerSid)}</span>
           </div>
         </div>
-        <div class="card-foot">
-          <button class="cta" type="button" data-action="respond" data-request-id="${r.id}">Откликнуться →</button>
+        <div class="card-foot" style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" data-action="respond" data-request-id="${r.id}" style="width:100%;text-align:center;justify-content:center;display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--brand,#3D5C19);color:var(--brand,#3D5C19);padding:13px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit">Откликнуться →</button>
+          <button class="cta-secondary" type="button" data-action="calc-logistics" data-offer-id="${r.id}" data-offer-title="${escapeHtml(title)}" style="width:100%;text-align:center;justify-content:center;background:transparent;border:1px solid var(--line,#E5E9DC);color:var(--slate-600,#475569);padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit">Рассчитать логистику</button>
         </div>
       </article>
     `;

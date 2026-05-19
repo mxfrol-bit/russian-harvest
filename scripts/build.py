@@ -143,7 +143,7 @@ def header(active=''):
     </span>
     <button class="btn btn-ghost btn-sm" data-open="login">Войти</button>
     <button class="btn btn-primary btn-sm" data-open="login" data-auth-tab="signup" id="navRegister">Зарегистрироваться</button>
-    <a class="btn btn-primary btn-sm" href="/account.html">Кабинет</a>
+    <a class="btn btn-primary btn-sm acc-only" href="/account.html" style="display:none">Кабинет</a>
     <button class="menu-trigger" id="menuTrigger" aria-label="Меню">{icon('menu')}</button>
   </div>
 </header>

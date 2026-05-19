@@ -783,14 +783,20 @@
   // ---- Show user info in header if logged in (async) ----
   api.currentUser().then(user => {
     if (user) {
+      // Залогинен: прячем Войти/Зарегистрироваться, показываем Кабинет
       document.querySelectorAll('[data-open="login"]').forEach(b => {
         b.style.display = 'none';
+      });
+      document.querySelectorAll('.acc-only').forEach(b => {
+        b.style.display = '';
       });
       const cabinetBtn = document.querySelector('.bar a.btn-primary[href*="account"]');
       if (cabinetBtn && user.full_name) {
         cabinetBtn.innerHTML = `👤 ${user.full_name.split(' ')[0]}`;
       }
     }
+    // Незалогинен: .acc-only остаётся display:none (Кабинет скрыт),
+    // Войти/Зарегистрироваться видны — ничего делать не нужно.
   }).catch(() => {});
 
   // v2.6.34: переинициализация auth-форм для встроенной копии в ЛК.
