@@ -1197,6 +1197,15 @@ input,select,textarea{font-family:inherit}
   color:var(--slate-600);display:grid;place-items:center;transition:all .15s;
 }
 .modal-close:hover{background:var(--slate-200);color:var(--ink)}
+/* v2.6.39: кнопка «Отмена/Закрыть» в группе кнопок тоже имеет класс
+   modal-close (для логики закрытия). Но абсолютное позиционирование
+   из .modal-close кидало её в угол поверх крестика-✕. Кнопки .btn
+   с modal-close — обычные, в потоке, не абсолютные. */
+.btn.modal-close{
+  position:static !important;
+  width:auto;height:auto;border-radius:14px;
+  display:inline-flex;
+}
 
 /* Onboarding specific */
 .modal-onb{max-width:640px}

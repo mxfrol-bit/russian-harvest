@@ -2676,14 +2676,14 @@
       // Show custom modal instead of browser confirm()
       const html = `
         <div class="modal-backdrop on"></div>
-        <div class="modal on" style="max-width:420px;text-align:center;padding:40px 30px">
-          <button class="modal-close">✕</button>
-          <div style="font-size:48px;margin-bottom:14px">🔐</div>
+        <div class="modal on" style="max-width:420px;text-align:center;padding:40px 30px;position:relative">
+          <button class="modal-close modal-x" aria-label="Закрыть" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--slate-100,#f1f5f9);color:var(--slate-600,#475569);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+          <div style="font-size:48px;margin-bottom:14px;margin-top:8px">🔐</div>
           <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">Требуется авторизация</h2>
           <p style="color:var(--slate-500);margin-bottom:24px;line-height:1.6">Чтобы ${escapeHtml(action)}, войдите в аккаунт или зарегистрируйтесь на платформе.</p>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-primary" id="authGoLogin">Войти / Регистрация</button>
-            <button class="btn btn-outline modal-close">Отмена</button>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="btn btn-primary" id="authGoLogin" style="width:100%">Войти / Регистрация</button>
+            <button class="btn btn-outline modal-close" style="position:static;width:100%">Отмена</button>
           </div>
         </div>
       `;
