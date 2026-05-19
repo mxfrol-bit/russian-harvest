@@ -793,6 +793,81 @@
     }
   }).catch(() => {});
 
+  // v2.6.34: переинициализация auth-форм для встроенной копии в ЛК.
+  // admin.js клонирует разметку #loginModal в .account-main для
+  // незалогиненного — у клона нет обработчиков. По этому событию
+  // навешиваем submit заново на встроенные #signinForm/#signupForm.
+  function rebindEmbeddedAuth(root) {
+    root = root || document;
+    const sIn = root.querySelector('#signinForm');
+    const sUp = root.querySelector('#signupForm');
+
+    if (sIn && !sIn.dataset.bound) {
+      sIn.dataset.bound = '1';
+      sIn.addEventListener('submit', async e => {
+        e.preventDefault();
+        const fd = new FormData(sIn);
+        const btn = sIn.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+        try {
+          await api.signIn({ email: fd.get('email')?.trim(), password: fd.get('password') });
+          window.location = '/account.html';
+        } catch (err) {
+          const h = sIn.querySelector('.form-hint, [id$="Hint"]');
+          if (h) { h.textContent = err.message || 'Ошибка входа'; h.style.color = '#B91C1C'; }
+          if (btn) btn.disabled = false;
+        }
+      });
+    }
+
+    if (sUp && !sUp.dataset.bound) {
+      sUp.dataset.bound = '1';
+      // чекбокс согласия
+      const ag = root.querySelector('#signupAgree');
+      const sub = root.querySelector('#signupSubmit');
+      if (ag && sub) {
+        const sync = () => { sub.disabled = !ag.checked; };
+        ag.addEventListener('change', sync); sync();
+      }
+      // ИНН валидация
+      const innEl = root.querySelector('#signupInn');
+      const innMsg = root.querySelector('#signupInnMsg');
+      if (innEl && window.RH_INN) window.RH_INN.attachToInput(innEl, { messageEl: innMsg });
+      // роль-сегменты
+      const roleInput = sUp.querySelector('input[name="role"]');
+      sUp.querySelectorAll('.seg-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          sUp.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('active', x === b));
+          if (roleInput) roleInput.value = b.dataset.role;
+        });
+      });
+      sUp.addEventListener('submit', async e => {
+        e.preventDefault();
+        const fd = new FormData(sUp);
+        const btn = sUp.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+        try {
+          await api.signUp({
+            email: fd.get('email')?.trim(),
+            password: fd.get('password'),
+            full_name: fd.get('full_name'),
+            company_name: fd.get('company_name'),
+            inn: fd.get('inn'),
+            phone: fd.get('phone'),
+            role: fd.get('role') || 'buyer',
+          });
+          window.location = '/account.html';
+        } catch (err) {
+          const h = sUp.querySelector('.form-hint, [id$="Hint"]');
+          if (h) { h.textContent = err.message || 'Ошибка регистрации'; h.style.color = '#B91C1C'; }
+          if (btn) btn.disabled = false;
+        }
+      });
+    }
+  }
+  window.RH_initAuthForms = rebindEmbeddedAuth;
+  document.addEventListener('rh:auth-embed-ready', () => rebindEmbeddedAuth(document));
+
 })();
 
 /* ===== Theme helpers (preserve smooth anchors on in-page links) ===== */

@@ -129,30 +129,80 @@
     const main = document.querySelector('.account-main');
     const aside = document.querySelector('.account-aside');
     if (aside) aside.style.display = 'none';
-    if (main) {
+    if (!main) return;
+
+    // v2.6.34: вместо заглушки с замком — встроенная форма
+    // вход/регистрация прямо в карточке ЛК. Переиспользуем
+    // готовую разметку из #loginModal (вкладки + формы + ИНН-валидация
+    // + чекбокс согласия — всё уже там, единый код).
+    const modalInner = document.querySelector('#loginModal .modal-inner, #loginModal .login-inner, #loginModal');
+    let formHtml = '';
+    if (modalInner) {
+      // Берём внутренности модалки (вкладки + панели), без крестика-закрытия
+      const clone = modalInner.cloneNode(true);
+      clone.querySelectorAll('[data-close], .modal-close').forEach(el => el.remove());
+      formHtml = clone.innerHTML;
+    }
+
+    if (formHtml) {
+      main.innerHTML = `
+        <div class="account-panel" style="max-width:480px;margin:0 auto;padding:32px 28px">
+          <div style="text-align:center;margin-bottom:8px">
+            <h2 style="font-size:22px;font-weight:800;color:var(--ink);margin-bottom:6px">Личный кабинет</h2>
+            <p style="color:var(--slate-500);font-size:14px;margin:0">Войдите или зарегистрируйтесь, чтобы получить доступ к сделкам, заявкам и истории.</p>
+          </div>
+          <div class="acc-auth-embed">${formHtml}</div>
+        </div>
+      `;
+      // Перепривязываем логику форм (клон потерял обработчики).
+      // main.js вешает обработчики на #signinForm/#signupForm по id —
+      // вызовем повторную инициализацию если функция доступна,
+      // иначе элементы те же id → отправим событие для перевешивания.
+      try {
+        if (window.RH_initAuthForms) {
+          window.RH_initAuthForms(main);
+        } else {
+          // Фоллбэк: дать main.js перевесить через DOMContentLoaded-подобное
+          document.dispatchEvent(new CustomEvent('rh:auth-embed-ready'));
+        }
+      } catch(e) { console.warn('[acc-embed]', e); }
+
+      // Вкладки внутри встроенной формы
+      main.querySelectorAll('.login-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const t = tab.dataset.tab;
+          main.querySelectorAll('.login-tab').forEach(x => x.classList.toggle('active', x === tab));
+          main.querySelectorAll('.login-pane').forEach(p => {
+            p.hidden = (p.dataset.pane !== t);
+          });
+        });
+      });
+      // По умолчанию открываем вкладку Регистрация (юзер чаще новый)
+      const signupTab = main.querySelector('.login-tab[data-tab="signup"]');
+      if (signupTab) signupTab.click();
+    } else {
+      // Фоллбэк если модалку не нашли — старая заглушка, но кнопка сразу на регистрацию
       main.innerHTML = `
         <div class="account-panel" style="text-align:center;padding:60px 20px;max-width:520px;margin:0 auto">
-          <div style="font-size:48px;margin-bottom:14px">🔒</div>
           <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px">Войдите в аккаунт</h2>
-          <p style="color:var(--slate-500);margin:0 auto 24px;max-width:400px">Чтобы пользоваться кабинетом — войдите или создайте аккаунт. У вас будет доступ к сделкам, заявкам, истории платежей и сделок.</p>
+          <p style="color:var(--slate-500);margin:0 auto 24px;max-width:400px">Войдите или создайте аккаунт для доступа к кабинету.</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-primary btn-lg" data-open="login">Войти</button>
-            <a class="btn btn-outline btn-lg" href="/index.html">На главную</a>
+            <button class="btn btn-primary btn-lg" data-open="login" data-auth-tab="signup">Зарегистрироваться</button>
+            <button class="btn btn-outline btn-lg" data-open="login">Войти</button>
           </div>
         </div>
       `;
-      const openBtn = main.querySelector('[data-open="login"]');
-      if (openBtn) {
-        openBtn.addEventListener('click', () => {
+      main.querySelectorAll('[data-open="login"]').forEach(btn => {
+        btn.addEventListener('click', () => {
           const bd = document.getElementById('loginBackdrop');
           const modal = document.getElementById('loginModal');
           if (bd) bd.classList.add('on');
           if (modal) modal.classList.add('on');
-          // Switch to signin tab
-          const tab = document.querySelector('.login-tab[data-tab="signin"]');
+          const wantTab = btn.dataset.authTab || 'signin';
+          const tab = document.querySelector('.login-tab[data-tab="' + wantTab + '"]');
           if (tab) tab.click();
         });
-      }
+      });
     }
   }
 
