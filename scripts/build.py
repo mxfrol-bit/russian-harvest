@@ -211,6 +211,10 @@ def footer():
   </div>
   <div class="foot-bot">
     <span class="c">© 2026 Русский Урожай. Все права защищены</span>
+    <span class="foot-role" id="footRole">
+      <span class="foot-role-label">Режим: <b id="footRoleName">не выбран</b></span>
+      <button type="button" class="foot-role-btn" id="footRoleSwitch">Сменить роль</button>
+    </span>
     <span style="font-size:12px;color:var(--slate-400)">Использование сайта означает согласие с Пользовательским соглашением и Политикой конфиденциальности сервиса Русский Урожай</span>
   </div>
 </footer>'''
@@ -919,8 +923,8 @@ def build_index():
       <p class="section-lead">Вы видите партию, её показатели качества, расстояние до склада и итоговую цену с доставкой — ещё до того, как свяжетесь с поставщиком. Решение принимаете на данных, а не на обещаниях.</p>
       <div class="adv-list">
         <div class="adv-item">{icon('shield')}<span class="txt"><b>Прозрачная цена.</b> Показываем цену за тонну, НДС, стоимость доставки и расстояние до склада. Итоговая цифра видна сразу — без запросов и пересчётов.</span></div>
-        <div class="adv-item">{icon('shield')}<span class="txt"><b>Только проверенные поставщики.</b> Каждого проверяем по ИНН, ОГРН, истории сделок и банковской дисциплине. Анонимный ID раскрывается только после оплаты через платформу.</span></div>
-        <div class="adv-item">{icon('shield')}<span class="txt"><b>Защита платежа.</b> Деньги резервируются и переводятся продавцу только после подтверждения приёмки товара покупателем. Не пришёл товар — возврат автоматический.</span></div>
+        <div class="adv-item">{icon('shield')}<span class="txt"><b>Только проверенные поставщики.</b> Каждого проверяем по ИНН, ОГРН и истории сделок. Контакты раскрываются после подтверждения отклика.</span></div>
+        <div class="adv-item">{icon('shield')}<span class="txt"><b>Сопровождение сделки.</b> Менеджер платформы помогает согласовать условия, проверить документы и довести поставку до отгрузки.</span></div>
         <div class="adv-item">{icon('shield')}<span class="txt"><b>Качество из лаборатории.</b> Протеин, клейковина, влажность, натура — все показатели с приложением акта лабораторного анализа в карточке партии.</span></div>
       </div>
     </div>
@@ -1309,12 +1313,12 @@ def build_product():
             <span style="color:var(--slate-300)">·</span>
             <span>Модерация товара</span>
           </div>
-          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Данные поставщика раскрываются покупателю после оплаты через платформу.</div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Контакты поставщика раскрываются после подтверждения отклика зарегистрированным пользователям.</div>
         </div>
 
         <div class="escrow" style="display:none">
           {icon('lock')}
-          <p><b style="color:var(--ink)">Сделка защищена платформой.</b> Деньги резервируются и переводятся продавцу только после подтверждения приёмки товара покупателем.</p>
+          <p><b style="color:var(--ink)">Сопровождение сделки.</b> Менеджер платформы помогает довести сделку до отгрузки.</p>
         </div>
       </div>
     </aside>
@@ -1553,12 +1557,6 @@ def build_sale():
       <p>+7 930 012-97-97</p>
       <span class="link-cta">Позвонить {icon('arrow-sm')}</span>
     </a>
-    <a class="contact-card" href="https://t.me/tdrusagro" target="_blank" rel="noopener">
-      <div class="ic">📨</div>
-      <h4>Написать в Telegram</h4>
-      <p>@tdrusagro</p>
-      <span class="link-cta">Открыть Telegram {icon('arrow-sm')}</span>
-    </a>
   </div>
 </section>'''
     return page('Продать · Заявки покупателей', body, active='sale',
@@ -1735,12 +1733,6 @@ def build_how():
       <h4>Позвонить</h4>
       <p><a href="tel:+79300129797" style="color:var(--ink);font-weight:600">+7 930 012-97-97</a></p>
       <a class="btn btn-outline btn-sm" href="tel:+79300129797">Позвонить {icon('arrow-sm')}</a>
-    </div>
-    <div class="help-tile">
-      <div class="ic-wrap">{icon('tg')}</div>
-      <h4>Написать в Telegram</h4>
-      <p><a href="https://t.me/tdrusagro" style="color:var(--ink);font-weight:600">@tdrusagro</a></p>
-      <a class="btn btn-outline btn-sm" href="https://t.me/tdrusagro">Открыть Telegram {icon('arrow-sm')}</a>
     </div>
   </div>
 

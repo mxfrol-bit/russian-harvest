@@ -283,6 +283,33 @@
   }
   applyRoleToNav();
 
+  // ---- v2.6.32: переключатель роли в футере ----
+  // Показывает текущую роль (понятно почему видно только один раздел).
+  // Клик → сброс роли + открытие модалки выбора заново.
+  (function initFooterRoleSwitch(){
+    const nameEl = document.getElementById('footRoleName');
+    const btn = document.getElementById('footRoleSwitch');
+    if (!nameEl || !btn) return;
+    let role = null;
+    try { role = localStorage.getItem('rh_role'); } catch(e){}
+    nameEl.textContent = role === 'seller' ? 'Продавец'
+                       : role === 'buyer'  ? 'Покупатель'
+                       : 'не выбран';
+    btn.addEventListener('click', () => {
+      try {
+        localStorage.removeItem('rh_role');
+        localStorage.removeItem('rh_seen');
+      } catch(e){}
+      // Открываем модалку выбора (она есть на всех страницах через onboarding_modal)
+      if (typeof openModal === 'function' && document.getElementById('onbModal')) {
+        openModal('onb');
+      } else {
+        // Фоллбэк: на странице нет модалки — на главную, там она всплывёт
+        location.href = '/index.html';
+      }
+    });
+  })();
+
   // ---- First-visit auto-open onboarding on index only ----
   const isHome = /\/(index\.html)?$/.test(location.pathname);
   if (isHome) {

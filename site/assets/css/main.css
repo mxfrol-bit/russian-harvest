@@ -1089,10 +1089,19 @@ input,select,textarea{font-family:inherit}
 
 @media (max-width:720px){
   .bar{padding:14px 16px;gap:12px}
+  /* v2.6.31: на телефоне в шапке только лого + лупа + бургер.
+     Войти/Кабинет/помощь/телефон уезжали за экран — прячем,
+     они доступны в drawer (мобильном меню). */
+  .bar .btn-ghost,
+  .bar .btn-primary,
+  .bar #tourHelpBtn,
+  .bar .phone-link,
+  .bar .region-chip{display:none}
+  .menu-trigger{display:flex;flex-shrink:0}
+  .brand img{height:30px}
   .site-search-btn span{display:none}
   .site-search-btn{padding:9px;width:44px;height:44px;justify-content:center}
   .site-search-btn kbd{display:none}
-  .region-chip{display:none}
 
   .hero-inner{padding:36px 16px;gap:28px}
   .hero h1{font-size:38px}
@@ -2437,3 +2446,18 @@ input.inn-invalid{border-color:#DC2626 !important;background:#FEF2F2}
 .inn-msg{font-size:12px;margin-top:4px;line-height:1.4}
 .inn-msg-ok{color:#3D5C19}
 .inn-msg-err{color:#B91C1C}
+
+/* v2.6.32: переключатель роли в футере */
+.foot-role{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;color:var(--slate-400)}
+.foot-role-label b{color:var(--slate-200);font-weight:600}
+.foot-role-btn{
+  background:transparent;border:1px solid rgba(255,255,255,.25);
+  color:#fff;font-size:12px;font-weight:600;
+  padding:5px 12px;border-radius:999px;cursor:pointer;
+  transition:all .15s;font-family:inherit;
+}
+.foot-role-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5)}
+@media (max-width:720px){
+  .foot-role{width:100%;justify-content:space-between;padding:10px 0;
+    border-top:1px solid rgba(255,255,255,.08);margin-top:8px}
+}
