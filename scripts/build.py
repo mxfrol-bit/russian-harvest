@@ -1354,6 +1354,94 @@ def build_product():
                 description='Пшеница 3 класс, 120 тонн, урожай 2025 · Балаково, 539,4 км до Нижнего Новгорода. Протеин 12,8%, клейковина 26%. 14 200 ₽/т + доставка 1 800 ₽/т.')
 
 
+def build_request():
+    """v2.6.42: детальная страница ЗАЯВКИ — зеркало build_product().
+    Купить→Откликнуться, Поставщик→Покупатель, цена→целевая/Договор,
+    Активно до→Поставка до. Данные грузятся динамически по ?id=."""
+    body = f'''<section class="page-hero" style="padding-bottom:20px">
+  <div class="page-hero-inner">
+    <div class="breadcrumb">
+      <a href="/index.html">Главная</a>
+      <span class="sep">/</span>
+      <a href="/sale.html">Продать</a>
+      <span class="sep">/</span>
+      <span id="reqCrumb">Заявка</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:28px">
+  <div class="product-layout">
+
+    <div class="product-main">
+      <h1 id="reqTitle">Заявка на закупку</h1>
+      <p class="subtitle" id="reqSubtitle">Заявка покупателя · ID <span class="mono" id="reqId">—</span></p>
+
+      <div class="product-attrs">
+        <div class="cell"><div class="k">Нужный объём</div><div class="v" id="reqVolume">—</div></div>
+        <div class="cell"><div class="k">НДС</div><div class="v" id="reqVat">—</div></div>
+        <div class="cell"><div class="k">Расстояние до вас</div><div class="v mono" id="reqDistance">—</div></div>
+        <div class="cell"><div class="k">Поставка до</div><div class="v" id="reqNeededBy">—</div></div>
+      </div>
+
+      <div class="product-quality" id="reqQuality" style="display:none">
+        <h3>{icon('check-big')} Требования к качеству</h3>
+        <div class="list" id="reqQualityList"></div>
+      </div>
+
+      <div class="product-section">
+        <h3>Условия</h3>
+        <p>Условия поставки, оплаты и доставки обсуждаются при согласовании сделки после отклика.</p>
+      </div>
+
+      <div class="product-section">
+        <h3>Документы</h3>
+        <p>После подтверждения отклика стороны обмениваются: договором поставки, УПД, ТТН, сертификатом качества.</p>
+      </div>
+    </div>
+
+    <aside class="product-aside">
+      <div class="buy-card">
+        <div class="price" id="reqPrice">Договор</div>
+        <span class="vat" id="reqPriceVat" style="display:none">с НДС 10%</span>
+
+        <div class="actions">
+          <button class="btn btn-primary btn-block" data-action="respond" data-request-id="demo" id="reqRespondBtn">Откликнуться {icon('arrow-sm')}</button>
+          <button class="btn btn-ghost btn-block" data-action="calc-logistics" data-offer-id="demo" id="reqCalcBtn">Рассчитать логистику</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="supplier-block">
+          <div style="font-size:11.5px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.1em">Статус покупателя</div>
+          <span class="supplier-verify verify" style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;align-self:flex-start">
+            <span class="bc" style="width:20px;height:20px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--brand)">{icon('verify')}</span>
+            Покупатель проверен
+          </span>
+          <div class="info">
+            <span>ИНН проверен</span>
+            <span style="color:var(--slate-300)">·</span>
+            <span>Модерация заявки</span>
+          </div>
+          <div style="font-size:12px;color:var(--slate-500);line-height:1.5;margin-top:6px">Контакты покупателя раскрываются после подтверждения отклика зарегистрированным пользователям.</div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</section>
+
+<div class="mobile-bottom-bar">
+  <div style="flex:1">
+    <div style="font-size:12px;color:var(--slate-500);font-weight:600" id="reqPriceMob">Договор</div>
+    <div style="font-size:11px;color:var(--slate-400)">заявка</div>
+  </div>
+  <button class="btn btn-primary btn-sm" data-action="respond" data-request-id="demo">Откликнуться</button>
+</div>'''
+    return page('Заявка на закупку · Русский Урожай', body, active='sale',
+                description='Заявка покупателя на закупку сельхозпродукции. Откликнитесь напрямую через платформу.')
+
+
 def build_sale():
     # Static fallback: no demo cards. Real requests loaded via syncSale() (admin.js).
     requests_html = '''<div class="cards-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--slate-500)">
@@ -2566,6 +2654,7 @@ def main():
         'index.html':       build_index(),
         'catalog.html':     build_catalog(),
         'product.html':     build_product(),
+        'request.html':     build_request(),
         'sale.html':        build_sale(),
         'auction.html':     build_auction(),
         'prices.html':      build_prices(),

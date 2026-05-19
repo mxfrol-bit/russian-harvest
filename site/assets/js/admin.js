@@ -2539,6 +2539,17 @@
         return;
       }
 
+      // v2.6.42: клик по карточке заявки → детальная страница /request.html
+      // (кроме кликов по кнопкам действий внутри карточки)
+      const reqCard = e.target.closest('.req-card[data-request]');
+      if (reqCard && !e.target.closest('button, a, [data-action]')) {
+        const rid = reqCard.getAttribute('data-request');
+        if (rid) {
+          window.location = '/request.html?id=' + encodeURIComponent(rid);
+          return;
+        }
+      }
+
       // Карточка оффера в каталоге → /product.html?id=...
       // (уже работает через <a href>, но запасной handler если кликнули по карточке без id)
     });
@@ -2676,7 +2687,7 @@
       // Show custom modal instead of browser confirm()
       const html = `
         <div class="modal-backdrop on"></div>
-        <div class="modal on" style="max-width:420px;text-align:center;padding:40px 30px;position:relative">
+        <div class="modal on" style="max-width:420px;text-align:center;padding:40px 30px">
           <button class="modal-close modal-x" aria-label="Закрыть" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--slate-100,#f1f5f9);color:var(--slate-600,#475569);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
           <div style="font-size:48px;margin-bottom:14px;margin-top:8px">🔐</div>
           <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">Требуется авторизация</h2>
@@ -2764,7 +2775,7 @@
 
     const html = `
       <div class="modal-backdrop on"></div>
-      <div class="modal on" style="max-width:460px;text-align:center;padding:36px 30px;position:relative">
+      <div class="modal on" style="max-width:460px;text-align:center;padding:36px 30px">
         <button class="modal-close modal-x" aria-label="Закрыть" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--slate-100,#f1f5f9);color:var(--slate-600,#475569);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
         <div style="font-size:48px;margin-bottom:14px;margin-top:8px">✓</div>
         <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${escapeHtml(title)}</h2>
@@ -4730,6 +4741,125 @@
     } catch(e) { console.warn('[focus]', e); wrap.style.display = 'none'; }
   }
 
+  // v2.6.42: детальная страница ЗАЯВКИ /request.html — загрузка по ?id=
+  async function syncRequest() {
+    // Страница заявки определяется по наличию #reqTitle
+    const titleEl = document.getElementById('reqTitle');
+    if (!titleEl) return; // не на странице заявки
+
+    const params = new URLSearchParams(location.search);
+    const reqId = params.get('id');
+    if (!reqId || !reqId.includes('-')) return;
+
+    try {
+      const cfg = window.RH_CONFIG || {};
+      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/buyer_requests?id=eq.${reqId}&select=*`, {
+        headers: {
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+          'Accept': 'application/json'
+        }
+      });
+      if (!r.ok) { console.warn('[syncRequest] fetch failed', r.status); return; }
+      const arr = await r.json();
+      const req = arr && arr[0];
+      if (!req) {
+        titleEl.textContent = 'Заявка не найдена';
+        return;
+      }
+
+      // Заголовок (чистим хвосты как у офферов)
+      const title = (typeof sanitizeOfferTitle === 'function')
+        ? sanitizeOfferTitle(req.title) : (req.title || 'Заявка на закупку');
+      titleEl.textContent = title;
+      document.title = `${title} — Русский Урожай`;
+      const crumb = document.getElementById('reqCrumb');
+      if (crumb) crumb.textContent = title;
+
+      // Подзаголовок + ID
+      const shortId = 'B-' + String(req.id || '').replace(/-/g, '').slice(-4).toUpperCase();
+      const idEl = document.getElementById('reqId');
+      if (idEl) idEl.textContent = shortId;
+      const sub = document.getElementById('reqSubtitle');
+      if (sub) sub.innerHTML = `Заявка покупателя · ID <span class="mono">${shortId}</span>`;
+
+      // Объём
+      const volEl = document.getElementById('reqVolume');
+      if (volEl) volEl.textContent = (req.volume_tons ? req.volume_tons + ' тонн' : '—');
+
+      // НДС
+      const vatMap = {
+        with_vat_10: 'с НДС 10%', with_vat_20: 'с НДС 20%',
+        with_vat_5: 'с НДС 5%', with_vat_7: 'с НДС 7%',
+        with_vat_22: 'с НДС 22%', without_vat: 'без НДС'
+      };
+      const vatEl = document.getElementById('reqVat');
+      if (vatEl) vatEl.textContent = vatMap[req.vat] || '—';
+
+      // Расстояние (от координат заявки до пользователя)
+      const distEl = document.getElementById('reqDistance');
+      if (distEl) {
+        let dist = null;
+        try {
+          if (typeof estimateDistance === 'function') {
+            dist = estimateDistance({
+              region: req.delivery_region, city: req.delivery_city,
+              delivery_lat: req.delivery_lat, delivery_lng: req.delivery_lng
+            });
+          }
+        } catch(_) {}
+        distEl.textContent = (dist != null) ? (dist + ' км') : '—';
+      }
+
+      // Поставка до
+      const nbEl = document.getElementById('reqNeededBy');
+      if (nbEl) nbEl.textContent = req.needed_by
+        ? new Date(req.needed_by).toLocaleDateString('ru-RU') : '—';
+
+      // Цена: целевая или «Договор»
+      const priceEl = document.getElementById('reqPrice');
+      const priceVatEl = document.getElementById('reqPriceVat');
+      const priceMobEl = document.getElementById('reqPriceMob');
+      if (req.target_price_kopecks && req.target_price_kopecks > 0) {
+        const p = (req.target_price_kopecks / 100).toLocaleString('ru-RU');
+        if (priceEl) priceEl.innerHTML = `${p} <span class="unit">₽/т</span>`;
+        if (priceVatEl) { priceVatEl.style.display = ''; priceVatEl.textContent = vatMap[req.vat] || ''; }
+        if (priceMobEl) priceMobEl.textContent = p + ' ₽/т';
+      } else {
+        if (priceEl) priceEl.textContent = 'Договорная цена';
+        if (priceMobEl) priceMobEl.textContent = 'Договор';
+      }
+
+      // Требования к качеству (jsonb meta или quality)
+      const q = req.quality || (req.meta && req.meta.quality) || null;
+      if (q && typeof q === 'object') {
+        const entries = Object.entries(q).filter(([_, v]) => v != null && v !== '');
+        if (entries.length) {
+          const box = document.getElementById('reqQuality');
+          const list = document.getElementById('reqQualityList');
+          if (box && list) {
+            list.innerHTML = entries.map(([k, v]) =>
+              `<div class="row"><span class="k">${escapeHtml(String(k))}</span><span class="v">${escapeHtml(String(v))}</span></div>`
+            ).join('');
+            box.style.display = '';
+          }
+        }
+      }
+
+      // Привязываем data-request-id к кнопкам действий
+      document.querySelectorAll('[data-action="respond"]').forEach(b => {
+        b.setAttribute('data-request-id', req.id);
+      });
+      const calcBtn = document.getElementById('reqCalcBtn');
+      if (calcBtn) {
+        calcBtn.setAttribute('data-offer-id', req.id);
+        calcBtn.setAttribute('data-offer-title', title);
+      }
+    } catch (e) {
+      console.warn('[syncRequest]', e);
+    }
+  }
+
   // Index page: "Recent offers" grid (id=homeGrid) — top 8
   async function syncHomeOffers() {
     const grid = document.getElementById('homeGrid');
@@ -4780,6 +4910,7 @@
     syncFocus();
     syncHomeOffers();
     syncSale();
+    syncRequest();
   });
 
   // Run after page loads
@@ -4788,6 +4919,7 @@
       syncCatalog();
       syncSale();
       syncProduct();
+      syncRequest();
       syncFocus();
       syncHomeOffers();
     });
@@ -4795,6 +4927,7 @@
     syncCatalog();
     syncSale();
     syncProduct();
+    syncRequest();
     syncFocus();
     syncHomeOffers();
   }

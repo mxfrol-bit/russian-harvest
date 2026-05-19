@@ -2346,6 +2346,11 @@ body[data-feature-delivery="off"] [data-feature="delivery"]{
   border: 2px solid #FFA500;
   box-shadow: 0 4px 18px rgba(255,165,0,.15);
 }
+/* v2.6.42: карточка заявки кликабельна → /request.html */
+.req-card[data-request]{cursor:pointer;transition:box-shadow .15s,transform .15s}
+.req-card[data-request]:hover{box-shadow:0 8px 28px rgba(26,36,16,.13);transform:translateY(-2px)}
+.req-card[data-request] button,
+.req-card[data-request] a{cursor:pointer}
 
 /* ============================================================
    v2.4.2 — VIP / Premium offer card styling
