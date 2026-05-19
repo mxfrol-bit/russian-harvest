@@ -68,6 +68,33 @@ def icon(name):
     return icons.get(name, '')
 
 
+def quick_request_form():
+    """v2.6.30: рабочая форма быстрой заявки.
+    На /catalog.html (покупатель) создаёт buyer_request,
+    на /sale.html (продавец) создаёт offer. Обработка в main.js
+    (window.RH_QuickRequest). Незалогинен -> черновик + модалка входа."""
+    return f'''<form class="reverse-form" id="quickRequestForm">
+      <input type="text" id="qrCrop" placeholder="Наименование продукта (напр. Пшеница)" list="qrCropList" required />
+      <datalist id="qrCropList">
+        <option value="Пшеница 3 класс"><option value="Пшеница 4 класс"><option value="Пшеница 5 класс">
+        <option value="Пшеница кормовая"><option value="Ячмень кормовой"><option value="Ячмень пивоваренный">
+        <option value="Кукуруза"><option value="Подсолнечник"><option value="Рапс"><option value="Соя">
+        <option value="Горох"><option value="Овёс"><option value="Рожь"><option value="Гречиха">
+      </datalist>
+      <input type="text" id="qrRegion" placeholder="Регион (напр. Воронежская область)" list="qrRegionList" required />
+      <datalist id="qrRegionList">
+        <option value="Нижегородская область"><option value="Московская область"><option value="Воронежская область">
+        <option value="Ростовская область"><option value="Краснодарский край"><option value="Ставропольский край">
+        <option value="Саратовская область"><option value="Самарская область"><option value="Тульская область">
+        <option value="Рязанская область"><option value="Липецкая область"><option value="Тамбовская область">
+        <option value="Курская область"><option value="Белгородская область"><option value="Волгоградская область">
+      </datalist>
+      <input type="number" id="qrVolume" placeholder="Объём партии (т)" min="1" step="1" required />
+      <input type="number" id="qrPrice" placeholder="Цена руб/т (необязательно)" min="0" step="100" />
+      <button class="submit" type="submit">Отправить заявку {icon('arrow-sm')}</button>
+    </form>'''
+
+
 def header(active=''):
     """Returns the header HTML. active = catalog|sale|about|how|contacts|prices"""
     def nav_item(href, label, key):
@@ -736,10 +763,11 @@ def build_index():
           <input id="heroInput" name="q" type="text" placeholder="Пшеница, ячмень, кукуруза…" autocomplete="off" />
         </label>
         <label class="field select-field">
-          <span class="k">Тип заявки</span>
-          <select name="type" id="heroType">
-            <option value="buy">Купить</option>
-            <option value="sell">Продать</option>
+          <span class="k">НДС</span>
+          <select name="vat" id="heroVat">
+            <option value="">любой</option>
+            <option value="with">с НДС</option>
+            <option value="without">без НДС</option>
           </select>
         </label>
         <label class="field select-field">
@@ -847,13 +875,7 @@ def build_index():
       <h3>Не нашли подходящее предложение?</h3>
       <p class="lead">Создайте заявку и получите персональные предложения от фермеров и поставщиков по вашим параметрам. 86% заявок закрываются за сутки.</p>
     </div>
-    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
-      <input type="text" placeholder="Наименование продукта" />
-      <input type="text" placeholder="Адрес доставки" />
-      <div class="sel"><span>Тип заявки</span><span class="chev">▾</span></div>
-      <div class="sel"><span>Объём партии (т)</span><span class="chev">▾</span></div>
-      <button class="submit" type="submit">Отправить заявку {icon('arrow-sm')}</button>
-    </form>
+    {quick_request_form()}
   </div>
 </section>
 
@@ -1205,13 +1227,7 @@ def build_catalog():
       <h3>Не нашли нужную партию?</h3>
       <p class="lead">Разместите обратную заявку — поставщики сами предложат условия по вашим параметрам.</p>
     </div>
-    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
-      <input type="text" placeholder="Наименование продукта" />
-      <input type="text" placeholder="Адрес доставки" />
-      <div class="sel"><span>Тип заявки</span><span class="chev">▾</span></div>
-      <div class="sel"><span>Объём партии (т)</span><span class="chev">▾</span></div>
-      <button class="submit" type="submit">Отправить заявку {icon('arrow-sm')}</button>
-    </form>
+    {quick_request_form()}
   </div>
 </section>'''
     return page('Купить · Каталог', body, active='catalog',
@@ -1518,13 +1534,7 @@ def build_sale():
       <h3>Не нашли подходящее предложение?</h3>
       <p class="lead">Создайте заявку и получите персональные предложения от фермеров и поставщиков по вашим параметрам. 86% заявок закрываются за сутки.</p>
     </div>
-    <form class="reverse-form" onsubmit="event.preventDefault();alert('Заявка отправлена.')">
-      <input type="text" placeholder="Наименование продукта" />
-      <input type="text" placeholder="Адрес доставки" />
-      <div class="sel"><span>Тип заявки</span><span class="chev">▾</span></div>
-      <div class="sel"><span>Объём партии (т)</span><span class="chev">▾</span></div>
-      <button class="submit" type="submit">Отправить заявку {icon('arrow-sm')}</button>
-    </form>
+    {quick_request_form()}
   </div>
 </section>
 

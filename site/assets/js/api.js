@@ -173,6 +173,60 @@
       return getCurrentProfile();
     },
 
+    // v2.6.30: создание заявки/оффера из формы быстрой заявки.
+    // d = { crop, region, volume, price, mode }
+    //   mode='buyer_request' → пишем в buyer_requests (хочу купить)
+    //   mode='offer'         → пишем в offers (хочу продать)
+    // Запись создаётся в статусе draft/pending — менеджер модерирует.
+    async createQuickEntry(d) {
+      const sb = await ensureSupabase();
+      const prof = await getCurrentProfile();
+      if (!prof) throw new Error('Требуется авторизация');
+
+      const title = String(d.crop || 'Заявка').trim();
+      const volume = Number(d.volume) || 1;
+      const priceKop = d.price ? Math.round(Number(d.price) * 100) : null;
+
+      if (d.mode === 'offer') {
+        // Продавец создаёт предложение
+        const row = {
+          seller_id: prof.id,
+          crop_id: 'other',
+          title: title,
+          price_kopecks: priceKop || 0,
+          vat: 'with_vat_10',
+          volume_tons: volume,
+          region: d.region || 'Россия',
+          has_delivery: false,
+          has_lab_analysis: false,
+          quality: {},
+          status: 'pending',          // на модерацию
+          external_source: 'quick_form',
+          meta: { from_quick_form: true, raw_price: d.price, created_via: 'site' },
+        };
+        const { data, error } = await sb.from('offers').insert(row).select('id').single();
+        if (error) throw new Error(error.message);
+        return { id: data.id, kind: 'offer' };
+      } else {
+        // Покупатель создаёт заявку-потребность
+        const row = {
+          buyer_id: prof.id,
+          crop_id: 'other',
+          title: 'Закупка: ' + title,
+          target_price_kopecks: priceKop,
+          vat: 'with_vat_10',
+          volume_tons: volume,
+          delivery_region: d.region || 'Россия',
+          status: 'open',
+          external_source: 'quick_form',
+          meta: { from_quick_form: true, raw_price: d.price, created_via: 'site' },
+        };
+        const { data, error } = await sb.from('buyer_requests').insert(row).select('id').single();
+        if (error) throw new Error(error.message);
+        return { id: data.id, kind: 'buyer_request' };
+      }
+    },
+
     async isLoggedIn() {
       const s = await getCurrentSession();
       return !!s;

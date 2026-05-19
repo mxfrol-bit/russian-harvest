@@ -2929,6 +2929,14 @@
     const F = window.RH_CONFIG?.FEATURES || {};
     const user = await api.currentUser().catch(() => null);
 
+    // v2.6.30 FIX: отклик ТОЛЬКО для зарегистрированных.
+    // Раньше проверка стояла после ветки !realtime_chat и была
+    // недостижима — отклик уходил от анонима. Теперь гейт в самом верху.
+    if (!user) {
+      await requireLogin('откликнуться');
+      return;
+    }
+
     const requestId = btn.dataset.requestId;
     let request = null;
     if (requestId && requestId.includes('-')) {

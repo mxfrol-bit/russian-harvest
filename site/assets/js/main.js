@@ -814,12 +814,18 @@ document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(a => {
   form.addEventListener('submit', e => {
     e.preventDefault();
     const q = form.querySelector('#heroInput').value.trim();
-    const type = form.querySelector('#heroType').value;
+    const vatEl = form.querySelector('#heroVat');
+    const vat = vatEl ? vatEl.value : '';
     const volume = form.querySelector('[name="volume"]').value;
-    const base = type === 'sell' ? '/sale.html' : '/catalog.html';
+    // v2.6.30: раздел определяется ролью (heroType удалён).
+    // Продавец ищет в заявках (sale), покупатель — в офферах (catalog).
+    let role = null;
+    try { role = localStorage.getItem('rh_role'); } catch(e){}
+    const base = role === 'seller' ? '/sale.html' : '/catalog.html';
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     if (volume) params.set('vol', volume);
+    if (vat) params.set('vat', vat);
     window.location = base + (params.toString() ? '?' + params : '');
   });
 })();
@@ -1568,7 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
    (44px+ высота). Native <select> остаётся в DOM скрытый — value хранится
    там, и существующие addEventListener('change', ...) продолжают работать. */
 (function(){
-  const TARGET_IDS = ['heroVolume', 'catalogVolume', 'saleVolume', 'heroType'];
+  const TARGET_IDS = ['heroVolume', 'catalogVolume', 'saleVolume', 'heroVat'];
 
   function wireSelect(sel) {
     if (!sel || sel.dataset.rhSelectWired) return;
@@ -1696,4 +1702,122 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     wireAll();
   }
+})();
+
+/* ============================================================
+ * v2.6.30: РАБОЧАЯ ФОРМА БЫСТРОЙ ЗАЯВКИ (quick_request_form)
+ * ============================================================
+ * Логика:
+ *  - /catalog.html (покупатель смотрит офферы) → создаём buyer_request
+ *  - /sale.html (продавец смотрит заявки)      → создаём offer
+ *  - не залогинен → сохраняем черновик в localStorage, открываем
+ *    модалку входа; после входа черновик досоздаётся (см. ниже)
+ *  - залогинен → создаём сразу, тост, редирект в ЛК
+ * ============================================================ */
+(function() {
+  'use strict';
+  const DRAFT_KEY = 'rh_quick_draft';
+
+  function detectMode() {
+    // На какой странице форма → что создаём
+    const p = location.pathname;
+    if (/\/sale\.html$/.test(p))    return 'offer';        // продавец → создаёт предложение
+    if (/\/catalog\.html$/.test(p)) return 'buyer_request';// покупатель → создаёт заявку
+    // На главной — по выбранной роли
+    let role = null;
+    try { role = localStorage.getItem('rh_role'); } catch(e){}
+    return role === 'seller' ? 'offer' : 'buyer_request';
+  }
+
+  function collectForm() {
+    const crop   = (document.getElementById('qrCrop')   || {}).value || '';
+    const region = (document.getElementById('qrRegion') || {}).value || '';
+    const volume = (document.getElementById('qrVolume') || {}).value || '';
+    const price  = (document.getElementById('qrPrice')  || {}).value || '';
+    return {
+      crop: crop.trim(),
+      region: region.trim(),
+      volume: parseFloat(volume) || null,
+      price: price ? parseFloat(price) : null,
+      mode: detectMode(),
+      ts: Date.now(),
+    };
+  }
+
+  async function submitDraft(d) {
+    // Требуется RH_API (Supabase). Если нет — не падаем.
+    if (!window.RH_API) {
+      alert('Сервис временно недоступен. Попробуйте позже.');
+      return false;
+    }
+    const user = await window.RH_API.currentUser().catch(() => null);
+
+    // Не залогинен → сохраняем черновик + открываем вход
+    if (!user) {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch(e){}
+      const bd = document.getElementById('loginBackdrop');
+      const lm = document.getElementById('loginModal');
+      if (bd && lm) {
+        bd.classList.add('on'); lm.classList.add('on');
+      } else {
+        location.href = '/account.html';
+      }
+      return false;
+    }
+
+    // Залогинен → создаём запись через RH_API
+    try {
+      if (typeof window.RH_API.createQuickEntry === 'function') {
+        await window.RH_API.createQuickEntry(d);
+      } else {
+        // Фоллбэк: пишем в admin_inbox если спец-метода нет
+        if (typeof window.RH_API.sendInbox === 'function') {
+          await window.RH_API.sendInbox({ kind: 'quick_request', payload: d, user });
+        }
+      }
+      try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+      const what = d.mode === 'offer' ? 'Предложение' : 'Заявка';
+      alert(what + ' создана. Менеджер свяжется с вами. Перенаправляем в личный кабинет…');
+      location.href = '/account.html';
+      return true;
+    } catch (err) {
+      console.error('[quickRequest] failed:', err);
+      alert('Не удалось создать: ' + (err.message || 'ошибка'));
+      return false;
+    }
+  }
+
+  function init() {
+    const form = document.getElementById('quickRequestForm');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const d = collectForm();
+      if (!d.crop || !d.region || !d.volume) {
+        alert('Заполните продукт, регион и объём.');
+        return;
+      }
+      await submitDraft(d);
+    });
+
+    // Если вернулись после входа и есть черновик — досоздаём
+    (async () => {
+      let draft = null;
+      try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch(e){}
+      if (!draft || !window.RH_API) return;
+      const user = await window.RH_API.currentUser().catch(() => null);
+      if (user) {
+        // Был незавершённый черновик и юзер теперь залогинен
+        await submitDraft(draft);
+      }
+    })();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  window.RH_QuickRequest = { detectMode, collectForm };
 })();
