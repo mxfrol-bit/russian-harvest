@@ -2764,16 +2764,16 @@
 
     const html = `
       <div class="modal-backdrop on"></div>
-      <div class="modal on" style="max-width:460px;text-align:center;padding:36px 30px">
-        <button class="modal-close">✕</button>
-        <div style="font-size:48px;margin-bottom:14px">✓</div>
+      <div class="modal on" style="max-width:460px;text-align:center;padding:36px 30px;position:relative">
+        <button class="modal-close modal-x" aria-label="Закрыть" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:none;background:var(--slate-100,#f1f5f9);color:var(--slate-600,#475569);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+        <div style="font-size:48px;margin-bottom:14px;margin-top:8px">✓</div>
         <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">${escapeHtml(title)}</h2>
         <p style="color:var(--slate-500);margin-bottom:18px;line-height:1.55">${escapeHtml(subtitle)}</p>
         ${item?.title ? `<div style="background:var(--slate-50);padding:12px 16px;border-radius:10px;margin-bottom:18px;font-size:13px;color:var(--slate-700)"><b>${escapeHtml(item.title)}</b></div>` : ''}
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
           <a class="btn btn-primary" href="tel:${escapeHtml(cfg.SUPPORT_PHONE || '+79300129797')}">📞 Позвонить: ${escapeHtml(cfg.SUPPORT_PHONE || '+7 930 012-97-97')}</a>
           <a class="btn btn-outline" href="https://t.me/${escapeHtml(cfg.SUPPORT_TELEGRAM || 'tdrusagro')}" target="_blank">Написать в Telegram</a>
-          <button class="btn btn-outline modal-close">Закрыть</button>
+          <button class="btn btn-outline modal-close" style="position:static;width:100%">Закрыть</button>
         </div>
       </div>
     `;
@@ -2783,6 +2783,15 @@
   async function handlePurchase(btn) {
     const F = window.RH_CONFIG?.FEATURES || {};
     const user = await api.currentUser().catch(() => null);
+
+    // v2.6.35 FIX: покупка ТОЛЬКО для зарегистрированных.
+    // Тот же баг что был с откликом (v2.6.30): проверка стояла
+    // после ветки !escrow_enabled и была недостижима — аноним
+    // покупал. Теперь гейт в самом верху.
+    if (!user) {
+      await requireLogin('купить');
+      return;
+    }
 
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) {
@@ -2799,7 +2808,6 @@
     }
 
     // С эскроу — старый flow
-    if (!user) { await requireLogin('купить'); return; }
     const withDelivery = btn.dataset.delivery === '1';
     openPurchaseModal(offer, withDelivery, user);
   }
@@ -2907,6 +2915,13 @@
     const F = window.RH_CONFIG?.FEATURES || {};
     const user = await api.currentUser().catch(() => null);
 
+    // v2.6.35 FIX: ценовое предложение ТОЛЬКО для зарегистрированных
+    // (та же недостижимая проверка что у buy/respond).
+    if (!user) {
+      await requireLogin('сделать ценовое предложение');
+      return;
+    }
+
     const offerId = await findOfferIdAsync(btn);
     if (!offerId) { showToast('Не удалось определить оффер. Откройте страницу товара.'); return; }
     const offer = await api.getOffer(offerId).catch(() => null);
@@ -2918,7 +2933,6 @@
       return;
     }
 
-    if (!user) { await requireLogin('сделать ценовое предложение'); return; }
     if (user.role === 'seller' && offer.seller_id === user.id) { showToast('Это ваш собственный оффер'); return; }
     if (user.role === 'seller') { showToast('Откликаются на офферы только покупатели'); return; }
 
@@ -4169,7 +4183,6 @@
           <div class="card-meta">
             <div class="cell"><div class="k">Объём</div><div class="v">${o.volume_tons} т</div></div>
             <div class="cell"><div class="k">Урожай</div><div class="v">${o.harvest_year || '2025'}</div></div>
-            <div class="cell"><div class="k">Регион</div><div class="v">${escapeHtml(o.region)}</div></div>
           </div>
         </div>
         ${qClean.length > 0 ? `
@@ -4186,7 +4199,6 @@
           <div class="distance-from">
             <span class="pin-ic">📍</span>
             <div>
-              <div class="route">${escapeHtml(cityFrom)} → ${escapeHtml(window.__rh_user_city || 'Нижний Новгород')}</div>
               <div class="km"><b>${distance}</b> км до вас</div>
             </div>
           </div>
@@ -4198,8 +4210,8 @@
           </div>
         </div>
         <div class="card-foot" style="display:flex;flex-direction:column;gap:8px">
-          <a class="cta" href="/product.html?id=${o.id}" style="width:100%;text-align:center;justify-content:center">Купить →</a>
-          <button class="cta-secondary" type="button" data-action="calc-logistics" data-offer-id="${o.id}" data-offer-title="${escapeHtml(cleanTitle)}" style="width:100%;text-align:center;justify-content:center;background:transparent;border:1px solid var(--line,#E5E9DC);color:var(--ink,#1a2410);padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit">Рассчитать логистику</button>
+          <a href="/product.html?id=${o.id}" style="width:100%;text-align:center;justify-content:center;display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--ink,#1a2410);color:var(--ink,#1a2410);padding:13px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;transition:all .15s">Купить →</a>
+          <button class="cta-secondary" type="button" data-action="calc-logistics" data-offer-id="${o.id}" data-offer-title="${escapeHtml(cleanTitle)}" style="width:100%;text-align:center;justify-content:center;background:transparent;border:1px solid var(--line,#E5E9DC);color:var(--slate-600,#475569);padding:11px;border-radius:12px;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit">Рассчитать логистику</button>
         </div>
       </article>
     `;
@@ -4414,14 +4426,12 @@
           </div>
           <div class="card-meta">
             <div class="cell"><div class="k">Объём</div><div class="v">${r.volume_tons || '—'} т</div></div>
-            <div class="cell"><div class="k">Куда</div><div class="v">${escapeHtml(region)}</div></div>
           </div>
         </div>
         <div class="distance-strip">
           <div class="distance-from">
             <span class="pin-ic">📍</span>
             <div>
-              <div class="route">${escapeHtml(cityFrom)} → ${escapeHtml(region)}</div>
               <div class="km"><b>${distance}</b> км от вас</div>
             </div>
           </div>
